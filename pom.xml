@@ -31,9 +31,9 @@
     <url>http://sling.apache.org</url>
 
     <scm>
-        <connection>scm:svn:http://svn.apache.org/repos/asf/sling/trunk/tooling/ide</connection>
-        <developerConnection>scm:svn:https://svn.apache.org/repos/asf/sling/trunk/tooling/ide</developerConnection>
-        <url>http://svn.apache.org/viewvc/sling/trunk/tooling/ide</url>
+        <connection>scm:git:https://gitbox.apache.org/repos/asf/sling-ide-tooling.git</conncetion>
+        <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/sling-ide-tooling.git</developerConnection>
+        <url>https://gitbox.apache.org/repos/asf?p=sling-ide-tooling.git</url>
     </scm>
 
     <modules>
