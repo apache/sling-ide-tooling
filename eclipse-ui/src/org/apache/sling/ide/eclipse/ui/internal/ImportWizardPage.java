@@ -61,7 +61,7 @@ public class ImportWizardPage extends WizardDataTransferPage {
 	private Label adjustJcrRootText;
     private IFolder importRoot;
     private Composite adjustComposite;
-    boolean hasValidFilter;
+    private boolean hasValidFilter;
 
 	/**
 	 * Creates an import wizard page for importing from a Sling Repository. If
@@ -308,7 +308,7 @@ public class ImportWizardPage extends WizardDataTransferPage {
     @Override
     protected void updateWidgetEnablements() {
         super.updateWidgetEnablements();
-        
+
         boolean pageComplete = determinePageCompletion();
         setPageComplete(pageComplete);
         if (pageComplete) {
@@ -328,7 +328,10 @@ public class ImportWizardPage extends WizardDataTransferPage {
 
             if (filterFile != null && filterFile.exists()) {
                 importLabel.setText("Will apply import filter from /" + filterFile.getProjectRelativePath() + ".");
-                hasValidFilter = true;
+                if ( !hasValidFilter ) {
+                    hasValidFilter = true;
+                    determinePageCompletion();
+                }
             }
             importLabel.setVisible(true);
         }
