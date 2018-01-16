@@ -322,7 +322,7 @@ public class ImportWizardPage extends WizardDataTransferPage {
 
         adjustComposite.setVisible(project != null);
         adjustComposite.getParent().layout();
-
+        
         if (importRoot != null) {
             IFile filterFile = getFilter();
 
@@ -330,7 +330,7 @@ public class ImportWizardPage extends WizardDataTransferPage {
                 importLabel.setText("Will apply import filter from /" + filterFile.getProjectRelativePath() + ".");
                 if ( !hasValidFilter ) {
                     hasValidFilter = true;
-                    determinePageCompletion();
+                    setPageComplete(determinePageCompletion());
                 }
             }
             importLabel.setVisible(true);
@@ -377,6 +377,7 @@ public class ImportWizardPage extends WizardDataTransferPage {
             setErrorMessage(repositoryError);
             return false;
         }
+        
         return true;
 	}
 
