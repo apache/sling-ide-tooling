@@ -76,4 +76,92 @@
       </plugin>
     </plugins>
   </build>
+    <profiles>
+        <profile>
+            <id>codesign</id>
+            <build>
+                <plugins>
+                    <!-- 
+                    This plugin is not yet released. To use this code signing, install the 
+                    pluging locally and then run with the 'codesign' profile. See the Sling IDE
+                    tooling docs for more instructions 
+                    <plugin>
+                        <groupId>org.apache.sling</groupId>
+                        <artifactId>codesign-maven-plugin</artifactId>
+                        <version>1.0.0-SNAPSHOT</version>
+                        <executions>
+                            <execution>
+                                <id>codesign</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <applicationName>Apache Sling IDE Tooling for Eclipse</applicationName>
+                            <applicationVersion>${qualifiedVersion}</applicationVersion>
+                            <includeProjectArtifact>false</includeProjectArtifact>
+                            <artifactSets>
+                                <artifactSet>
+                                    <directory>target/repository/features</directory>
+                                    <include>org.apache.sling.*.jar</include>
+                                </artifactSet>
+                                <artifactSet>
+                                    <directory>target/repository/plugins</directory>
+                                    <include>org.apache.sling.*.jar</include>
+                                </artifactSet>
+                            </artifactSets>
+                            <signingService>Java TEST Signing Sha256</signingService>
+                        </configuration>
+                    </plugin>
+                     -->
+                    <plugin>
+                        <groupId>org.eclipse.tycho.extras</groupId>
+                        <artifactId>tycho-p2-extras-plugin</artifactId>
+                        <version>${tycho.version}</version>
+                        <configuration>
+                            <source>
+                                <repository>
+                                    <url>${project.build.directory}/repository</url>
+                                </repository>
+                            </source>
+                            <destination>${project.build.directory}/repository-signed</destination>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>create-signed-repository</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>mirror</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-resources-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>copy-index.html-to-signed-repository</id>
+                                <goals>
+                                    <goal>copy-resources</goal>
+                                </goals>
+                                <phase>package</phase>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/repository-signed</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${project.build.directory}/repository</directory>
+                                    <include>index.html</include>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
