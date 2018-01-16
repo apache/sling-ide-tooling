@@ -73,5 +73,13 @@ public class VltFilterTest {
                     is(FilterResult.PREREQUISITE));
         }
     }
+    
+    @Test
+    public void filterWithInclude() throws IOException, ConfigurationException {
+        
+        assertThat(newFilter("filter-with-include.xml").filter("/etc/designs/base"), is(FilterResult.PREREQUISITE));
+        assertThat(newFilter("filter-with-include.xml").filter("/etc/designs/base/jcr:content"), is(FilterResult.ALLOW));
+        assertThat(newFilter("filter-with-include.xml").filter("/etc/designs/base/other"), is(FilterResult.DENY));
+    }
 
 }
