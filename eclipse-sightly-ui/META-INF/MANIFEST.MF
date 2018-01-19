@@ -1,5 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
+Bundle-Vendor: The Apache Software Foundation
+Bundle-Name: Sling IDE Eclipse Sightly UI
 Bundle-SymbolicName: org.apache.sling.ide.eclipse-sightly-ui;singleton:=true
 Bundle-Version: 1.2.1.qualifier
 Bundle-ActivationPolicy: lazy

@@ -1,6 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: Slingclipse-M2Eclipse-based-WST-plugin
+Bundle-Vendor: The Apache Software Foundation
+Bundle-Name: Sling IDE M2E UI
 Bundle-SymbolicName: org.apache.sling.ide.eclipse-m2e-ui;singleton:=true
 Bundle-Activator: org.apache.sling.ide.eclipse.m2e.internal.Activator
 Bundle-Version: 1.2.1.qualifier
