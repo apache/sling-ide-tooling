@@ -25,7 +25,7 @@
     </parent>
     <groupId>org.apache.sling.ide</groupId>
     <artifactId>sling-ide-tooling</artifactId>
-    <version>1.2.2</version>
+    <version>1.2.3-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Apache Sling IDE Tools</name>
     <url>http://sling.apache.org</url>

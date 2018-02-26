@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.apache.sling.ide</groupId>
     <artifactId>sling-ide-tooling</artifactId>
-    <version>1.2.2</version>
+    <version>1.2.3-SNAPSHOT</version>
   </parent>
   <artifactId>org.apache.sling.ide.p2update</artifactId>
   <packaging>eclipse-repository</packaging>
