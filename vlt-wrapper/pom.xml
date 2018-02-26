@@ -172,7 +172,7 @@
 
     <properties>
         <!-- must match the version being referenced in the pom.xml of filevault -->
-        <jackrabbit.version>2.16.0</jackrabbit.version>
-        <vault.version>3.1.42</vault.version>
+        <jackrabbit.version>2.16.1</jackrabbit.version>
+        <vault.version>3.1.44</vault.version>
     </properties>
 </project>
