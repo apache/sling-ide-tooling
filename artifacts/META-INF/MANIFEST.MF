@@ -3,7 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Vendor: The Apache Software Foundation
 Bundle-Name: Sling IDE Embedded Artifacts
 Bundle-SymbolicName: org.apache.sling.ide.artifacts
-Bundle-Version: 1.2.1.qualifier
+Bundle-Version: 1.2.2
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Import-Package: org.osgi.service.component,

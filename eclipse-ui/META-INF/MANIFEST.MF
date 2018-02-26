@@ -4,7 +4,7 @@ Bundle-Vendor: The Apache Software Foundation
 Bundle-Name: Sling IDE Eclipse UI
 Bundle-SymbolicName: org.apache.sling.ide.eclipse-ui;singleton:=true
 Bundle-Activator: org.apache.sling.ide.eclipse.ui.internal.Activator
-Bundle-Version: 1.2.1.qualifier
+Bundle-Version: 1.2.2
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ClassPath: .,
  lib/decentxml-1.4.jar
