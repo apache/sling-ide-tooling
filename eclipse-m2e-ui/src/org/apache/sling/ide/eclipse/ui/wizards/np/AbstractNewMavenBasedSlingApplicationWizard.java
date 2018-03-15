@@ -23,6 +23,7 @@ import java.util.Properties;
 
 import org.apache.maven.archetype.catalog.Archetype;
 import org.apache.maven.model.Model;
+import org.apache.maven.model.Plugin;
 import org.apache.sling.ide.eclipse.ui.wizards.AbstractNewSlingApplicationWizard;
 import org.apache.sling.ide.eclipse.ui.wizards.Projects;
 import org.eclipse.core.resources.IFile;
@@ -40,6 +41,17 @@ public abstract class AbstractNewMavenBasedSlingApplicationWizard extends Abstra
 	private ChooseArchetypeWizardPage chooseArchetypePage;
 	private ArchetypeParametersWizardPage archetypeParametersPage;
 
+	private static boolean isConfiguredWithBndPlugin(Model model) {
+	    for ( Plugin buildPlugin: model.getBuild().getPlugins() ) {
+	        if ( "biz.aQute.bnd".equals(buildPlugin.getGroupId())
+	                && "bnd-maven-plugin".equals(buildPlugin.getArtifactId()) ) {
+	            return true;
+	        }
+	    }
+	    
+        return false;
+    }
+	
     public abstract boolean acceptsArchetype(Archetype archetype);
 
 	/**
@@ -118,7 +130,7 @@ public abstract class AbstractNewMavenBasedSlingApplicationWizard extends Abstra
 
             if ("content-package".equals(packaging)) {
                 projects.getContentProjects().add(project);
-            } else if ("bundle".equals(packaging)) {
+            } else if ("bundle".equals(packaging) || isConfiguredWithBndPlugin(model)) {
                 projects.getBundleProjects().add(project);
             } else if ("pom".equals(packaging)) {
                 if (projects.getReactorProject() == null) {

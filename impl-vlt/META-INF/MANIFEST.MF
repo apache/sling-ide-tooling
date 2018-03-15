@@ -3,7 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Vendor: The Apache Software Foundation
 Bundle-Name: Sling IDE Vlt Impl
 Bundle-SymbolicName: org.apache.sling.ide.impl-vlt;singleton:=true
-Bundle-Version: 1.2.1.qualifier
+Bundle-Version: 1.2.3.qualifier
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Require-Bundle: org.eclipse.equinox.ds;bundle-version="1.2.1",

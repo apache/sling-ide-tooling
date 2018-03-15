@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.apache.sling.ide</groupId>
     <artifactId>sling-ide-tooling</artifactId>
-    <version>1.2.1-SNAPSHOT</version>
+    <version>1.2.3-SNAPSHOT</version>
   </parent>
 
   <artifactId>org.apache.sling.ide.target-definition</artifactId>
