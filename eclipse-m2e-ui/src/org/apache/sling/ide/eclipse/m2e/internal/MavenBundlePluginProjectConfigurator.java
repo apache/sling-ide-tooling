@@ -66,10 +66,12 @@ public class MavenBundlePluginProjectConfigurator extends AbstractBundleProjectC
             if (comparableVersion.compareTo(new ComparableVersion("3.2.0")) >= 0) {
                 // but only if explicitly configured, see http://felix.apache.org/documentation/faqs/apache-felix-bundle-plugin-faq.html#use-scr-metadata-generated-by-bnd-in-unit-tests
                 // therefore check configuration
+                boolean foundManifestGoal = false;
                 for (PluginExecution pluginExecution : bundlePlugin.getExecutions()) {
                     if (!pluginExecution.getGoals().contains("manifest")) {
                         continue;
                     }
+                    foundManifestGoal = true;
                     Xpp3Dom configuration = (Xpp3Dom)pluginExecution.getConfiguration();
                     Xpp3Dom supportIncrementalBuildConfiguration = configuration.getChild("supportIncrementalBuild");
                     // https://issues.apache.org/jira/browse/FELIX-3324
@@ -82,6 +84,9 @@ public class MavenBundlePluginProjectConfigurator extends AbstractBundleProjectC
                         logger.trace("Using maven-bundle-plugin in a version >= 3.2.0 with the incremental build support correctly enabled.");
                         return true;
                     }
+                }
+                if (!foundManifestGoal) {
+                    logger.warn("Although using maven-bundle-plugin in a version >= 3.2.0, the explicit goal 'manifest' is not configured.");
                 }
             } else {
                 logger.warn("maven-bundle-plugin in a version < 3.2.0 does not natively support incremental builds.");
