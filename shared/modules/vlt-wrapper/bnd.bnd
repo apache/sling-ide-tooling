@@ -41,7 +41,8 @@
 -includeresource: guava-*.jar;lib:=true,\
     jackrabbit-*.jar;lib:=true, \
     vault-*;lib:=true, \
-    http*.jar;lib:=true
+    http*.jar;lib:=true, \
+    jcr-*.jar;lib:=true
 
 Import-Package: sun.misc;resolution:=optional, \
  org.apache.commons.codec;version="[1.3.0,2)", \
