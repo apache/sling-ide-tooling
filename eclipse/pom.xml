@@ -39,8 +39,6 @@
     <modules>
         <module>target-definition</module>
         <module>artifacts</module>
-        <module>impl-vlt</module>
-        <module>impl-vlt-test</module>
         <module>eclipse-core</module>
         <module>eclipse-ui</module>
         <module>feature</module>

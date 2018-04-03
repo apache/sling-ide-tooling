@@ -25,6 +25,11 @@
       <artifactId>org.apache.sling.ide.vlt-wrapper</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.apache.sling</groupId>
+      <artifactId>org.apache.sling.ide.impl-vlt</artifactId>
+      <version>${project.version}</version>
+    </dependency>
   </dependencies>
 
 </project>
