@@ -20,12 +20,13 @@ import java.util.Date;
 
 import org.apache.sling.ide.log.Logger;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Plugin;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.osgi.service.debug.DebugOptions;
 import org.eclipse.osgi.service.debug.DebugOptionsListener;
 import org.eclipse.osgi.service.debug.DebugTrace;
 import org.eclipse.osgi.util.NLS;
+import org.osgi.framework.Bundle;
 
 /**
  * The <tt>Tracer</tt> is the default implementation of the <tt>Logger</tt>
@@ -34,20 +35,20 @@ public class Tracer implements DebugOptionsListener, Logger {
 
     private static final long PERF_IGNORE_THRESHOLD = 50;
 
-    private final Plugin plugin;
+    private final Bundle bundle;
     private boolean debugEnabled;
     private boolean consoleEnabled;
     private boolean performanceEnabled;
     private DebugTrace trace;
     
-    public Tracer(Plugin plugin) {
-        this.plugin = plugin;
+    public Tracer(Bundle bundle) {
+        this.bundle = bundle;
     }
 
     @Override
     public void optionsChanged(DebugOptions options) {
     	
-        String pluginId = plugin.getBundle().getSymbolicName();
+        String pluginId = bundle.getSymbolicName();
 
         debugEnabled = options.getBooleanOption(pluginId + "/debug", false);
         consoleEnabled = options.getBooleanOption(pluginId + "/debug/console", false) && debugEnabled;
@@ -73,7 +74,7 @@ public class Tracer implements DebugOptionsListener, Logger {
     private void writeToConsole(String message, Throwable t) {
 
         System.out.println("[" + Thread.currentThread().getName() + "] " + new Date() + " "
-                + plugin.getBundle().getSymbolicName() + " : " + message);
+                + bundle.getSymbolicName() + " : " + message);
         if (t != null)
             t.printStackTrace(System.out);
     }
@@ -130,6 +131,6 @@ public class Tracer implements DebugOptionsListener, Logger {
     }
 
     private void logInternal(int statusCode, String message, Throwable cause) {
-        plugin.getLog().log(new Status(statusCode, plugin.getBundle().getSymbolicName(), message, cause));
+        Platform.getLog(bundle).log(new Status(statusCode, bundle.getSymbolicName(), message, cause));
     }
 }

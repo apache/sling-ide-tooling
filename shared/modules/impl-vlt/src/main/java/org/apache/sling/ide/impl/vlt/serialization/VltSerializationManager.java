@@ -58,7 +58,6 @@ public class VltSerializationManager implements SerializationManager {
 
     static final String EXTENSION_XML = ".xml";
 
-    @Reference
     private VltSerializationDataBuilder builder;
     
     @Reference

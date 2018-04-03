@@ -2,3 +2,4 @@ Bundle-ActivationPolicy: lazy
 -exportcontents: ${packages;VERSIONED}
 -includeresource: plugin.xml, .options
 Bundle-SymbolicName: org.apache.sling.ide.impl-vlt;singleton:=true
+SlingIDE-PluginLoggerEnabled: true

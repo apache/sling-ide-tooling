@@ -62,7 +62,7 @@ public class Activator extends Plugin {
                 null);
         osgiClientFactory.open();
 
-        tracerRegistration = PluginLoggerRegistrar.register(this);
+        tracerRegistration = PluginLoggerRegistrar.getInstance().getServiceRegistration(context.getBundle());
 
         tracer = new ServiceTracker<>(context, tracerRegistration.getReference(), null);
         tracer.open();

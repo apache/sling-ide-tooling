@@ -39,7 +39,7 @@ public class Activator extends Plugin {
 
     public void start(BundleContext context) throws Exception {
         
-        loggerRegistration = PluginLoggerRegistrar.register(this);
+        loggerRegistration = PluginLoggerRegistrar.getInstance().getServiceRegistration(context.getBundle());
         loggerTracker = new ServiceTracker<>(context, loggerRegistration.getReference(), null);
         loggerTracker.open();
         
@@ -54,7 +54,6 @@ public class Activator extends Plugin {
     public void stop(BundleContext context) throws Exception {
 
         plugin = null;
-        loggerRegistration.unregister();
         
         super.stop(context);
     }

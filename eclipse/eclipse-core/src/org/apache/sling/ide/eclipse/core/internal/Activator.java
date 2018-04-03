@@ -32,8 +32,6 @@ import org.apache.sling.ide.transport.BatcherFactory;
 import org.apache.sling.ide.transport.CommandExecutionProperties;
 import org.apache.sling.ide.transport.RepositoryFactory;
 import org.eclipse.core.runtime.Plugin;
-import org.eclipse.core.runtime.preferences.InstanceScope;
-import org.eclipse.ui.preferences.ScopedPreferenceStore;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.event.Event;
@@ -73,8 +71,13 @@ public class Activator extends Plugin {
 	public void start(BundleContext context) throws Exception {
 		super.start(context);
 		plugin = this;
+		
+		PluginLoggerRegistrar loggerRegistrar = PluginLoggerRegistrar.getInstance();
+		
+        loggerRegistrar.init(context.getBundles());
+        context.addBundleListener(loggerRegistrar);
 
-        tracerRegistration = PluginLoggerRegistrar.register(this);
+        tracerRegistration = loggerRegistrar.getServiceRegistration(context.getBundle());
 
         eventAdmin = new ServiceTracker<>(context, EventAdmin.class, null);
         eventAdmin.open();
@@ -111,8 +114,11 @@ public class Activator extends Plugin {
 	 * @see org.eclipse.ui.plugin.AbstractUIPlugin#stop(org.osgi.framework.BundleContext)
 	 */
 	public void stop(BundleContext context) throws Exception {
-
-        tracerRegistration.unregister();
+	    
+	    PluginLoggerRegistrar loggerRegistrar = PluginLoggerRegistrar.getInstance();
+	    
+	    context.removeBundleListener(loggerRegistrar);
+	    loggerRegistrar.shutdown();
 
         repositoryFactory.close();
         serializationManager.close();

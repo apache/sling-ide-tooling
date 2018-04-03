@@ -68,3 +68,4 @@ Import-Package: org.apache.commons.httpclient;version="3.1.0",
 Bundle-ActivationPolicy: lazy
 Export-Package: org.apache.sling.ide.eclipse.m2e,org.apache.sling.ide.
  eclipse.ui.wizards.np
+SlingIDE-PluginLoggerEnabled: true

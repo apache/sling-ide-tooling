@@ -59,7 +59,7 @@ public class Activator extends AbstractUIPlugin {
     public void start(BundleContext context) throws Exception {
         super.start(context);
 
-        tracerRegistration = PluginLoggerRegistrar.register(this);
+        tracerRegistration = PluginLoggerRegistrar.getInstance().getServiceRegistration(context.getBundle());
 
         serializationManager = new ServiceTracker<>(context, SerializationManager.class, null);
         serializationManager.open();
