@@ -34,6 +34,7 @@
 
     <modules>
         <module>shared-feature</module>
+        <module>shared-repository</module>
     </modules>
 
     <repositories>
