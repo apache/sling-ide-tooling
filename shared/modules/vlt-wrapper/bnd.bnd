@@ -35,3 +35,4 @@
     vault-*;lib:=true, \
     http*.jar;lib:=true
 
+Import-Package: sun.misc;resolution:=optional, *
