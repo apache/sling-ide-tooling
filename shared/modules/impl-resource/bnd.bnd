@@ -1,1 +1,2 @@
+Bundle-ActivationPolicy: lazy
 -exportcontents: ${packages;VERSIONED}

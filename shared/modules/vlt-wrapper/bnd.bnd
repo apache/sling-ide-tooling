@@ -1,3 +1,5 @@
+Bundle-ActivationPolicy: lazy
+
 -exportcontents: javax.jcr,\
  javax.jcr.nodetype,\
  javax.jcr.lock,\
