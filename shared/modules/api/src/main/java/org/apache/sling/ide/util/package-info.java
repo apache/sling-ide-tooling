@@ -14,16 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sling.ide.transport.impl;
 
-import org.apache.sling.ide.transport.Batcher;
-import org.apache.sling.ide.transport.BatcherFactory;
-
-public class DefaultBatcherFactory implements BatcherFactory {
-
-    @Override
-    public Batcher createBatcher() {
-        return new DefaultBatcher();
-    }
-
-}
+@org.osgi.annotation.versioning.Version("1.2.0")
+package org.apache.sling.ide.util;

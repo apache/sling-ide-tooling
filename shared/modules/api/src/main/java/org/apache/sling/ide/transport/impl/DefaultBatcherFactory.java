@@ -14,29 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sling.ide.osgi.impl;
+package org.apache.sling.ide.transport.impl;
 
-import org.apache.sling.ide.osgi.OsgiClient;
-import org.apache.sling.ide.osgi.OsgiClientFactory;
-import org.apache.sling.ide.transport.RepositoryInfo;
-import org.osgi.service.event.EventAdmin;
+import org.apache.sling.ide.transport.Batcher;
+import org.apache.sling.ide.transport.BatcherFactory;
+import org.osgi.service.component.annotations.Component;
 
-public class HttpOsgiClientFactory implements OsgiClientFactory {
+@Component(service = BatcherFactory.class)
+public class DefaultBatcherFactory implements BatcherFactory {
 
-    private EventAdmin eventAdmin;
-
-    public OsgiClient createOsgiClient(RepositoryInfo repositoryInfo) {
-        if (eventAdmin != null) {
-            return new TracingOsgiClient(new HttpOsgiClient(repositoryInfo), eventAdmin);
-        }
-        return new HttpOsgiClient(repositoryInfo);
+    @Override
+    public Batcher createBatcher() {
+        return new DefaultBatcher();
     }
 
-    protected void bindEventAdmin(EventAdmin eventAdmin) {
-        this.eventAdmin = eventAdmin;
-    }
-
-    protected void unbindEventAdmin(EventAdmin eventAdmin) {
-        this.eventAdmin = null;
-    }
 }
