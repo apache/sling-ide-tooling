@@ -1,5 +1,13 @@
 -exportcontents: javax.jcr,\
  javax.jcr.nodetype,\
+ javax.jcr.lock,\
+ javax.jcr.observation, \
+ javax.jcr.query, \
+ javax.jcr.query.qom, \
+ javax.jcr.retention, \
+ javax.jcr.security , \
+ javax.jcr.util, \
+ javax.jcr.version, \
  org.apache.jackrabbit.api,\
  org.apache.jackrabbit.api.management, \
  org.apache.jackrabbit.api.security.authorization, \
