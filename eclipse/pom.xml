@@ -195,6 +195,15 @@
         </pluginRepository>
     </pluginRepositories>
 
+  <repositories>
+   <repository>
+     <id>sling-ide-tooling-shared-local</id>
+     <layout>p2</layout>
+     <url>file:${basedir}/../../shared/p2/shared-repository/target/repository</url>
+   </repository>
+  </repositories>
+
+
     <properties>
         <tycho.version>0.22.0</tycho.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
