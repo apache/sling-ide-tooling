@@ -15,14 +15,13 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.apache.sling</groupId>
-        <artifactId>sling</artifactId>
-        <version>33</version>
+        <groupId>org.apache.sling.ide</groupId>
+        <artifactId>sling-ide-shared-parent</artifactId>
+        <version>1.2.3-SNAPSHOT</version>
+        <relativePath>../parent/</relativePath>
     </parent>
 
-    <groupId>org.apache.sling.ide</groupId>
     <artifactId>org.apache.sling.ide.impl-resource</artifactId>
-    <version>1.2.3-SNAPSHOT</version>
     <name>Apache Sling IDE Tools Resource-based Implementation</name>
 
     <scm>

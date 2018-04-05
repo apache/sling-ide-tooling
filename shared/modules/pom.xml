@@ -33,6 +33,7 @@
     </scm>
 
     <modules>
+        <module>parent</module>
         <module>api</module>
         <module>impl-resource</module>
         <module>impl-vlt</module>
