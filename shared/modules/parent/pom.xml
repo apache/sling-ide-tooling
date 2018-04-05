@@ -33,6 +33,20 @@
         <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/sling-ide-tooling.git</developerConnection>
         <url>https://gitbox.apache.org/repos/asf?p=sling-ide-tooling.git</url>
     </scm>
+    
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.rat</groupId>
+                <artifactId>apache-rat-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <exclude>**/MANIFEST.MF</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
     <profiles>
         <profile>

@@ -38,5 +38,6 @@
         <module>impl-resource</module>
         <module>impl-vlt</module>
         <module>vlt-wrapper</module>
+        <module>artifacts</module>
     </modules>
 </project>

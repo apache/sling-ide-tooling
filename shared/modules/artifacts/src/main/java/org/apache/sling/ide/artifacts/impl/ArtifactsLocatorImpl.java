@@ -22,17 +22,15 @@ import org.apache.sling.ide.artifacts.EmbeddedArtifact;
 import org.apache.sling.ide.artifacts.EmbeddedArtifactLocator;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.component.ComponentContext;
+import org.osgi.service.component.annotations.Component;
 
+@Component(service = EmbeddedArtifactLocator.class)
 public class ArtifactsLocatorImpl implements EmbeddedArtifactLocator {
-
-    private static final String ARTIFACTS_LOCATION = "target/artifacts";
 
     private ComponentContext context;
 
     protected void activate(ComponentContext context) {
-
         this.context = context;
-
     }
 
     @Override
@@ -44,7 +42,7 @@ public class ArtifactsLocatorImpl implements EmbeddedArtifactLocator {
         String artifactId = "org.apache.sling.tooling.support.install";
         String extension = "jar";
 
-        URL jarUrl = loadResource(bundleContext, ARTIFACTS_LOCATION + "/sling-tooling-support-install/" + artifactId
+        URL jarUrl = loadResource(bundleContext, artifactId + "-" + version
                 + "." + extension);
 
         return new EmbeddedArtifact(artifactId + "-" + version + "." + extension, version, jarUrl);
@@ -59,7 +57,7 @@ public class ArtifactsLocatorImpl implements EmbeddedArtifactLocator {
         String artifactId = "org.apache.sling.tooling.support.source";
         String extension = "jar";
         
-        URL jarUrl = loadResource(bundleContext, ARTIFACTS_LOCATION + "/sling-tooling-support-source/" + artifactId
+        URL jarUrl = loadResource(bundleContext, artifactId + "-" + version
                 + "." + extension);
         
         return new EmbeddedArtifact(artifactId + "-" + version + "." + extension, version, jarUrl);

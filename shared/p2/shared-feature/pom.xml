@@ -30,6 +30,11 @@
       <artifactId>org.apache.sling.ide.impl-vlt</artifactId>
       <version>${project.version}</version>
     </dependency>
-  </dependencies>
+    <dependency>
+      <groupId>org.apache.sling.ide</groupId>
+      <artifactId>org.apache.sling.ide.artifacts</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+   </dependencies>
 
 </project>

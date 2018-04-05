@@ -1,0 +1,5 @@
+Bundle-ActivationPolicy: lazy
+
+-exportcontents: ${packages;VERSIONED}
+
+-includeresource: org.apache.sling.tooling.support*.jar
