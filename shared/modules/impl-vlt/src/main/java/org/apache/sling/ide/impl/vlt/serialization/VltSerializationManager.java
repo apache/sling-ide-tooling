@@ -58,10 +58,11 @@ public class VltSerializationManager implements SerializationManager {
 
     static final String EXTENSION_XML = ".xml";
 
-    private VltSerializationDataBuilder builder;
-    
     @Reference
     private Logger logger;
+
+    @Reference
+    private VaultFsLocator fsLocator;
 
     public static void main(String[] args) throws RepositoryException, URISyntaxException, IOException {
         RepositoryAddress address = new RepositoryAddress("http://localhost:8080/server/root");
@@ -208,29 +209,12 @@ public class VltSerializationManager implements SerializationManager {
     public String getOsPath(String repositoryPath) {
         return PlatformNameFormat.getPlatformPath(repositoryPath);
     }
-
-    protected void bindVaultFsLocator(VaultFsLocator fsLocator) {
-
-        getBuilder().setLocator(fsLocator);
-    }
-
-    protected void unbindVaultFsLocator(VaultFsLocator fsLocator) {
-
-        getBuilder().setLocator(null);
-    }
-    
-    private VltSerializationDataBuilder getBuilder() {
-    	if (builder==null) {
-    		builder = new VltSerializationDataBuilder(logger);
-    	}
-    	return builder;
-    }
     
     @Override
     public SerializationDataBuilder newBuilder(
     		org.apache.sling.ide.transport.Repository repository,
     		File contentSyncRoot) throws SerializationException {
-    	VltSerializationDataBuilder b = getBuilder();
+        VltSerializationDataBuilder b = new VltSerializationDataBuilder(logger, fsLocator);
     	b.init(repository, contentSyncRoot);
     	return b;
     }

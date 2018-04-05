@@ -67,8 +67,13 @@ public class VltSerializationDataBuilder implements SerializationDataBuilder {
 	private VaultFileSystem fs;
     private Logger logger;
 	
-	public VltSerializationDataBuilder(Logger logger) {
+	public VltSerializationDataBuilder(Logger logger, VaultFsLocator fsLocator) {
+	    if ( logger == null )
+	        throw new RuntimeException("Logger is null");
+        if ( fsLocator == null )
+            throw new RuntimeException("fsLocator is null");
 	    this.logger = logger;
+	    this.fsLocator = fsLocator;
 	}
 
     public void init(org.apache.sling.ide.transport.Repository repository, File contentSyncRoot)
@@ -341,10 +346,4 @@ public class VltSerializationDataBuilder implements SerializationDataBuilder {
 
         return null;
     }
-
-    public void setLocator(VaultFsLocator locator) {
-
-        this.fsLocator = locator;
-    }
-
 }
