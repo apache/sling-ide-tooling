@@ -20,6 +20,7 @@ import static org.junit.Assert.assertThat;
 
 import java.util.concurrent.Callable;
 
+import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matcher;
 
 import junit.framework.AssertionFailedError;
@@ -98,5 +99,9 @@ public class Poller {
 
         // safe, since only we write in holder[0]
         return (V) holder[0];
+    }
+
+    public void pollUntilTrue(final Callable<Boolean> callable) throws InterruptedException {
+        pollUntil(callable, CoreMatchers.equalTo(true));
     }
 }

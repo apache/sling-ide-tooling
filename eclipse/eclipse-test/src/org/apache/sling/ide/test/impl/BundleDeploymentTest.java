@@ -38,6 +38,7 @@ import org.apache.sling.ide.test.impl.helpers.ServerAdapter;
 import org.apache.sling.ide.test.impl.helpers.SlingWstServer;
 import org.apache.sling.ide.test.impl.helpers.TemporaryProject;
 import org.apache.sling.ide.test.impl.helpers.ToolingSupportBundle;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.JavaCore;
@@ -84,7 +85,7 @@ public class BundleDeploymentTest {
         wstServer.waitForServerToStart();
 
         // create faceted project
-        IProject bundleProject = projectRule.getProject();
+        final IProject bundleProject = projectRule.getProject();
 
         ProjectAdapter project = new ProjectAdapter(bundleProject);
         project.addNatures(JavaCore.NATURE_ID, "org.eclipse.wst.common.project.facet.core.nature");
@@ -112,6 +113,15 @@ public class BundleDeploymentTest {
 
         // install bundle facet
         project.installFacet("sling.bundle", "1.0");
+
+        // ensure that the project is built and deployable
+        new Poller().pollUntilTrue(new Callable<Boolean>() {
+            @Override
+            public Boolean call() throws Exception {
+                IFile outputManifest = bundleProject.getFile(Path.fromPortableString("bin/META-INF/MANIFEST.MF"));
+                return outputManifest.exists();
+            }
+        });
 
         ServerAdapter server = new ServerAdapter(wstServer.getServer());
         server.setAttribute(ISlingLaunchpadServer.PROP_INSTALL_LOCALLY, installBundleLocally);
