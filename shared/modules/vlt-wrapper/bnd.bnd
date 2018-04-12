@@ -1,0 +1,57 @@
+Bundle-ActivationPolicy: lazy
+
+-exportcontents: javax.jcr,\
+ javax.jcr.nodetype,\
+ javax.jcr.lock,\
+ javax.jcr.observation, \
+ javax.jcr.query, \
+ javax.jcr.query.qom, \
+ javax.jcr.retention, \
+ javax.jcr.security , \
+ javax.jcr.util, \
+ javax.jcr.version, \
+ org.apache.jackrabbit.api,\
+ org.apache.jackrabbit.api.management, \
+ org.apache.jackrabbit.api.security.authorization, \
+ org.apache.jackrabbit.api.security.principal, \
+ org.apache.jackrabbit.api.security.user, \
+ org.apache.jackrabbit.spi,\
+ org.apache.jackrabbit.spi.commons.conversion,\
+ org.apache.jackrabbit.spi.commons.namespace,\
+ org.apache.jackrabbit.util,\
+ org.apache.jackrabbit.vault.davex,\
+ org.apache.jackrabbit.vault.fs,\
+ org.apache.jackrabbit.vault.fs.api,\
+ org.apache.jackrabbit.vault.fs.config,\
+ org.apache.jackrabbit.vault.fs.filter,\
+ org.apache.jackrabbit.vault.fs.impl,\
+ org.apache.jackrabbit.vault.fs.impl.aggregator,\
+ org.apache.jackrabbit.vault.fs.impl.io,\
+ org.apache.jackrabbit.vault.fs.impl.io.legacycnd,\
+ org.apache.jackrabbit.vault.fs.io,\
+ org.apache.jackrabbit.vault.fs.spi,\
+ org.apache.jackrabbit.vault.fs.spi.impl.jcr20,\
+ org.apache.jackrabbit.vault.packaging,\
+ org.apache.jackrabbit.vault.packaging.impl,\
+ org.apache.jackrabbit.vault.util,\
+ org.apache.jackrabbit.vault.util.xml.serialize,\
+ org.apache.jackrabbit.vault.util.xml.xerces.dom,\
+ org.apache.jackrabbit.vault.util.xml.xerces.util,\
+ org.apache.jackrabbit.vault.util.xml.xerces.xni,\
+ org.apache.jackrabbit.vault.util.xml.xerces.xni.parser
+
+-includeresource: guava-*.jar;lib:=true,\
+    jackrabbit-*.jar;lib:=true, \
+    vault-*;lib:=true, \
+    org.apache.jackrabbit.vault-*.jar;lib:=true, \
+    http*.jar;lib:=true, \
+    jcr-*.jar;lib:=true
+
+Import-Package: sun.misc;resolution:=optional, \
+ org.apache.commons.codec;version="[1.3.0,2)", \
+ org.apache.commons.codec.binary;version="[1.3.0,2)", \
+ org.apache.commons.io;version="[1.4,3)", \
+ org.apache.commons.io.input;version="[1.4,3)", \
+ org.apache.commons.io.output;version="[1.4,3)", \
+ !org.apache.sling.*, \
+ *

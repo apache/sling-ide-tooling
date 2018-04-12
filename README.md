@@ -1,17 +1,36 @@
-Apache Sling IDE Tooling
+# Apache Sling IDE Tooling
 
-The IDE Tooling project produces a p2 update site which is installable into
-a Eclipse runtime. The update site is located in the p2update/target/repository
-directory.
+This module is part of the [Apache Sling](https://sling.apache.org) project.
 
-How to run the Sling IDE tools in a test Eclipse instance
----------------------------------------------------------
+For using the IDE tooling, please see the [Sling IDE Tooling](https://sling.apache.org/documentation/development/ide-tooling.html)
+documentation page.
 
-This howto assumes that you are running Eclipse Mars or Later with the Plug-In 
+## Repository structure
+
+The modules are split into two sub-trees
+
+* shared
+* eclipse
+
+to ensure that the reusable code is available for usage in other IDEs or
+environments.
+
+The modules placed under `shared/modules` should bring as few external dependencies as
+possible, and must not depend on IDE-specific APIs, such as Eclipse or OSGi.
+
+The modules placed under `eclipse` may depend on any Eclipse-specific APIs.
+
+To make the shared modules consumable by the Maven + Tycho toolchain, a separate
+`shared/p2` sub-tree contains a Maven + Tycho build which creates a p2 update
+site. That update site in turn is consumed by the `eclipse` build.
+
+## Building the Sling IDE Tooling for Eclipse
+
+This howto assumes that you are running Eclipse Oxygen or later with the Plug-In 
 Development Environment and Maven features installed. You should have
 previously built the projects using
 
-    mvn package
+    ./build-eclipse.sh
 
 to ensure that Maven artifacts which are not available on p2 update sites are
 included in the workspace.
@@ -36,55 +55,3 @@ the target platform is set up, you can create a new launch configuration.
 Now you can use the 'Sling IDE Tooling' launch configuration which is present 
 in the org.apache.sling.ide.target-definition project to launch a local instance
 of Eclipse with Sling IDE Tooling plug-ins picked up from the local workspace.
-
-How to generate a signed release
---------------------------------
-
-The build can be configured to sign the generated jars with a code signing
-certificates. This prevents unsigned content errors from appearing when
-installing the plugins and reassures the user that the content comes from
-a trusted source.
-
-Please note that this is different from GPG signatures.
-
-The following steps are needed to sign the generated jars.
-
-1. Obtain a code signing certificate. At the moment the ASF does not provide
-such a service, so you will have to obtain one yourself. One free possibility
-is Certum [1]. Expect at least two weeks of processing time, so plan this
-ahead of time.
-
-2. Import the certificate chain into a local keystore. The best approach is to
-install the certificate into a browser and ensure that the whole certificate
-chain is present. For Certum that would by the Certum CA, the Certum Level 3
-CA and the code signing certificate.  Backup the certificates from Fireox
-and then import them into the keystore, with a command similar to
-
-	keytool -importkeystore -destkeystore keystore_certum.jks -srckeystore \
-		backup.p12 -srcstoretype pkcs12 
-
-3. Insert properties controlling jarsigner behaviour in your settings.xml
-
-	<settings>
-	    <profiles>
-	        <profile>
-	            <id>sign</id>        
-	
-	            <properties>
-	                <jarsigner.alias>certum-codesigning</jarsigner.alias>
-	                <jarsigner.storepass>changeit</jarsigner.storepass>
-	                <jarsigner.tsa>http://time.certum.pl/</jarsigner.tsa>
-	                <!-- needed since we mix packages between projects -->
-	                <skipTests>true</skipTests>
-	                <jarsigner.keystore>/home/users/keystore_certum.jks</jarsigner.keystore>
-	            </properties>
-	        </profile>
-	    </profiles>
-	</settings>
-
-At this point you can launch a build using
-
-	mvn clean package -Psign
-
-All jars will be signed, and should install without any warnings.
-[1]: https://www.certum.eu/certum/cert,offer_en_open_source_cs.xml 

@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Licensed to the Apache Software Foundation (ASF) under one or more contributor 
+    license agreements. See the NOTICE file distributed with this work for additional 
+    information regarding copyright ownership. The ASF licenses this file to 
+    you under the Apache License, Version 2.0 (the "License"); you may not use 
+    this file except in compliance with the License. You may obtain a copy of 
+    the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required 
+    by applicable law or agreed to in writing, software distributed under the 
+    License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS 
+    OF ANY KIND, either express or implied. See the License for the specific 
+    language governing permissions and limitations under the License. -->
+<project
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+    xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.apache</groupId>
+        <artifactId>apache</artifactId>
+        <version>14</version>
+    </parent>
+    <groupId>org.apache.sling</groupId>
+    <artifactId>sling-ide-tooling-p2</artifactId>
+    <version>1.2.3-SNAPSHOT</version>
+    <packaging>pom</packaging>
+    <name>Apache Sling IDE Tools - P2 packaging</name>
+    <url>http://sling.apache.org</url>
+
+    <scm>
+        <connection>scm:git:https://gitbox.apache.org/repos/asf/sling-ide-tooling.git</connection>
+        <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/sling-ide-tooling.git</developerConnection>
+        <url>https://gitbox.apache.org/repos/asf?p=sling-ide-tooling.git</url>
+    </scm>
+
+    <modules>
+        <module>shared-feature</module>
+        <module>shared-repository</module>
+    </modules>
+
+    <repositories>
+        <repository>
+            <id>luna</id>
+            <layout>p2</layout>
+            <url>http://download.eclipse.org/releases/oxygen</url>
+        </repository>
+        <repository>
+            <id>orbit</id>
+            <layout>p2</layout>
+            <url>http://download.eclipse.org/tools/orbit/downloads/drops/R20140525021250/repository/</url>
+        </repository>
+    </repositories>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.eclipse.tycho</groupId>
+                <artifactId>tycho-maven-plugin</artifactId>
+                <version>${tycho.version}</version>
+                <extensions>true</extensions>
+            </plugin>
+            <plugin>
+                <groupId>org.eclipse.tycho</groupId>
+                <artifactId>target-platform-configuration</artifactId>
+                <version>${tycho.version}</version>
+                <configuration>
+                    <resolver>p2</resolver>
+                    <pomDependencies>consider</pomDependencies>
+                    <!-- <target> <artifact> <groupId>${project.groupId}</groupId> 
+                        <artifactId>org.apache.sling.ide.target-definition</artifactId> <version>${project.version}</version> 
+                        </artifact> </target> -->
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.eclipse.tycho</groupId>
+                <artifactId>tycho-versions-plugin</artifactId>
+                <version>${tycho.version}</version>
+            </plugin>
+            <!-- <plugin> <groupId>org.codehaus.mojo</groupId> <artifactId>ianal-maven-plugin</artifactId> 
+                <version>1.0-alpha-1</version> <executions> <execution> <goals> <goal>verify-legal-files</goal> 
+                </goals> <configuration> <strict>true</strict> </configuration> </execution> 
+                </executions> </plugin> -->
+            <plugin>
+                <groupId>org.apache.rat</groupId>
+                <artifactId>apache-rat-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <exclude>derby.log</exclude>
+                        <exclude>.gitignore</exclude>
+                        <exclude>README.md</exclude>
+
+                        <!-- Eclipse build related files -->
+                        <exclude>*.launch</exclude>
+                        <exclude>build.properties</exclude>
+                        <exclude>.options</exclude>
+                        <exclude>META-INF/MANIFEST.MF</exclude>
+
+                        <!-- test data -->
+                        <exclude>**/*.binary</exclude>
+
+                        <!-- prevent failures when eclipse-test is not activated 
+                            as a submodule -->
+                        <exclude>eclipse-test/**</exclude>
+                        <!-- exclude target file from the source-bundle project 
+                            since it is not a module -->
+                        <exclude>source-bundle/target/**</exclude>
+                        <exclude>source-bundle/README.md</exclude>
+
+                        <!-- Jenkins Xvfb plugin -->
+                        <exclude>.Xauthority-*</exclude>
+                    </excludes>
+                </configuration>
+                <!-- <executions> <execution> <goals> <goal>check</goal> 
+                    </goals> <phase>verify</phase> </execution> </executions> -->
+            </plugin>
+        </plugins>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.1</version>
+                    <configuration>
+                        <source>1.7</source>
+                        <target>1.7</target>
+                    </configuration>
+                </plugin>
+                <!--This plugin's configuration is used to store Eclipse 
+                    m2e settings only. It has no influence on the Maven build itself. -->
+                <!-- We embed some bundles that are not available on p2 update 
+                    sites. To make the build seamless, we copy them early in the process. -->
+                <plugin>
+                    <groupId>org.eclipse.m2e</groupId>
+                    <artifactId>lifecycle-mapping</artifactId>
+                    <version>1.0.0</version>
+                    <configuration>
+                        <lifecycleMappingMetadata>
+                            <pluginExecutions>
+                                <pluginExecution>
+                                    <pluginExecutionFilter>
+                                        <groupId>
+                                            org.apache.maven.plugins
+                                        </groupId>
+                                        <artifactId>
+                                            maven-dependency-plugin
+                                        </artifactId>
+                                        <versionRange>
+                                            [2.8,)
+                                        </versionRange>
+                                        <goals>
+                                            <goal>copy</goal>
+                                        </goals>
+                                    </pluginExecutionFilter>
+                                    <action>
+                                        <ignore></ignore>
+                                    </action>
+                                </pluginExecution>
+                            </pluginExecutions>
+                        </lifecycleMappingMetadata>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+
+    <properties>
+        <tycho.version>1.0.0</tycho.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+</project>
