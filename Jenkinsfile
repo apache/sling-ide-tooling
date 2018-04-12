@@ -24,7 +24,9 @@ pipeline {
 
         stage ('Build Eclipse plug-ins') {
             steps {
-                sh 'mvn -f eclipse clean verify'
+                wrap([$class: 'Xvfb') {
+                    sh 'mvn -f eclipse clean verify'
+                }
                 junit 'eclipse/**/surefire-reports/*.xml'
                 archiveArtifacts artifacts: 'eclipse/**/logs/*.log'
             }
