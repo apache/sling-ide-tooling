@@ -11,21 +11,27 @@ pipeline {
     stages {
         stage ('Build shared code') {
             steps {
-                sh 'mvn -f shared/modules clean install'
+                timeout(10) {
+                    sh 'mvn -f shared/modules clean install'
+                }
                 junit 'shared/modules/**/surefire-reports/*.xml'
             }
         }
 
         stage ('Build shared code P2 repository') {
             steps {
-                sh 'mvn -f shared/p2 clean package'
+                timeout(10) {
+                    sh 'mvn -f shared/p2 clean package'
+                }
             }
         }
 
         stage ('Build Eclipse plug-ins') {
             steps {
-                wrap([$class: 'Xvfb') {
-                    sh 'mvn -f eclipse clean verify'
+                wrap([$class: 'Xvfb']) {
+                    timeout(20) {
+                        sh 'mvn -f eclipse clean verify'
+                    }
                 }
                 junit 'eclipse/**/surefire-reports/*.xml'
                 archiveArtifacts artifacts: 'eclipse/**/logs/*.log'
