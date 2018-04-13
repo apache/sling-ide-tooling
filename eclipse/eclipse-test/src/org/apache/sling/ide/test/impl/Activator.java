@@ -20,6 +20,7 @@ import org.apache.sling.ide.artifacts.EmbeddedArtifactLocator;
 import org.apache.sling.ide.eclipse.core.ServiceUtil;
 import org.apache.sling.ide.osgi.OsgiClientFactory;
 import org.apache.sling.ide.serialization.SerializationManager;
+import org.apache.sling.ide.sync.content.SyncCommandFactory;
 import org.eclipse.core.runtime.Plugin;
 import org.osgi.framework.BundleContext;
 import org.osgi.util.tracker.ServiceTracker;
@@ -34,6 +35,8 @@ public class Activator extends Plugin {
 
     private ServiceTracker<SerializationManager, SerializationManager> serializationManager;
 
+    private ServiceTracker <SyncCommandFactory, SyncCommandFactory> commandFactory;
+
     @Override
     public void start(BundleContext context) throws Exception {
         super.start(context);
@@ -46,6 +49,9 @@ public class Activator extends Plugin {
 
         serializationManager = new ServiceTracker<>(context, SerializationManager.class, null);
         serializationManager.open();
+        
+        commandFactory = new ServiceTracker<>(context, SyncCommandFactory.class, null);
+        commandFactory.open();
 
         INSTANCE = this;
     }
@@ -56,6 +62,7 @@ public class Activator extends Plugin {
         artifactLocator.close();
         osgiClientFactory.close();
         serializationManager.close();
+        commandFactory.close();
 
         INSTANCE = null;
 
@@ -79,5 +86,9 @@ public class Activator extends Plugin {
     public SerializationManager getSerializationManager() {
 
         return ServiceUtil.getNotNull(serializationManager);
+    }
+
+    public SyncCommandFactory getCommandFactory() {
+        return ServiceUtil.getNotNull(commandFactory);
     }
 }

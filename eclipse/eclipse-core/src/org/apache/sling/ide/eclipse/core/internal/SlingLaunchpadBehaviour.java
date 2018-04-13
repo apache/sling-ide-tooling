@@ -30,12 +30,14 @@ import java.util.Set;
 
 import org.apache.sling.ide.artifacts.EmbeddedArtifact;
 import org.apache.sling.ide.artifacts.EmbeddedArtifactLocator;
+import org.apache.sling.ide.eclipse.core.EclipseResources;
 import org.apache.sling.ide.eclipse.core.ISlingLaunchpadServer;
 import org.apache.sling.ide.eclipse.core.ServerUtil;
 import org.apache.sling.ide.log.Logger;
 import org.apache.sling.ide.osgi.OsgiClient;
 import org.apache.sling.ide.osgi.OsgiClientException;
 import org.apache.sling.ide.serialization.SerializationException;
+import org.apache.sling.ide.sync.content.SyncCommandFactory;
 import org.apache.sling.ide.transport.Batcher;
 import org.apache.sling.ide.transport.Command;
 import org.apache.sling.ide.transport.Repository;
@@ -65,7 +67,7 @@ import org.osgi.framework.Version;
 
 public class SlingLaunchpadBehaviour extends ServerBehaviourDelegateWithModulePublishSupport {
 
-    private ResourceChangeCommandFactory commandFactory;
+    private SyncCommandFactory commandFactory;
 	private ILaunch launch;
 	private JVMDebuggerConnection debuggerConnection;
 	
@@ -196,7 +198,7 @@ public class SlingLaunchpadBehaviour extends ServerBehaviourDelegateWithModulePu
         Logger logger = Activator.getDefault().getPluginLogger();
         
         if (commandFactory == null) {
-            commandFactory = new ResourceChangeCommandFactory();
+            commandFactory = Activator.getDefault().getCommandFactory();
         }
 
         logger.trace(traceOperation(kind, deltaKind, module));
@@ -566,7 +568,7 @@ public class SlingLaunchpadBehaviour extends ServerBehaviourDelegateWithModulePu
             return null;
         }
 
-        return commandFactory.newCommandForAddedOrUpdated(repository, res);
+        return commandFactory.newCommandForAddedOrUpdatedResource(repository, EclipseResources.create(res));
     }
 
     private Command<?> reorderChildNodesCommand(Repository repository, IModuleResource resource) throws CoreException,
@@ -578,7 +580,7 @@ public class SlingLaunchpadBehaviour extends ServerBehaviourDelegateWithModulePu
             return null;
         }
 
-        return commandFactory.newReorderChildNodesCommand(repository, res);
+        return commandFactory.newReorderChildNodesCommand(repository, EclipseResources.create(res));
     }
 
     private IResource getResource(IModuleResource resource) {
@@ -608,6 +610,6 @@ public class SlingLaunchpadBehaviour extends ServerBehaviourDelegateWithModulePu
             return null;
         }
 
-        return commandFactory.newCommandForRemovedResources(repository, deletedResource);
+        return commandFactory.newCommandForRemovedResource(repository, EclipseResources.create(deletedResource));
     }
 }

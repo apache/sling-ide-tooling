@@ -31,7 +31,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.sling.ide.eclipse.core.internal.ResourceChangeCommandFactory;
+import org.apache.sling.ide.eclipse.core.EclipseResources;
+import org.apache.sling.ide.sync.content.SyncCommandFactory;
 import org.apache.sling.ide.test.impl.helpers.ProjectAdapter;
 import org.apache.sling.ide.test.impl.helpers.SpyCommand;
 import org.apache.sling.ide.test.impl.helpers.SpyRepository;
@@ -47,13 +48,14 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
-public class ResourceChangeCommandFactoryTest {
+// TODO - move out of the eclipse-test module and make this a regular Maven test
+public class DefaultCommandFactoryImplTest {
 
     @Rule
     public TemporaryProject projectRule = new TemporaryProject();
     private IProject contentProject;
     private ProjectAdapter project;
-    private ResourceChangeCommandFactory factory;
+    private SyncCommandFactory factory;
     private Repository spyRepo;
 
     @Before
@@ -72,7 +74,7 @@ public class ResourceChangeCommandFactoryTest {
 
         Set<String> ignoredFileNames = new HashSet<>();
         ignoredFileNames.add(".gitignore");
-        factory = new ResourceChangeCommandFactory();
+        factory = Activator.getDefault().getCommandFactory();
 
         spyRepo = new SpyRepository();
     }
@@ -85,11 +87,11 @@ public class ResourceChangeCommandFactoryTest {
             project.createOrUpdateFile(Path.fromPortableString("jcr_root/content/test-root/nested/.gitignore"),
                     inputStream);
         }
-        SpyCommand<?> command = (SpyCommand<?>) factory.newCommandForAddedOrUpdated(spyRepo,
-                contentProject.findMember("jcr_root/content/test-root/nested/.gitignore"));
+        SpyCommand<?> command = (SpyCommand<?>) factory.newCommandForAddedOrUpdatedResource(spyRepo,
+                EclipseResources.create(contentProject.findMember("jcr_root/content/test-root/nested/.gitignore")));
         assertNull(command);
-        command = (SpyCommand<?>) factory.newCommandForRemovedResources(spyRepo,
-                contentProject.findMember("jcr_root/content/test-root/nested/.gitignore"));
+        command = (SpyCommand<?>) factory.newCommandForRemovedResource(spyRepo,
+                EclipseResources.create(contentProject.findMember("jcr_root/content/test-root/nested/.gitignore")));
         assertNull(command);
     }
 
@@ -101,30 +103,30 @@ public class ResourceChangeCommandFactoryTest {
             project.createOrUpdateFile(Path.fromPortableString("jcr_root/content/test-root/nested/gitignore"),
                     inputStream);
         }
-        SpyCommand<?> command = (SpyCommand<?>) factory.newCommandForAddedOrUpdated(spyRepo,
-                contentProject.findMember("jcr_root/content/test-root/nested/gitignore"));
+        SpyCommand<?> command = (SpyCommand<?>) factory.newCommandForAddedOrUpdatedResource(spyRepo,
+                EclipseResources.create(contentProject.findMember("jcr_root/content/test-root/nested/gitignore")));
         assertThat("command.path", command.getPath(), nullValue());
         assertThat("command.resource.path", command.getResourceProxy().getPath(), equalTo("/content/test-root/nested/gitignore"));
         assertThat("command.resource.properties", command.getResourceProxy().getProperties(),
                 equalTo(singletonMap("jcr:primaryType", (Object) "nt:file")));
         assertThat("command.kind", command.getSpyKind(), equalTo(SpyCommand.Kind.ADD_OR_UPDATE));
         
-        command = (SpyCommand<?>) factory.newCommandForRemovedResources(spyRepo,
-                contentProject.findMember("jcr_root/content/test-root/nested/gitignore"));
+        command = (SpyCommand<?>) factory.newCommandForRemovedResource(spyRepo,
+                EclipseResources.create(contentProject.findMember("jcr_root/content/test-root/nested/gitignore")));
         assertThat("command.path", command.getPath(), equalTo("/content/test-root/nested/gitignore"));
         assertThat("command.kind", command.getSpyKind(), equalTo(SpyCommand.Kind.DELETE));
     }
 
     @Test
-    public void commandForAddedOrUpdatedNtFolder() throws CoreException {
+    public void commandForAddedOrUpdatedNtFolder() throws CoreException, IOException {
 
         // create a sling:Folder at /content/test-root/nested
         InputStream childContentXml = getClass().getResourceAsStream("sling-folder-nodetype.xml");
         project.createOrUpdateFile(Path.fromPortableString("jcr_root/content/test-root/nested/.content.xml"),
                 childContentXml);
 
-        SpyCommand<?> command = (SpyCommand<?>) factory.newCommandForAddedOrUpdated(spyRepo,
-                contentProject.findMember("jcr_root/content/test-root"));
+        SpyCommand<?> command = (SpyCommand<?>) factory.newCommandForAddedOrUpdatedResource(spyRepo,
+                EclipseResources.create(contentProject.findMember("jcr_root/content/test-root")));
 
         assertThat("command.path", command.getPath(), nullValue());
         assertThat("command.resource.path", command.getResourceProxy().getPath(), equalTo("/content/test-root"));
@@ -135,15 +137,15 @@ public class ResourceChangeCommandFactoryTest {
     }
 
     @Test
-    public void commandForAddedOrUpdatedSlingFolder() throws CoreException {
+    public void commandForAddedOrUpdatedSlingFolder() throws CoreException, IOException {
 
         // create a sling:Folder at /content/test-root/nested
         InputStream childContentXml = getClass().getResourceAsStream("sling-folder-nodetype-with-title.xml");
         project.createOrUpdateFile(Path.fromPortableString("jcr_root/content/test-root/nested/.content.xml"),
                 childContentXml);
 
-        SpyCommand<?> command = (SpyCommand<?>) factory.newCommandForAddedOrUpdated(spyRepo,
-                contentProject.findMember("jcr_root/content/test-root/nested"));
+        SpyCommand<?> command = (SpyCommand<?>) factory.newCommandForAddedOrUpdatedResource(spyRepo,
+                EclipseResources.create(contentProject.findMember("jcr_root/content/test-root/nested")));
 
         Map<String, Object> props = new HashMap<>();
         props.put("jcr:primaryType", "sling:Folder");
@@ -157,7 +159,7 @@ public class ResourceChangeCommandFactoryTest {
     }
 
     @Test
-    public void commandForSlingOrderedFolder_children() throws CoreException {
+    public void commandForSlingOrderedFolder_children() throws CoreException, IOException {
 
         // create a sling:OrderedFolder at /content/test-root
         project.createOrUpdateFile(Path.fromPortableString("jcr_root/content/test-root/.content.xml"), getClass()
@@ -165,8 +167,8 @@ public class ResourceChangeCommandFactoryTest {
         // create the child folder listed in the .content.xml file
         contentProject.getFolder("jcr_root/content/test-root/folder").create(true, true, new NullProgressMonitor());
 
-        SpyCommand<?> command = (SpyCommand<?>) factory.newCommandForAddedOrUpdated(spyRepo,
-                contentProject.findMember("jcr_root/content/test-root"));
+        SpyCommand<?> command = (SpyCommand<?>) factory.newCommandForAddedOrUpdatedResource(spyRepo,
+                EclipseResources.create(contentProject.findMember("jcr_root/content/test-root")));
 
         List<ResourceProxy> children = command.getResourceProxy().getChildren();
 
@@ -174,14 +176,14 @@ public class ResourceChangeCommandFactoryTest {
     }
 
     @Test
-    public void commandForSlingOrderedFolder_childrenMissingFromFilesystem() throws CoreException {
+    public void commandForSlingOrderedFolder_childrenMissingFromFilesystem() throws CoreException, IOException {
 
         // create a sling:OrderedFolder at /content/test-root
         project.createOrUpdateFile(Path.fromPortableString("jcr_root/content/test-root/.content.xml"), getClass()
                 .getResourceAsStream("sling-ordered-folder-with-children.xml"));
 
-        SpyCommand<?> command = (SpyCommand<?>) factory.newCommandForAddedOrUpdated(spyRepo,
-                contentProject.findMember("jcr_root/content/test-root"));
+        SpyCommand<?> command = (SpyCommand<?>) factory.newCommandForAddedOrUpdatedResource(spyRepo,
+                EclipseResources.create(contentProject.findMember("jcr_root/content/test-root")));
 
         List<ResourceProxy> children = command.getResourceProxy().getChildren();
 
@@ -189,7 +191,7 @@ public class ResourceChangeCommandFactoryTest {
     }
 
     @Test
-    public void commandForSlingOrderedFolder_extraChildrenInTheFilesystem() throws CoreException {
+    public void commandForSlingOrderedFolder_extraChildrenInTheFilesystem() throws CoreException, IOException {
 
         // create a sling:OrderedFolder at /content/test-root
         project.createOrUpdateFile(Path.fromPortableString("jcr_root/content/test-root/.content.xml"), getClass()
@@ -199,8 +201,8 @@ public class ResourceChangeCommandFactoryTest {
         // create an extra folder not listed in the .content.xml file
         contentProject.getFolder("jcr_root/content/test-root/folder2").create(true, true, new NullProgressMonitor());
 
-        SpyCommand<?> command = (SpyCommand<?>) factory.newCommandForAddedOrUpdated(spyRepo,
-                contentProject.findMember("jcr_root/content/test-root"));
+        SpyCommand<?> command = (SpyCommand<?>) factory.newCommandForAddedOrUpdatedResource(spyRepo,
+                EclipseResources.create(contentProject.findMember("jcr_root/content/test-root")));
 
         List<ResourceProxy> children = command.getResourceProxy().getChildren();
 
