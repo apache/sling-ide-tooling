@@ -34,6 +34,9 @@ public class PathUtil {
     }
 
     public static String getName(String path) {
+        
+        if ( path.length() == 1 && path.charAt(0) == '/')
+            return path;
 
         return path.substring(path.lastIndexOf('/') + 1);
     }

@@ -24,6 +24,7 @@ import org.apache.sling.ide.filter.FilterLocator;
 import org.apache.sling.ide.log.Logger;
 import org.apache.sling.ide.osgi.OsgiClientFactory;
 import org.apache.sling.ide.serialization.SerializationManager;
+import org.apache.sling.ide.sync.content.SyncCommandFactory;
 import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
@@ -44,7 +45,8 @@ public class Activator extends AbstractUIPlugin {
     private ServiceTracker<EmbeddedArtifactLocator, EmbeddedArtifactLocator> artifactLocator;
     private ServiceTracker<OsgiClientFactory, OsgiClientFactory> osgiClientFactory;
     private ServiceTracker<Logger, Logger> tracer;
-
+    private ServiceTracker<SyncCommandFactory, SyncCommandFactory> commandFactory;
+    
     private ServiceRegistration<Logger> tracerRegistration;
     private ScopedPreferenceStore preferenceStore;
     
@@ -80,6 +82,9 @@ public class Activator extends AbstractUIPlugin {
 
         tracer = new ServiceTracker<>(context, tracerRegistration.getReference(), null);
         tracer.open();
+        
+        commandFactory = new ServiceTracker<>(context, SyncCommandFactory.class, null);
+        commandFactory.open();        
 
         INSTANCE = this;
     }
@@ -92,6 +97,7 @@ public class Activator extends AbstractUIPlugin {
         eventAdmin.close();
         artifactLocator.close();
         osgiClientFactory.close();
+        commandFactory.close();
 
         super.stop(context);
     }
@@ -119,6 +125,10 @@ public class Activator extends AbstractUIPlugin {
 
     public Logger getPluginLogger() {
         return (Logger) ServiceUtil.getNotNull(tracer);
+    }
+    
+    public SyncCommandFactory getCommandFactory() {
+        return ServiceUtil.getNotNull(commandFactory);
     }
 
     @Override

@@ -27,10 +27,23 @@ public interface SerializationManager {
 
     void destroy();
 
+    /**
+     * @param filePath the filesystem path
+     * @return
+     */
     boolean isSerializationFile(String filePath);
 
+    /**
+     * @param serializationFilePath the full OS path to the serialization file
+     * @return
+     */
     String getBaseResourcePath(String serializationFilePath);
 
+    /**
+     * @param baseFilePath the filesystem path of the resource
+     * @param serializationKind
+     * @return
+     */
     String getSerializationFilePath(String baseFilePath, SerializationKind serializationKind);
 
     String getRepositoryPath(String osPath);

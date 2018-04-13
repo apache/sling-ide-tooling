@@ -196,7 +196,7 @@ public class SlingLaunchpadBehaviour extends ServerBehaviourDelegateWithModulePu
         Logger logger = Activator.getDefault().getPluginLogger();
         
         if (commandFactory == null) {
-            commandFactory = new ResourceChangeCommandFactory(Activator.getDefault().getSerializationManager(), Activator.getDefault().getPreferences().getIgnoredFileNamesForSync());
+            commandFactory = new ResourceChangeCommandFactory();
         }
 
         logger.trace(traceOperation(kind, deltaKind, module));

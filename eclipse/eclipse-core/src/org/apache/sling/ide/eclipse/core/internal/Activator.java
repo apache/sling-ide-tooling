@@ -28,6 +28,7 @@ import org.apache.sling.ide.filter.FilterLocator;
 import org.apache.sling.ide.log.Logger;
 import org.apache.sling.ide.osgi.OsgiClientFactory;
 import org.apache.sling.ide.serialization.SerializationManager;
+import org.apache.sling.ide.sync.content.SyncCommandFactory;
 import org.apache.sling.ide.transport.BatcherFactory;
 import org.apache.sling.ide.transport.CommandExecutionProperties;
 import org.apache.sling.ide.transport.RepositoryFactory;
@@ -63,6 +64,7 @@ public class Activator extends Plugin {
     private ServiceTracker<Logger, Logger> tracer;
     private ServiceTracker<BatcherFactory, BatcherFactory> batcherFactoryLocator;
     private ServiceTracker<SourceReferenceResolver, Object> sourceReferenceLocator;
+    private ServiceTracker<SyncCommandFactory, SyncCommandFactory> commandFactory;
     
     private ServiceRegistration<Logger> tracerRegistration;
 
@@ -107,6 +109,9 @@ public class Activator extends Plugin {
         
         sourceReferenceLocator = new ServiceTracker<>(context, SourceReferenceResolver.class, null);
         sourceReferenceLocator.open();
+        
+        commandFactory = new ServiceTracker<>(context, SyncCommandFactory.class, null);
+        commandFactory.open();
 	}
 
 	/*
@@ -128,6 +133,7 @@ public class Activator extends Plugin {
         tracer.close();
         batcherFactoryLocator.close();
         sourceReferenceLocator.close();
+        commandFactory.close();
 
         plugin = null;
 		super.stop(context);
@@ -170,6 +176,10 @@ public class Activator extends Plugin {
     
     public BatcherFactory getBatcherFactory() {
         return (BatcherFactory) ServiceUtil.getNotNull(batcherFactoryLocator);
+    }
+    
+    public SyncCommandFactory getCommandFactory() {
+        return ServiceUtil.getNotNull(commandFactory);
     }
     
     /**
