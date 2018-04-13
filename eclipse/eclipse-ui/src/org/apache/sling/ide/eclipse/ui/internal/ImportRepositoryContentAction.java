@@ -33,7 +33,6 @@ import org.apache.sling.ide.eclipse.core.EclipseResources;
 import org.apache.sling.ide.eclipse.core.ProjectUtil;
 import org.apache.sling.ide.eclipse.core.ResourceUtil;
 import org.apache.sling.ide.eclipse.core.ServerUtil;
-import org.apache.sling.ide.eclipse.core.internal.ResourceChangeCommandFactory;
 import org.apache.sling.ide.eclipse.core.progress.ProgressUtils;
 import org.apache.sling.ide.filter.Filter;
 import org.apache.sling.ide.filter.FilterResult;

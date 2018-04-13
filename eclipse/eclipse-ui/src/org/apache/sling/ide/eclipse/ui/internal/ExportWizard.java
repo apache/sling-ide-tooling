@@ -21,7 +21,6 @@ import java.lang.reflect.InvocationTargetException;
 
 import org.apache.sling.ide.eclipse.core.EclipseResources;
 import org.apache.sling.ide.eclipse.core.ServerUtil;
-import org.apache.sling.ide.eclipse.core.internal.ResourceChangeCommandFactory;
 import org.apache.sling.ide.eclipse.ui.WhitelabelSupport;
 import org.apache.sling.ide.sync.content.SyncCommandFactory;
 import org.apache.sling.ide.transport.Command;
