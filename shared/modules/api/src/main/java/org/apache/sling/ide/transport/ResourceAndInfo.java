@@ -14,10 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sling.ide.eclipse.core.internal;
-
-import org.apache.sling.ide.transport.FileInfo;
-import org.apache.sling.ide.transport.ResourceProxy;
+package org.apache.sling.ide.transport;
 
 /**
  * The <tt>ResourceAndInfo</tt> is a simple value class allowing both a ResourceProxy and a FileInfo to be passed

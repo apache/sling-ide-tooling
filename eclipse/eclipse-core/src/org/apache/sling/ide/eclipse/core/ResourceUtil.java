@@ -17,6 +17,7 @@
 package org.apache.sling.ide.eclipse.core;
 
 import org.apache.sling.ide.eclipse.core.internal.Activator;
+import org.apache.sling.ide.sync.content.SyncCommandFactory;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.QualifiedName;
 
@@ -36,7 +37,7 @@ public abstract class ResourceUtil {
      * </p>
      */
     public static final QualifiedName QN_IMPORT_MODIFICATION_TIMESTAMP = new QualifiedName(Activator.PLUGIN_ID,
-            "importModificationTimestamp");
+            SyncCommandFactory.PN_IMPORT_MODIFICATION_TIMESTAMP);
 
     private ResourceUtil() {
 

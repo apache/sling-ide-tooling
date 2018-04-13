@@ -72,7 +72,7 @@ public class ResourceChangeCommandFactoryTest {
 
         Set<String> ignoredFileNames = new HashSet<>();
         ignoredFileNames.add(".gitignore");
-        factory = new ResourceChangeCommandFactory(Activator.getDefault().getSerializationManager(), ignoredFileNames);
+        factory = new ResourceChangeCommandFactory();
 
         spyRepo = new SpyRepository();
     }

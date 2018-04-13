@@ -29,10 +29,10 @@ import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.util.Text;
+import org.apache.sling.ide.eclipse.core.EclipseResources;
 import org.apache.sling.ide.eclipse.core.ProjectUtil;
 import org.apache.sling.ide.eclipse.core.ResourceUtil;
 import org.apache.sling.ide.eclipse.core.ServerUtil;
-import org.apache.sling.ide.eclipse.core.internal.ResourceAndInfo;
 import org.apache.sling.ide.eclipse.core.internal.ResourceChangeCommandFactory;
 import org.apache.sling.ide.eclipse.core.progress.ProgressUtils;
 import org.apache.sling.ide.filter.Filter;
@@ -45,9 +45,11 @@ import org.apache.sling.ide.serialization.SerializationException;
 import org.apache.sling.ide.serialization.SerializationKind;
 import org.apache.sling.ide.serialization.SerializationKindManager;
 import org.apache.sling.ide.serialization.SerializationManager;
+import org.apache.sling.ide.sync.content.SyncCommandFactory;
 import org.apache.sling.ide.transport.Command;
 import org.apache.sling.ide.transport.Repository;
 import org.apache.sling.ide.transport.RepositoryException;
+import org.apache.sling.ide.transport.ResourceAndInfo;
 import org.apache.sling.ide.transport.ResourceProxy;
 import org.apache.sling.ide.transport.Result;
 import org.eclipse.core.resources.IContainer;
@@ -185,7 +187,7 @@ public class ImportRepositoryContentAction {
 
     private void recordNotIgnoredResources() throws CoreException {
 
-        final ResourceChangeCommandFactory rccf = new ResourceChangeCommandFactory(serializationManager, Activator.getDefault().getPreferences().getIgnoredFileNamesForSync());
+        final SyncCommandFactory commandFactory = Activator.getDefault().getCommandFactory();
 
         IResource importStartingPoint = contentSyncRootDir.findMember(repositoryImportRoot);
         if (importStartingPoint == null) {
@@ -197,7 +199,7 @@ public class ImportRepositoryContentAction {
             public boolean visit(IResource resource) throws CoreException {
 
                 try {
-                    ResourceAndInfo rai = rccf.buildResourceAndInfo(resource, repository);
+                    ResourceAndInfo rai = commandFactory.buildResourceAndInfo(EclipseResources.create(resource), repository);
 
                     if (rai == null) {
                         // can be a prerequisite

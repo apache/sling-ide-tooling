@@ -16,11 +16,14 @@
  */
 package org.apache.sling.ide.eclipse.ui.internal;
 
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 
+import org.apache.sling.ide.eclipse.core.EclipseResources;
 import org.apache.sling.ide.eclipse.core.ServerUtil;
 import org.apache.sling.ide.eclipse.core.internal.ResourceChangeCommandFactory;
 import org.apache.sling.ide.eclipse.ui.WhitelabelSupport;
+import org.apache.sling.ide.sync.content.SyncCommandFactory;
 import org.apache.sling.ide.transport.Command;
 import org.apache.sling.ide.transport.Repository;
 import org.apache.sling.ide.transport.Result;
@@ -61,8 +64,7 @@ public class ExportWizard extends Wizard {
 
                 @Override
                 public void run(final IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                    final ResourceChangeCommandFactory factory = new ResourceChangeCommandFactory(Activator
-                            .getDefault().getSerializationManager(), Activator.getDefault().getPreferences().getIgnoredFileNamesForSync());
+                    final SyncCommandFactory factory = Activator.getDefault().getCommandFactory();
 
                     final Repository[] selectedServer = new Repository[1];
                     Display.getDefault().syncExec(new Runnable() {
@@ -82,16 +84,21 @@ public class ExportWizard extends Wizard {
 
                             @Override
                             public boolean visit(IResource resource) throws CoreException {
-                                Command<?> command = factory.newCommandForAddedOrUpdated(selectedServer[0], resource);
-                                if (command == null) {
-                                    return true;
-                                }
-                                Result<?> result = command.execute();
-                                if (!result.isSuccess()) {
+                                try {
+                                    Command<?> command = factory.newCommandForAddedOrUpdatedResource(selectedServer[0],
+                                            EclipseResources.create(resource));
+                                    if (command == null) {
+                                        return true;
+                                    }
+                                    Result<?> result = command.execute();
+                                    if (!result.isSuccess()) {
+                                        throw new CoreException(new Status(Status.ERROR, Activator.PLUGIN_ID,
+                                                "Failed exporting: " + result.toString()));
+                                    }
+                                } catch (IOException e) {
                                     throw new CoreException(new Status(Status.ERROR, Activator.PLUGIN_ID,
-                                            "Failed exporting: " + result.toString()));
+                                            "Failed exporting: " + e.getMessage()));
                                 }
-
                                 return true;
                             }
                         });
