@@ -33,6 +33,7 @@
     </scm>
 
     <modules>
+        <module>vlt-wrapper</module>
         <module>shared-feature</module>
         <module>shared-repository</module>
     </modules>
@@ -46,8 +47,8 @@
         <repository>
             <id>orbit</id>
             <layout>p2</layout>
-            <url>http://download.eclipse.org/tools/orbit/downloads/drops/R20140525021250/repository/</url>
-        </repository>
+            <url>http://download.eclipse.org/tools/orbit/downloads/drops/R20170516192513/repository</url>
+        </repository>    
     </repositories>
 
     <build>
