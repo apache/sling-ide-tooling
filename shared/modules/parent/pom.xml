@@ -42,6 +42,7 @@
                 <configuration>
                     <excludes>
                         <exclude>**/MANIFEST.MF</exclude>
+                        <exclude>**/OSGI-INF/*.xml</exclude>
                     </excludes>
                 </configuration>
             </plugin>
@@ -61,11 +62,30 @@
             <build>
                 <plugins>
                     <plugin>
+                        <artifactId>maven-clean-plugin</artifactId>
+                        <configuration>
+                            <filesets>
+                                <fileset>
+                                    <directory>META-INF</directory>
+                                    <includes>
+                                        <include>*</include>
+                                    </includes>
+                                </fileset>
+                                <fileset>
+                                    <directory>OSGI-INF</directory>
+                                    <includes>
+                                        <include>*</include>
+                                    </includes>
+                                </fileset>
+                            </filesets>
+                        </configuration>
+                    </plugin>
+                    <plugin>
                         <artifactId>maven-resources-plugin</artifactId>
                         <executions>
                             <execution>
                                 <id>copy-manifest-for-pde</id>
-                                <phase>process-classes</phase>
+                                <phase>process-test-resources</phase>
                                 <goals>
                                     <goal>copy-resources</goal>
                                 </goals>
@@ -76,6 +96,24 @@
                                             <directory>${project.build.outputDirectory}/META-INF</directory>
                                             <includes>
                                                 <include>MANIFEST.MF</include>
+                                            </includes>
+                                        </resource>
+                                    </resources>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>copy-scr-descriptors-for-pde</id>
+                                <phase>process-test-resources</phase>
+                                <goals>
+                                    <goal>copy-resources</goal>
+                                </goals>
+                                <configuration>
+                                    <outputDirectory>OSGI-INF</outputDirectory>
+                                    <resources>
+                                        <resource>
+                                            <directory>${project.build.outputDirectory}/OSGI-INF</directory>
+                                            <includes>
+                                                <include>*.xml</include>
                                             </includes>
                                         </resource>
                                     </resources>
