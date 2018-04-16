@@ -23,6 +23,7 @@
         <artifactId>sling-ide-tooling-p2</artifactId>
         <version>1.2.3-SNAPSHOT</version>
     </parent>
+    <groupId>org.apache.sling.ide</groupId>
     <artifactId>org.apache.sling.ide.vlt-wrapper</artifactId>
     <packaging>eclipse-plugin</packaging>
     <name>Apache Sling IDE Tools FileVault wrapper</name>
