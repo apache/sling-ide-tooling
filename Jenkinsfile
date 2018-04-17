@@ -18,6 +18,15 @@ pipeline {
             }
         }
 
+        stage ('Build CLI bundles') {
+            steps {
+                timeout(10) {
+                    sh 'mvn -f cli clean install'
+                }
+                junit 'shared/**/surefire-reports/*.xml'
+            }
+        }
+
         stage ('Build shared code P2 repository') {
             steps {
                 timeout(10) {
