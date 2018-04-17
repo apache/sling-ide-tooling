@@ -34,6 +34,8 @@
 
     <modules>
         <module>cli</module>
+        <!--  Not used for now, depends on SNAPSHOT versions of the feature model
         <module>dist</module>
+        -->
     </modules>
 </project>
