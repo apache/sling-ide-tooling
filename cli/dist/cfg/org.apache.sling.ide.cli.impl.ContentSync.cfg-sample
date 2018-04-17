@@ -1,0 +1,4 @@
+projectDir=/your/path/here
+repositoryUrl=http://localhost:8080
+username=admin
+password=admin

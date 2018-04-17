@@ -16,6 +16,8 @@
  */
 package org.apache.sling.ide.cli.impl;
 
+import static org.osgi.service.component.annotations.ConfigurationPolicy.REQUIRE;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -36,8 +38,16 @@ import org.apache.sling.ide.transport.RepositoryInfo;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
-@Component(immediate=true)
+@Component(immediate=true, configurationPolicy = REQUIRE)
 public class ContentSync {
+    
+    public @interface Config {
+        
+        String projectDir();
+        String repositoryUrl();
+        String username();
+        String password();
+    }
     
     @Reference
     private Logger logger;
@@ -54,17 +64,16 @@ public class ContentSync {
     private DirWatcher watcher;
     
     private Thread watcherThread;
-    
 
-    protected void activate() throws Exception {
+    protected void activate(Config cfg) throws Exception {
 
-        File projectDir = new File("/home/robert/Documents/workspace/content003");
+        File projectDir = new File(cfg.projectDir());
         
         WorkspaceProject prj = FSResources.create(projectDir, projectDir, filterLocator);
         
         logger.trace("Working on project {0} at {1}", prj.getName(), prj.getOSPath());
         
-        Repository repo = repoFactory.connectRepository(new RepositoryInfo("admin", "admin", "http://localhost:8080"));
+        Repository repo = repoFactory.connectRepository(new RepositoryInfo(cfg.username(), cfg.password(), cfg.repositoryUrl()));
         
         repo.newListChildrenNodeCommand("/").execute();
         
