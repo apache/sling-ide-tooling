@@ -69,7 +69,7 @@ public class FSWorkspaceProject extends FSWorkspaceResource implements Workspace
 
     @Override
     public Filter getFilter() throws IOException {
-        File filterFile = filterLocator.findFilterLocation(syncRoot);
+        File filterFile = filterLocator.findFilterLocation(new File(syncRoot, "jcr_root"));
         if ( filterFile == null || !filterFile.exists() )
             return null;
         
