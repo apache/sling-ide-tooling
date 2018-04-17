@@ -12,7 +12,6 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.swt,
  org.eclipse.osgi
 Import-Package: org.apache.sling.ide.eclipse.core,
- org.apache.sling.ide.eclipse.core.debug,
  org.apache.sling.ide.eclipse.core.facet,
  org.apache.sling.ide.log,
  org.eclipse.core.expressions,
@@ -37,4 +36,3 @@ Export-Package: org.apache.sling.ide.eclipse.sightly,
  org.apache.sling.ide.eclipse.sightly.model,
  org.apache.sling.ide.eclipse.sightly.validation,
  org.apache.sling.ide.eclipse.sightly.internal;x-friends:="org.apache.sling.ide.eclipse-test"
-SlingIDE-PluginLoggerEnabled: true

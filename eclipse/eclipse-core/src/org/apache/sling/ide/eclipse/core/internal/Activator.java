@@ -22,7 +22,6 @@ import java.util.Map;
 import org.apache.sling.ide.artifacts.EmbeddedArtifactLocator;
 import org.apache.sling.ide.eclipse.core.Preferences;
 import org.apache.sling.ide.eclipse.core.ServiceUtil;
-import org.apache.sling.ide.eclipse.core.debug.PluginLoggerRegistrar;
 import org.apache.sling.ide.eclipse.core.launch.SourceReferenceResolver;
 import org.apache.sling.ide.filter.FilterLocator;
 import org.apache.sling.ide.log.Logger;
@@ -34,7 +33,6 @@ import org.apache.sling.ide.transport.CommandExecutionProperties;
 import org.apache.sling.ide.transport.RepositoryFactory;
 import org.eclipse.core.runtime.Plugin;
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.event.Event;
 import org.osgi.service.event.EventAdmin;
 import org.osgi.util.tracker.ServiceTracker;
@@ -66,21 +64,12 @@ public class Activator extends Plugin {
     private ServiceTracker<SourceReferenceResolver, Object> sourceReferenceLocator;
     private ServiceTracker<SyncCommandFactory, SyncCommandFactory> commandFactory;
     
-    private ServiceRegistration<Logger> tracerRegistration;
-
     private Preferences preferences;
 
 	public void start(BundleContext context) throws Exception {
 		super.start(context);
 		plugin = this;
 		
-		PluginLoggerRegistrar loggerRegistrar = PluginLoggerRegistrar.getInstance();
-		
-        loggerRegistrar.init(context.getBundles());
-        context.addBundleListener(loggerRegistrar);
-
-        tracerRegistration = loggerRegistrar.getServiceRegistration(context.getBundle());
-
         eventAdmin = new ServiceTracker<>(context, EventAdmin.class, null);
         eventAdmin.open();
 
@@ -101,7 +90,7 @@ public class Activator extends Plugin {
         artifactLocator = new ServiceTracker<>(context, EmbeddedArtifactLocator.class, null);
         artifactLocator.open();
 
-        tracer = new ServiceTracker<>(context, tracerRegistration.getReference(), null);
+        tracer = new ServiceTracker<>(context, Logger.class, null);
         tracer.open();
         
         batcherFactoryLocator = new ServiceTracker<>(context, BatcherFactory.class, null);
@@ -120,11 +109,6 @@ public class Activator extends Plugin {
 	 */
 	public void stop(BundleContext context) throws Exception {
 	    
-	    PluginLoggerRegistrar loggerRegistrar = PluginLoggerRegistrar.getInstance();
-	    
-	    context.removeBundleListener(loggerRegistrar);
-	    loggerRegistrar.shutdown();
-
         repositoryFactory.close();
         serializationManager.close();
         filterLocator.close();

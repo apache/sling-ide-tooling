@@ -102,4 +102,3 @@ Export-Package: org.apache.sling.ide.eclipse.ui,
  org.apache.sling.ide.eclipse.ui.propertyPages,
  org.apache.sling.ide.eclipse.ui.views,
  org.apache.sling.ide.eclipse.ui.wizards
-SlingIDE-PluginLoggerEnabled: true
