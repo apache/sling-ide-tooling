@@ -106,4 +106,20 @@ public class FSWorkspaceProjectTest {
 
         assertThat("filter", project.getFilter(), equalTo(MockFilterLocator.MOCK_FILTER));
     }
+    
+    @Test
+    public void getDirectory_missing() {
+        
+        WorkspaceDirectory directory = project.getDirectory(new WorkspacePath("missing"));
+        assertThat("directory.exists", directory.exists(), equalTo(false));
+        assertThat("directory.localPath", directory.getLocalPath(), equalTo(new WorkspacePath("/test-project/missing")));
+    }
+    
+    @Test
+    public void getDirectory_file() {
+        
+        WorkspaceDirectory directory = project.getDirectory(new WorkspacePath("content/META-INF/vault/filter.xml"));
+        assertThat("directory.exists", directory.exists(), equalTo(false));
+        assertThat("directory.localPath", directory.getLocalPath(), equalTo(new WorkspacePath("/test-project/content/META-INF/vault/filter.xml")));
+    }   
 }

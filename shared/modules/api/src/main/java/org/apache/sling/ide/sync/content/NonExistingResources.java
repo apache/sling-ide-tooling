@@ -16,27 +16,20 @@
  */
 package org.apache.sling.ide.sync.content;
 
-import java.io.File;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import org.apache.sling.ide.sync.content.impl.NonExistingDirectory;
+import org.apache.sling.ide.sync.content.impl.NonExistingFile;
 
 /**
- * 
- * Holds utility methods related to path instances
+ * Factory class to aid in the construction of non-existing resources
  *
  */
-public abstract class WorkspacePaths {
+public abstract class NonExistingResources {
 
-    public static WorkspacePath fromOsPath(Path path) {
-        
-        return new WorkspacePath(path.toString().replace(File.separatorChar, '/'));
+    public static WorkspaceDirectory newDirectory(WorkspacePath path, WorkspaceProject project) {
+        return new NonExistingDirectory(path, project);
     }
-    
-    public static Path toOsPath(WorkspacePath path) {
-        return Paths.get(path.asPortableString().replace('/', File.separatorChar));
-    }
-    
-    private WorkspacePaths() {
-        
+
+    public static WorkspaceFile newFile(WorkspacePath path, WorkspaceDirectory parent) {
+        return new NonExistingFile(path, parent);
     }
 }

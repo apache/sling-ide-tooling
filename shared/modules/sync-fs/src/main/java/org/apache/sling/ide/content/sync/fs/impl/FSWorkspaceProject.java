@@ -23,8 +23,10 @@ import java.io.InputStream;
 
 import org.apache.sling.ide.filter.Filter;
 import org.apache.sling.ide.filter.FilterLocator;
+import org.apache.sling.ide.sync.content.NonExistingResources;
 import org.apache.sling.ide.sync.content.WorkspaceDirectory;
 import org.apache.sling.ide.sync.content.WorkspacePath;
+import org.apache.sling.ide.sync.content.WorkspacePaths;
 import org.apache.sling.ide.sync.content.WorkspaceProject;
 
 public class FSWorkspaceProject extends FSWorkspaceResource implements WorkspaceProject {
@@ -80,7 +82,10 @@ public class FSWorkspaceProject extends FSWorkspaceResource implements Workspace
 
     @Override
     public WorkspaceDirectory getDirectory(WorkspacePath path) {
-        return new FSWorkspaceDirectory(new File(backingFile(), path.asPortableString().replace('/', File.separatorChar)), this);
+        final File osFile = new File(backingFile(), WorkspacePaths.toOsPath(path).toString());
+        if ( !osFile.isDirectory() )
+            return NonExistingResources.newDirectory(getLocalPath().append(path), this);
+        return new FSWorkspaceDirectory(osFile, this);
     }
 
 }

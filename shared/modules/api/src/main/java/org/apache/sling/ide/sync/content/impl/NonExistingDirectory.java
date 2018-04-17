@@ -14,14 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sling.ide.content.sync.fs.impl;
+package org.apache.sling.ide.sync.content.impl;
 
-import java.io.File;
-import java.util.Arrays;
+import java.nio.file.Path;
 import java.util.List;
-import java.util.stream.Collectors;
 
-import org.apache.sling.ide.sync.content.NonExistingResources;
 import org.apache.sling.ide.sync.content.WorkspaceDirectory;
 import org.apache.sling.ide.sync.content.WorkspaceFile;
 import org.apache.sling.ide.sync.content.WorkspacePath;
@@ -29,15 +26,24 @@ import org.apache.sling.ide.sync.content.WorkspacePaths;
 import org.apache.sling.ide.sync.content.WorkspaceProject;
 import org.apache.sling.ide.sync.content.WorkspaceResource;
 
-public class FSWorkspaceDirectory extends FSWorkspaceResource implements WorkspaceDirectory {
+public class NonExistingDirectory implements WorkspaceDirectory {
 
-    private final FSWorkspaceProject project;
     private final WorkspacePath path;
-
-    public FSWorkspaceDirectory(File dir, FSWorkspaceProject project) {
-        super(dir, true);
+    private final WorkspaceProject project;
+    
+    public NonExistingDirectory(WorkspacePath path, WorkspaceProject project) {
+        this.path = path;
         this.project = project;
-        this.path = getPath(project, dir);
+    }
+
+    @Override
+    public boolean exists() {
+        return false;
+    }
+
+    @Override
+    public boolean isIgnored() {
+        return false;
     }
 
     @Override
@@ -46,43 +52,38 @@ public class FSWorkspaceDirectory extends FSWorkspaceResource implements Workspa
     }
 
     @Override
+    public Path getOSPath() {
+        return WorkspacePaths.toOsPath(path);
+    }
+
+    @Override
     public WorkspaceProject getProject() {
         return project;
     }
 
     @Override
+    public long getLastModified() {
+        throw new IllegalArgumentException("Directory at " + path + " does not exist");
+    }
+
+    @Override
     public Object getTransientProperty(String propertyName) {
-        return null;
+        throw new IllegalArgumentException("Directory at " + path + " does not exist");
     }
 
     @Override
     public WorkspaceFile getFile(WorkspacePath relativePath) {
-        final File osFile = new File(backingFile(), WorkspacePaths.toOsPath(relativePath).toString());
-        if ( !osFile.isFile() )
-            return NonExistingResources.newFile(getLocalPath().append(relativePath), this);
-        return new FSWorkspaceFile(osFile, project);
+        throw new IllegalArgumentException("Directory at " + path + " does not exist");
     }
 
     @Override
     public WorkspaceDirectory getDirectory(WorkspacePath relativePath) {
-        final File osFile = new File(backingFile(), WorkspacePaths.toOsPath(relativePath).toString());
-        if ( !osFile.isDirectory() )
-            return NonExistingResources.newDirectory(getLocalPath().append(relativePath), project);
-        return new FSWorkspaceDirectory(osFile, project);
+        throw new IllegalArgumentException("Directory at " + path + " does not exist");
     }
 
     @Override
     public List<WorkspaceResource> getChildren() {
-        return Arrays.stream(backingFile().listFiles())
-                .map( f -> {
-                    if ( f.isFile() )
-                        return new FSWorkspaceFile(f, project);
-                    else if ( f.isDirectory() )
-                        return new FSWorkspaceDirectory(f, project);
-                    else return null;
-                })
-                .filter( r -> r != null)
-                .collect(Collectors.toList());
+        throw new IllegalArgumentException("Directory at " + path + " does not exist");
     }
 
 }

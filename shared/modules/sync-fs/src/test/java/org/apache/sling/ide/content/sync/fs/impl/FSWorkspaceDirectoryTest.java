@@ -117,6 +117,13 @@ public class FSWorkspaceDirectoryTest {
     }
     
     @Test
+    public void getFile_isDirectory() {
+        WorkspaceFile file = dir.getFile(new WorkspacePath("dir"));
+        assertThat("file.exists", file.exists(), equalTo(false));
+        assertThat("file.localPath", file.getLocalPath(), equalTo(new WorkspacePath("/test-project/jcr_root/dir")));
+    }
+    
+    @Test
     public void getDir_exists() {
         WorkspaceDirectory directory = dir.getDirectory(new WorkspacePath("dir"));
         assertThat("directory.exists", directory.exists(), equalTo(true));
@@ -128,5 +135,12 @@ public class FSWorkspaceDirectoryTest {
         WorkspaceDirectory directory = dir.getDirectory(new WorkspacePath("does-not-exist"));
         assertThat("directory.exists", directory.exists(), equalTo(false));
         assertThat("file.localPath", directory.getLocalPath(), equalTo(new WorkspacePath("/test-project/jcr_root/does-not-exist")));
+    }
+    
+    @Test
+    public void getDir_isFile() {
+        WorkspaceDirectory directory = dir.getDirectory(new WorkspacePath("file.txt"));
+        assertThat("directory.exists", directory.exists(), equalTo(false));
+        assertThat("file.localPath", directory.getLocalPath(), equalTo(new WorkspacePath("/test-project/jcr_root/file.txt")));
     }
 }
