@@ -15,11 +15,10 @@
     See the License for the specific language governing permissions
     and limitations under the License.
 -->
-<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0">
-    <implementation class="org.apache.sling.ide.eclipse.core.debug.impl.TraceCommandExecutionEventsHandler" />
-    <reference bind="bindLogger" cardinality="1..1" interface="org.apache.sling.ide.log.Logger" name="Logger" policy="static" unbind="unbindLogger"/>
-    <service>
-        <provide interface="org.osgi.service.event.EventHandler" />
+<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.2.0">
+    <implementation class="org.apache.sling.ide.eclipse.core.debug.impl.Tracer" />
+    <service servicefactory="true">
+       <provide interface="org.apache.sling.ide.log.Logger"/>
+       <provide interface="org.eclipse.osgi.service.debug.DebugOptionsListener"/>
     </service>
-    <property name="event.topics" value="org/apache/sling/ide/transport" />
 </scr:component>

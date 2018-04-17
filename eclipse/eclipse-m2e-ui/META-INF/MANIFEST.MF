@@ -21,7 +21,6 @@ Import-Package: org.apache.commons.httpclient;version="3.1.0",
  org.apache.commons.lang,
  org.apache.sling.ide.artifacts,
  org.apache.sling.ide.eclipse.core,
- org.apache.sling.ide.eclipse.core.debug,
  org.apache.sling.ide.eclipse.core.progress,
  org.apache.sling.ide.eclipse.ui,
  org.apache.sling.ide.eclipse.ui.wizards,
@@ -67,4 +66,3 @@ Import-Package: org.apache.commons.httpclient;version="3.1.0",
  org.osgi.util.tracker;version="1.5.0"
 Bundle-ActivationPolicy: lazy
 Export-Package: org.apache.sling.ide.eclipse.ui.wizards.np
-SlingIDE-PluginLoggerEnabled: true

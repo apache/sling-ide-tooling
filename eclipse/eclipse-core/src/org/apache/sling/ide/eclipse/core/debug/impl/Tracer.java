@@ -27,6 +27,7 @@ import org.eclipse.osgi.service.debug.DebugOptionsListener;
 import org.eclipse.osgi.service.debug.DebugTrace;
 import org.eclipse.osgi.util.NLS;
 import org.osgi.framework.Bundle;
+import org.osgi.service.component.ComponentContext;
 
 /**
  * The <tt>Tracer</tt> is the default implementation of the <tt>Logger</tt>
@@ -35,14 +36,14 @@ public class Tracer implements DebugOptionsListener, Logger {
 
     private static final long PERF_IGNORE_THRESHOLD = 50;
 
-    private final Bundle bundle;
+    private Bundle bundle;
     private boolean debugEnabled;
     private boolean consoleEnabled;
     private boolean performanceEnabled;
     private DebugTrace trace;
     
-    public Tracer(Bundle bundle) {
-        this.bundle = bundle;
+    protected void activate(ComponentContext ctx) {
+        bundle = ctx.getUsingBundle();
     }
 
     @Override

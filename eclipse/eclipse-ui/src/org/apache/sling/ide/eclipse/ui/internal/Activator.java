@@ -19,7 +19,6 @@ package org.apache.sling.ide.eclipse.ui.internal;
 import org.apache.sling.ide.artifacts.EmbeddedArtifactLocator;
 import org.apache.sling.ide.eclipse.core.Preferences;
 import org.apache.sling.ide.eclipse.core.ServiceUtil;
-import org.apache.sling.ide.eclipse.core.debug.PluginLoggerRegistrar;
 import org.apache.sling.ide.filter.FilterLocator;
 import org.apache.sling.ide.log.Logger;
 import org.apache.sling.ide.osgi.OsgiClientFactory;
@@ -30,7 +29,6 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.event.EventAdmin;
 import org.osgi.util.tracker.ServiceTracker;
 
@@ -47,7 +45,6 @@ public class Activator extends AbstractUIPlugin {
     private ServiceTracker<Logger, Logger> tracer;
     private ServiceTracker<SyncCommandFactory, SyncCommandFactory> commandFactory;
     
-    private ServiceRegistration<Logger> tracerRegistration;
     private ScopedPreferenceStore preferenceStore;
     
     private Preferences preferences;
@@ -60,8 +57,6 @@ public class Activator extends AbstractUIPlugin {
     @Override
     public void start(BundleContext context) throws Exception {
         super.start(context);
-
-        tracerRegistration = PluginLoggerRegistrar.getInstance().getServiceRegistration(context.getBundle());
 
         serializationManager = new ServiceTracker<>(context, SerializationManager.class, null);
         serializationManager.open();
@@ -80,7 +75,7 @@ public class Activator extends AbstractUIPlugin {
                 null);
         osgiClientFactory.open();
 
-        tracer = new ServiceTracker<>(context, tracerRegistration.getReference(), null);
+        tracer = new ServiceTracker<>(context, Logger.class, null);
         tracer.open();
         
         commandFactory = new ServiceTracker<>(context, SyncCommandFactory.class, null);
@@ -98,6 +93,7 @@ public class Activator extends AbstractUIPlugin {
         artifactLocator.close();
         osgiClientFactory.close();
         commandFactory.close();
+        tracer.close();
 
         super.stop(context);
     }

@@ -18,7 +18,6 @@ package org.apache.sling.ide.eclipse.m2e.internal;
 
 import org.apache.sling.ide.artifacts.EmbeddedArtifactLocator;
 import org.apache.sling.ide.eclipse.core.ServiceUtil;
-import org.apache.sling.ide.eclipse.core.debug.PluginLoggerRegistrar;
 import org.apache.sling.ide.log.Logger;
 import org.apache.sling.ide.osgi.OsgiClientFactory;
 import org.eclipse.core.runtime.Plugin;
@@ -26,7 +25,6 @@ import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.ServiceRegistration;
 import org.osgi.util.tracker.ServiceTracker;
 
 public class Activator extends Plugin {
@@ -36,8 +34,6 @@ public class Activator extends Plugin {
 
     private ServiceTracker<EmbeddedArtifactLocator, EmbeddedArtifactLocator> artifactLocator;
     private ServiceTracker<OsgiClientFactory, OsgiClientFactory> osgiClientFactory;
-
-    private ServiceRegistration<Logger> tracerRegistration;
     private ServiceTracker<Logger, Logger> tracer;
 
     /**
@@ -62,9 +58,7 @@ public class Activator extends Plugin {
                 null);
         osgiClientFactory.open();
 
-        tracerRegistration = PluginLoggerRegistrar.getInstance().getServiceRegistration(context.getBundle());
-
-        tracer = new ServiceTracker<>(context, tracerRegistration.getReference(), null);
+        tracer = new ServiceTracker<>(context, Logger.class, null);
         tracer.open();
     }
 
@@ -73,6 +67,7 @@ public class Activator extends Plugin {
         INSTANCE = null;
 
         artifactLocator.close();
+        tracer.close();
 
         super.stop(context);
     }
