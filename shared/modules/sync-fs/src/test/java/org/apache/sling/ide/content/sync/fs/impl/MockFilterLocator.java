@@ -38,7 +38,7 @@ public class MockFilterLocator implements FilterLocator {
     @Override
     public File findFilterLocation(File syncDirectory) {
         
-        return syncDirectory.toPath().
+        return syncDirectory.getParentFile().toPath().
                 resolve(Paths.get("META-INF", "vault", "filter.xml")).toFile();
         
     }
