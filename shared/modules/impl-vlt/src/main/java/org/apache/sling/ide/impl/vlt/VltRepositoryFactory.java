@@ -38,7 +38,7 @@ public class VltRepositoryFactory implements RepositoryFactory {
     @Reference
     private EventAdmin eventAdmin;
     
-    @Reference(target = "(listener.symbolic.name=org.apache.sling.ide.impl-vlt)")
+    @Reference
     private Logger logger;
     
     private Map<String,VltRepository> repositoryMap = new HashMap<>();
