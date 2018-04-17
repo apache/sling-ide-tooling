@@ -16,6 +16,8 @@
  */
 package org.apache.sling.ide.sync.content;
 
+import java.io.IOException;
+
 import org.apache.sling.ide.filter.Filter;
 
 /**
@@ -28,7 +30,7 @@ public interface WorkspaceProject extends WorkspaceResource {
     
     WorkspaceDirectory getSyncDirectory();
 
-    Filter getFilter();
+    Filter getFilter() throws IOException;
 
     WorkspaceDirectory getDirectory(WorkspacePath path);
 

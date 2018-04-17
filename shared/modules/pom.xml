@@ -38,5 +38,6 @@
         <module>impl-resource</module>
         <module>impl-vlt</module>
         <module>artifacts</module>
+        <module>sync-fs</module>
     </modules>
 </project>
