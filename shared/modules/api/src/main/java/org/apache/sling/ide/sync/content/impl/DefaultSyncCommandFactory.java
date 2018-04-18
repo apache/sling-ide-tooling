@@ -27,7 +27,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.sling.ide.filter.FilterResult;
 import org.apache.sling.ide.log.Logger;
