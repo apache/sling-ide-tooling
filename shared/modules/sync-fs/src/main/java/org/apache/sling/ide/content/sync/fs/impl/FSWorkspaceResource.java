@@ -18,6 +18,8 @@ package org.apache.sling.ide.content.sync.fs.impl;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 import org.apache.sling.ide.sync.content.WorkspacePath;
@@ -27,6 +29,12 @@ import org.apache.sling.ide.sync.content.WorkspaceResource;
 
 public abstract class FSWorkspaceResource implements WorkspaceResource {
     
+    private static final List<String> DEFAULT_IGNORE_SUFFIXES = new ArrayList<>();
+    static {
+        DEFAULT_IGNORE_SUFFIXES.add("___jb_tmp___"); // IntelliJ safe write
+        DEFAULT_IGNORE_SUFFIXES.add("___jb_old___"); // IntelliJ safe write
+    }
+
     static WorkspacePath getPath(WorkspaceProject project, File file){
         return WorkspacePaths.fromOsPath(project.getOSPath().getParent().relativize(file.toPath())).absolute();
     }
@@ -58,6 +66,9 @@ public abstract class FSWorkspaceResource implements WorkspaceResource {
 
     @Override
     public boolean isIgnored() {
+        for ( String ignore : DEFAULT_IGNORE_SUFFIXES)
+            if ( getName().endsWith(ignore))
+                return true;
         return false;
     }
 
