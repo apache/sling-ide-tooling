@@ -209,16 +209,20 @@ localFile);
    
    public ResourceAndInfo buildResourceAndInfo(WorkspaceResource resource, Repository repository) throws IOException {
 
+       if ( !resource.exists() ) {
+           return null;
+       }
+
+       if ( resource.isIgnored()) {
+           logger.trace("Skipping team-private resource {0}", resource);
+           return null;
+       }
+
        Long modificationTimestamp = (Long) resource.getTransientProperty(PN_IMPORT_MODIFICATION_TIMESTAMP);
 
        if (modificationTimestamp != null && modificationTimestamp >= resource.getLastModified()) {
            logger.trace("Change for resource {0} ignored as the import timestamp {1} >= modification timestamp {2}",
                            resource, modificationTimestamp, resource.getLastModified());
-           return null;
-       }
-
-       if (resource.isIgnored()) {
-           logger.trace("Skipping team-private resource {0}", resource);
            return null;
        }
 
