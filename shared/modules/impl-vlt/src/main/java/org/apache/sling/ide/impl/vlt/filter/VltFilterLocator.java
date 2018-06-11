@@ -33,6 +33,13 @@ public class VltFilterLocator implements FilterLocator {
     @Reference
     private VaultFsLocator fsLocator;
 
+    public VltFilterLocator() {
+    }
+
+    public VltFilterLocator(VaultFsLocator fsLocator) {
+        bindVaultFsLocator(fsLocator);
+    }
+
     protected void bindVaultFsLocator(VaultFsLocator fsLocator) {
         this.fsLocator = fsLocator;
     }

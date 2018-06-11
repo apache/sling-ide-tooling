@@ -90,6 +90,24 @@ public class VltSerializationManager implements SerializationManager {
 
     }
 
+    public VltSerializationManager() {
+    }
+
+    public VltSerializationManager(Logger logger, VaultFsLocator fsLocator) {
+        setLogger(logger);
+        setFsLocator(fsLocator);
+    }
+
+    public VltSerializationManager setLogger(Logger logger) {
+        this.logger = logger;
+        return this;
+    }
+
+    public VltSerializationManager setFsLocator(VaultFsLocator fsLocator) {
+        this.fsLocator = fsLocator;
+        return this;
+    }
+
     @Override
     public void destroy() {
 

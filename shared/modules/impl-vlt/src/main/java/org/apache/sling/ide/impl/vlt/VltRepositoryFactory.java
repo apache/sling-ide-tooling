@@ -43,6 +43,19 @@ public class VltRepositoryFactory implements RepositoryFactory {
     
     private Map<String,VltRepository> repositoryMap = new HashMap<>();
 
+    public VltRepositoryFactory() {
+    }
+
+    public VltRepositoryFactory(EventAdmin eventAdmin, Logger logger) {
+        bindEventAdmin(eventAdmin);
+        setLogger(logger);
+    }
+
+    public VltRepositoryFactory setLogger(Logger logger) {
+        this.logger = logger;
+        return this;
+    }
+
     @Override
     public Repository getRepository(RepositoryInfo repositoryInfo,
             boolean acceptsDisconnectedRepository) throws RepositoryException {

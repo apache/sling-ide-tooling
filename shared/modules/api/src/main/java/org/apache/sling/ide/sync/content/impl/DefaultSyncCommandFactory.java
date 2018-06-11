@@ -58,7 +58,24 @@ public class DefaultSyncCommandFactory implements SyncCommandFactory {
     
     @Reference
     private Logger logger;
-   
+
+    public DefaultSyncCommandFactory() {
+    }
+
+    public DefaultSyncCommandFactory(SerializationManager serializationManager, Logger logger) {
+        setSerializationManager(serializationManager);
+        setLogger(logger);
+    }
+
+    public DefaultSyncCommandFactory setSerializationManager(SerializationManager serializationManager) {
+        this.serializationManager = serializationManager;
+        return this;
+    }
+
+    public DefaultSyncCommandFactory setLogger(Logger logger) {
+        this.logger = logger;
+        return this;
+    }
 
     @Override
     public Command<?> newCommandForRemovedResource(Repository repository, WorkspaceResource resource) throws IOException {

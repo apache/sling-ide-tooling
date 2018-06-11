@@ -34,6 +34,13 @@ public class RepositoryFactoryImpl implements RepositoryFactory {
     @Reference
     private EventAdmin eventAdmin;
 
+    public RepositoryFactoryImpl() {
+    }
+
+    public RepositoryFactoryImpl(EventAdmin eventAdmin) {
+        bindEventAdmin(eventAdmin);
+    }
+
     @Override
     public Repository connectRepository(RepositoryInfo repositoryInfo) throws RepositoryException {
         //TODO: currently not doing repository-caching
