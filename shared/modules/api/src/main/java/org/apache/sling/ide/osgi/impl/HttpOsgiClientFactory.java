@@ -29,6 +29,18 @@ public class HttpOsgiClientFactory implements OsgiClientFactory {
     @Reference
     private EventAdmin eventAdmin;
 
+    public HttpOsgiClientFactory() {
+    }
+
+    /**
+     * Constructor to create this instance outside of an OSGi Container
+     *
+     * @param eventAdmin Event Admin for tracing the OSGi Client. If null then there is no tracing.
+     */
+    public HttpOsgiClientFactory(EventAdmin eventAdmin) {
+        bindEventAdmin(eventAdmin);
+    }
+
     public OsgiClient createOsgiClient(RepositoryInfo repositoryInfo) {
         if (eventAdmin != null) {
             return new TracingOsgiClient(new HttpOsgiClient(repositoryInfo), eventAdmin);

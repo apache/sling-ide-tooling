@@ -34,6 +34,18 @@ public class RepositoryFactoryImpl implements RepositoryFactory {
     @Reference
     private EventAdmin eventAdmin;
 
+    public RepositoryFactoryImpl() {
+    }
+
+    /**
+     * Constructor to create this instance outside of an OSGi Container
+     *
+     * @param eventAdmin Event Admin for tracing the Repository. If null then there is no tracing.
+     */
+    public RepositoryFactoryImpl(EventAdmin eventAdmin) {
+        bindEventAdmin(eventAdmin);
+    }
+
     @Override
     public Repository connectRepository(RepositoryInfo repositoryInfo) throws RepositoryException {
         //TODO: currently not doing repository-caching

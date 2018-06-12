@@ -33,6 +33,18 @@ public class VltFilterLocator implements FilterLocator {
     @Reference
     private VaultFsLocator fsLocator;
 
+    public VltFilterLocator() {
+    }
+
+    /**
+     * Constructor to create this instance outside of an OSGi Container
+     *
+     * @param fsLocator Vault Filesystem Locator which must not be null
+     */
+    public VltFilterLocator(VaultFsLocator fsLocator) {
+        bindVaultFsLocator(fsLocator);
+    }
+
     protected void bindVaultFsLocator(VaultFsLocator fsLocator) {
         this.fsLocator = fsLocator;
     }

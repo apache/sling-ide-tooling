@@ -43,6 +43,20 @@ public class VltRepositoryFactory implements RepositoryFactory {
     
     private Map<String,VltRepository> repositoryMap = new HashMap<>();
 
+    public VltRepositoryFactory() {
+    }
+
+    /**
+     * Constructor to create this instance outside of an OSGi Container
+     *
+     * @param eventAdmin Event Admin for tracing the OSGi Client. If null then there is no tracing.
+     * @param logger Sling IDE Logger which must not be null
+     */
+    public VltRepositoryFactory(EventAdmin eventAdmin, Logger logger) {
+        bindEventAdmin(eventAdmin);
+        this.logger = logger;
+    }
+
     @Override
     public Repository getRepository(RepositoryInfo repositoryInfo,
             boolean acceptsDisconnectedRepository) throws RepositoryException {

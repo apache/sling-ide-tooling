@@ -58,7 +58,20 @@ public class DefaultSyncCommandFactory implements SyncCommandFactory {
     
     @Reference
     private Logger logger;
-   
+
+    public DefaultSyncCommandFactory() {
+    }
+
+    /**
+     * Constructor to create this instance outside of an OSGi Container
+     *
+     * @param serializationManager Serialization Manager to be used which must not be null
+     * @param logger Sling IDE Logger which must not be null
+     */
+    public DefaultSyncCommandFactory(SerializationManager serializationManager, Logger logger) {
+        this.serializationManager = serializationManager;
+        this.logger = logger;
+    }
 
     @Override
     public Command<?> newCommandForRemovedResource(Repository repository, WorkspaceResource resource) throws IOException {
