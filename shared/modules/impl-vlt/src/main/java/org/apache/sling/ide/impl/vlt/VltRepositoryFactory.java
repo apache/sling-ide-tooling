@@ -46,14 +46,15 @@ public class VltRepositoryFactory implements RepositoryFactory {
     public VltRepositoryFactory() {
     }
 
+    /**
+     * Constructor to create this instance outside of an OSGi Container
+     *
+     * @param eventAdmin Event Admin for tracing the OSGi Client. If null then there is no tracing.
+     * @param logger Sling IDE Logger which must not be null
+     */
     public VltRepositoryFactory(EventAdmin eventAdmin, Logger logger) {
         bindEventAdmin(eventAdmin);
-        setLogger(logger);
-    }
-
-    public VltRepositoryFactory setLogger(Logger logger) {
         this.logger = logger;
-        return this;
     }
 
     @Override

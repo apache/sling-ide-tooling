@@ -93,19 +93,15 @@ public class VltSerializationManager implements SerializationManager {
     public VltSerializationManager() {
     }
 
+    /**
+     * Constructor to create this instance outside of an OSGi Container
+     *
+     * @param logger Sling IDE Logger which must not be null
+     * @param fsLocator Vault File System Locator which must not be null
+     */
     public VltSerializationManager(Logger logger, VaultFsLocator fsLocator) {
-        setLogger(logger);
-        setFsLocator(fsLocator);
-    }
-
-    public VltSerializationManager setLogger(Logger logger) {
         this.logger = logger;
-        return this;
-    }
-
-    public VltSerializationManager setFsLocator(VaultFsLocator fsLocator) {
         this.fsLocator = fsLocator;
-        return this;
     }
 
     @Override
