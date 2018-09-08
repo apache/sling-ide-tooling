@@ -1,9 +1,5 @@
 {
-	"id": "org.apache.sling.ide/org.apache.sling.ide.cli-dist/1.0.0",
-	"variables": {
-		"ide.version": "1.2.3-SNAPSHOT",
-		"slf4j.version": "1.7.25"
-	},
+	"id": "org.apache.sling.ide/org.apache.sling.ide.cli-dist/1.0.0-SNAPSHOT",
 	"framework-properties": {
 		"felix.fileinstall.dir": "cfg"
 	},
@@ -11,15 +7,15 @@
 		"org.apache.felix/org.apache.felix.eventadmin/1.4.10",
 		"org.apache.felix/org.apache.felix.fileinstall/3.6.4",
 		"org.apache.felix/org.apache.felix.configadmin/1.8.16/",
-		"org.slf4j/slf4j-api/${slf4j.version}",
-		"org.slf4j/slf4j-simple/${slf4j.version}",
-		"org.slf4j/jcl-over-slf4j/${slf4j.version}",
+		"org.slf4j/slf4j-api/1.7.25",
+		"org.slf4j/slf4j-simple/1.7.25",
+		"org.slf4j/jcl-over-slf4j/1.7.25",
 		"org.apache.felix/org.apache.felix.scr/2.0.14",
-		"org.apache.sling.ide/org.apache.sling.ide.api/${ide.version}",
-		"org.apache.sling.ide/org.apache.sling.ide.impl-vlt/${ide.version}",
-		"org.apache.sling.ide/org.apache.sling.ide.sync-fs/${ide.version}",
-		"org.apache.sling.ide/org.apache.sling.ide.cli/${ide.version}",
-		"org.apache.sling.ide/org.apache.sling.ide.vlt-wrapper/${ide.version}",
+		"org.apache.sling.ide/org.apache.sling.ide.api/1.2.3-SNAPSHOT",
+		"org.apache.sling.ide/org.apache.sling.ide.impl-vlt/1.2.3-SNAPSHOT",
+		"org.apache.sling.ide/org.apache.sling.ide.sync-fs/1.2.3-SNAPSHOT",
+		"org.apache.sling.ide/org.apache.sling.ide.cli/1.2.3-SNAPSHOT",
+		"org.apache.sling.ide/org.apache.sling.ide.vlt-wrapper/1.2.3-SNAPSHOT",
 		"javax.servlet/javax.servlet-api/3.1.0",
 		"commons-collections/commons-collections/3.2.2",
 		"org.apache.sling/org.apache.sling.fragment.xml/1.0.2",
