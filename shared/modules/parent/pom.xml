@@ -47,6 +47,14 @@
                 </configuration>
             </plugin>
         </plugins>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <artifactId>maven-resources-plugin</artifactId>
+                    <version>3.1.0</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
     </build>
 
     <profiles>
@@ -60,6 +68,9 @@
                 </property>
             </activation>
             <build>
+                <!-- as currently PDE cannot deal with the MANIFEST.MF in the target folder
+                https://bugs.eclipse.org/bugs/show_bug.cgi?id=533263 copy both 
+                Manifest and component descriptors to the project's root -->
                 <plugins>
                     <plugin>
                         <artifactId>maven-clean-plugin</artifactId>
@@ -90,6 +101,7 @@
                                     <goal>copy-resources</goal>
                                 </goals>
                                 <configuration>
+                                    <overwrite>true</overwrite>
                                     <outputDirectory>META-INF</outputDirectory>
                                     <resources>
                                         <resource>

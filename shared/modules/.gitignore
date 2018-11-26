@@ -1,2 +1,4 @@
 META-INF/
 OSGI-INF/
+!*/.project
+build.properties
