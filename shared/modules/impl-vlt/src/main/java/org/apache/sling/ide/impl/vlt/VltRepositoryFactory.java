@@ -30,9 +30,10 @@ import org.osgi.service.event.EventAdmin;
 
 /**
  * The <tt>VltRepositoryFactory</tt> instatiantes <tt>VltRepository</tt> instances
- *
+ * This service should get precedence over {@code org.apache.sling.ide.impl.resource.transport.RepositoryFactoryImpl} in
+ * case both are deployed in an OSGi container.
  */
-@Component(service = RepositoryFactory.class)
+@Component(service = RepositoryFactory.class, property="service.ranking:Integer=1000")
 public class VltRepositoryFactory implements RepositoryFactory {
 
     @Reference
