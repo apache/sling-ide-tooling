@@ -310,17 +310,18 @@ public class VltNodeTypeFactory {
     }
 
     private void initAllowedPrimaryChildNodeTypes(VltNodeType nt0) throws RepositoryException {
-        NodeDefinition[] declaredCihldNodeDefinitions = nt0.getDeclaredChildNodeDefinitions();
+        NodeDefinition[] declaredChildNodeDefinitions = nt0.getDeclaredChildNodeDefinitions();
         Set<String> allowedChildNodeTypes = new HashSet<>();
-        if (declaredCihldNodeDefinitions!=null) {
-            for (int i = 0; i < declaredCihldNodeDefinitions.length; i++) {
-                NodeDefinition nodeDefinition = declaredCihldNodeDefinitions[i];
+        if (declaredChildNodeDefinitions!=null) {
+            for (int i = 0; i < declaredChildNodeDefinitions.length; i++) {
+                NodeDefinition nodeDefinition = declaredChildNodeDefinitions[i];
                 NodeType[] requiredPrimaryTypes = nodeDefinition.getRequiredPrimaryTypes();
                 if (requiredPrimaryTypes!=null) {
                     for (int j = 0; j < requiredPrimaryTypes.length; j++) {
                         VltNodeType aRequiredPrimaryType = (VltNodeType) requiredPrimaryTypes[j];
                         if (aRequiredPrimaryType==null) {
-                            System.out.println("this can not be");
+                            throw new IllegalStateException("Found a required primary type with value 'null' in the array returned via " +
+                            "'nodeDefinition.getRequiredPrimaryTypes()' for type: " + nodeDefinition.getName());
                         }
                         Set<VltNodeType> allKnownChildTypes = aRequiredPrimaryType.getAllKnownChildTypes();
                         for (Iterator<VltNodeType> it = allKnownChildTypes.iterator(); it.hasNext();) {
