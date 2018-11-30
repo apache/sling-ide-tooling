@@ -53,6 +53,44 @@
                     <artifactId>maven-resources-plugin</artifactId>
                     <version>3.1.0</version>
                 </plugin>
+                <plugin>
+                    <!-- TODO: consolidate once sling-parent 35 is released, because most properties are set correctly there -->
+                    <groupId>biz.aQute.bnd</groupId>
+                    <artifactId>bnd-maven-plugin</artifactId>
+                    <version>4.1.0</version>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>bnd-process</goal>
+                            </goals>
+                            <configuration>
+                                <!-- default OSGi headers (mainly for usage within Eclipse) -->
+                                <bnd><![CDATA[
+Bundle-Category: sling
+
+Bundle-Description: "${project.description}"
+
+Bundle-DocURL: https://sling.apache.org/documentation/development/ide-tooling.html
+
+Bundle-License: Apache License, Version 2.0
+
+Bundle-Vendor: The Apache Software Foundation
+
+Bundle-SCM: url=${project.scm.url},connection=${project.scm.connection},developer-connection=${project.scm.developerConnection},tag=${project.scm.tag}
+
+# export all versioned packages by default
+-exportcontents: ${packages;VERSIONED}
+
+# overwrite timestamp format used as qualifier for snapshots to make the resolution higher (i.e. make them differ for each build), 
+# compare with https://www.mail-archive.com/dev@sling.apache.org/msg76177.html
+-snapshot: ${tstamp;yyyyMMddHHmmssSSS}
+
+Bundle-ActivationPolicy: lazy
+                                ]]></bnd>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
             </plugins>
         </pluginManagement>
     </build>

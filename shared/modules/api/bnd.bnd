@@ -1,5 +1,2 @@
-Bundle-ActivationPolicy: lazy
-
--exportcontents: ${packages;VERSIONED}
 Import-Package: org.apache.commons.io;version="[1.4,3)", \
   *
