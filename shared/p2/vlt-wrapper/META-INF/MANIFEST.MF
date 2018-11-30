@@ -1,5 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
+Bundle-Vendor: The Apache Software Foundation
+Bundle-Name: Sling IDE Vlt Wrapper
 Bundle-SymbolicName: org.apache.sling.ide.vlt-wrapper
 Bundle-Version: 1.2.3.qualifier
 Bundle-ActivationPolicy: lazy
