@@ -1,34 +1,36 @@
-pipeline {
-    agent {
-        label 'ubuntu'
-    }
+import org.apache.sling.jenkins.SlingJenkinsHelper;
 
-    tools {
-        maven 'Maven 3.3.9'
-        jdk 'JDK 1.8 (latest)'
-    }
+def mvnVersion = 'Maven 3.3.9'
+def javaVersion = 'JDK 1.8 (latest)'
 
-    stages {
-        stage ('Build shared code') {
-            steps {
+node('ubuntu') {
+
+    def jobConfig = [:] // not implemented yet
+
+    def helper = new SlingJenkinsHelper(jobConfig: jobConfig, currentBuild: currentBuild, script: this)
+    helper.runWithErrorHandling({
+        stage('Init') {
+            checkout scm
+        }
+
+        stage('Build shared code') {
+            withMaven(maven: mvnVersion, jdk: javaVersion) {
                 timeout(10) {
-                    sh 'mvn -f shared/modules clean install'
+                    sh "mvn -f shared/modules clean install"
                 }
-                junit 'shared/modules/**/surefire-reports/*.xml'
             }
         }
 
-        stage ('Build CLI bundles') {
-            steps {
+        stage('Build CLI bundles') {
+            withMaven(maven: mvnVersion, jdk: javaVersion) {
                 timeout(10) {
-                    sh 'mvn -f cli clean install'
+                    sh "mvn -f cli clean install"
                 }
-                junit 'shared/**/surefire-reports/*.xml'
             }
         }
 
         stage ('Build shared code P2 repository') {
-            steps {
+            withMaven(maven: mvnVersion, jdk: javaVersion) {
                 timeout(10) {
                     sh 'mvn -f shared/p2 clean package'
                 }
@@ -36,32 +38,14 @@ pipeline {
         }
 
         stage ('Build Eclipse plug-ins') {
-            steps {
-                wrap([$class: 'Xvfb']) {
-                    timeout(20) {
+            withMaven(maven: mvnVersion, jdk: javaVersion) {
+                timeout(20) {
+                    wrap([$class: 'Xvfb']) {
                         sh 'mvn -f eclipse clean verify'
                     }
+                    archiveArtifacts artifacts: 'eclipse/**/logs/*.log'
                 }
-                junit 'eclipse/**/surefire-reports/*.xml'
-                archiveArtifacts artifacts: 'eclipse/**/logs/*.log'
             }
         }
-    }
-
-    post {
-        failure {
-            mail to: 'dev@sling.apache.org',
-            subject: "Failed Pipeline: ${currentBuild.fullDisplayName}",
-            body: "See ${env.BUILD_URL}"
-        }
-
-        unstable {
-            mail to: 'dev@sling.apache.org',
-            subject: "Failed Pipeline: ${currentBuild.fullDisplayName}",
-            body: "See ${env.BUILD_URL}"
-        }
-
-    }
-
+    });
 }
-
