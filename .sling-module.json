@@ -1,0 +1,8 @@
+{
+  "jenkins": {
+    "emailRecipients": [
+      "rombert@apache.org"
+    ]
+  }
+}
+
