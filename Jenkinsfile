@@ -9,7 +9,7 @@ node('ubuntu') {
     helper.runWithErrorHandling({ jobConfig ->
 
         stage('Build shared code') {
-            withMaven(maven: mvnVersion, jdk: javaVersion) {
+            withMaven(maven: mvnVersion, jdk: javaVersion, options: [artifactsPublisher(disabled: true)]) {
                 timeout(10) {
                     sh "mvn -f shared/modules clean install"
                 }
@@ -17,7 +17,7 @@ node('ubuntu') {
         }
 
         stage('Build CLI bundles') {
-            withMaven(maven: mvnVersion, jdk: javaVersion) {
+            withMaven(maven: mvnVersion, jdk: javaVersion, options: [artifactsPublisher(disabled: true)]) {
                 timeout(10) {
                     sh "mvn -f cli clean install"
                 }
@@ -25,7 +25,7 @@ node('ubuntu') {
         }
 
         stage ('Build shared code P2 repository') {
-            withMaven(maven: mvnVersion, jdk: javaVersion) {
+            withMaven(maven: mvnVersion, jdk: javaVersion, options: [artifactsPublisher(disabled: true)]) {
                 timeout(10) {
                     sh 'mvn -f shared/p2 clean package'
                 }
@@ -33,7 +33,7 @@ node('ubuntu') {
         }
 
         stage ('Build Eclipse plug-ins') {
-            withMaven(maven: mvnVersion, jdk: javaVersion) {
+            withMaven(maven: mvnVersion, jdk: javaVersion, options: [artifactsPublisher(disabled: true)]) {
                 timeout(20) {
                     wrap([$class: 'Xvfb']) {
                         sh 'mvn -f eclipse clean verify'
