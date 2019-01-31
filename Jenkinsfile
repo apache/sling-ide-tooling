@@ -38,6 +38,8 @@ node('ubuntu') {
                     wrap([$class: 'Xvfb']) {
                         sh 'mvn -f eclipse clean verify'
                     }
+                    // workaround for https://issues.jenkins-ci.org/browse/JENKINS-55889
+                    junit 'eclipse/**/surefire-reports/*.xml' 
                     archiveArtifacts artifacts: 'eclipse/**/logs/*.log'
                 }
             }
