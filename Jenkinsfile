@@ -5,13 +5,8 @@ def javaVersion = 'JDK 1.8 (latest)'
 
 node('ubuntu') {
 
-    def jobConfig = [:] // not implemented yet
-
-    def helper = new SlingJenkinsHelper(jobConfig: jobConfig, currentBuild: currentBuild, script: this)
-    helper.runWithErrorHandling({
-        stage('Init') {
-            checkout scm
-        }
+    def helper = new SlingJenkinsHelper(currentBuild: currentBuild, script: this)
+    helper.runWithErrorHandling({ jobConfig ->
 
         stage('Build shared code') {
             withMaven(maven: mvnVersion, jdk: javaVersion) {
