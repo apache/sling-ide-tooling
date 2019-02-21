@@ -55,6 +55,7 @@ public class ExternalSlingLaunchpad extends ExternalResource {
 
         HttpClient client = new HttpClient();
         client.getState().setCredentials(new AuthScope(config.getHostname(), config.getPort()), creds);
+        client.getParams().setAuthenticationPreemptive(true);
 
         long cutoff = System.currentTimeMillis() + MAX_WAIT_TIME_MS;
 
