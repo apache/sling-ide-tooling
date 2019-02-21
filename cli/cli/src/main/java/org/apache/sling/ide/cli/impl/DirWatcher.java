@@ -21,6 +21,7 @@ import static java.nio.file.StandardWatchEventKinds.ENTRY_DELETE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
 
 import java.io.IOException;
+import java.nio.file.ClosedWatchServiceException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardWatchEventKinds;
@@ -41,6 +42,10 @@ import java.util.stream.Stream;
  * 
  * <p>This class works on top of the standard  {@link WatchService} API by generating
  * events for all changes below a given directory.</p>
+ * 
+ * <p>This implementation works within the same constraints as the {@link WatchService} so
+ * consumers are advised to read the documentation, particularly those related to platform limitations.
+ * It is recommended to allow for minimal 
  */
 public class DirWatcher implements AutoCloseable {
     
@@ -60,6 +65,8 @@ public class DirWatcher implements AutoCloseable {
                     queue.addAll(pollInternal());
                 } catch ( InterruptedException e) {
                     Thread.currentThread().interrupt();
+                    break;
+                } catch ( ClosedWatchServiceException e) {
                     break;
                 }
             }
@@ -151,10 +158,12 @@ public class DirWatcher implements AutoCloseable {
         public Event(WatchEvent<?> wrapper) {
             kind = wrapper.kind();
             path = (Path) wrapper.context();
+            count = wrapper.count();
         }
         
         private Kind<?> kind;
         private Path path;
+        private int count;
         
         public Kind<?> getKind() {
             return kind;
@@ -162,6 +171,11 @@ public class DirWatcher implements AutoCloseable {
         
         public Path getPath() {
             return path;
+        }
+        
+        @Override
+        public String toString() {
+            return getClass().getSimpleName() + "[ kind: " + kind +", path: " + path + ", count: " + count +"]";
         }
     }
     

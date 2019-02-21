@@ -21,12 +21,16 @@ import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_DELETE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.junit.Assert.assertThat;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Consumer;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -159,19 +163,47 @@ public class DirWatcherTest {
             
             Files.write(created.toPath(), "hello, world".getBytes(UTF_8));
             
-            DirWatcher.Event event = w.poll();
-            
-            assertThat("event.kind", event.getKind(), equalTo(ENTRY_MODIFY));
-            assertThat("event.path", event.getPath(), equalTo(Paths.get(created.getName())));
+            drainAndCheck(w, (events) -> {
+                assertThat("events.size", events.size(), greaterThanOrEqualTo(1));
+                for ( DirWatcher.Event event : events ) {
+                    assertThat("event.kind", event.getKind(), equalTo(ENTRY_MODIFY));
+                    assertThat("event.path", event.getPath(), equalTo(Paths.get(created.getName())));
+                }
+            });
             
             Files.write(created.toPath(), "hello, again".getBytes(UTF_8));
             
-            event = w.poll();
+            drainAndCheck(w, (events) -> {
+                assertThat("events.size", events.size(), greaterThanOrEqualTo(1));
+                for ( DirWatcher.Event event : events ) {
+                    assertThat("event.kind", event.getKind(), equalTo(ENTRY_MODIFY));
+                    assertThat("event.path", event.getPath(), equalTo(Paths.get(created.getName())));
+                }
+            });
             
-            assertThat("event.kind", event.getKind(), equalTo(ENTRY_MODIFY));
-            assertThat("event.path", event.getPath(), equalTo(Paths.get(created.getName())));
+            List<DirWatcher.Event> unexpected = new ArrayList<>();
+            while( w.queueSize() != 0 )
+                unexpected.add(w.poll());
             
-            assertThat("queue.size", w.queueSize(), equalTo(0));
+            // don't use size comparison to print out unexpected events in case of an assertion failure
+            assertThat("unexpected events", unexpected, equalTo(new ArrayList<>()));
         }
+    }
+    
+    private void drainAndCheck(DirWatcher w, Consumer<List<DirWatcher.Event>> check) throws InterruptedException {
+        
+        long start = System.currentTimeMillis();
+        long delay = 500l;
+        
+        List<DirWatcher.Event> events = new ArrayList<>();
+        while( System.currentTimeMillis() < start + delay) {
+            if ( w.queueSize() == 0 ) {
+                Thread.sleep(50);
+                continue;
+            }
+            events.add(w.poll());
+        }
+        
+        check.accept(events);
     }
 }
