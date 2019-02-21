@@ -55,12 +55,14 @@ public class ExternalSlingLaunchpad extends ExternalResource {
 
         HttpClient client = new HttpClient();
         client.getState().setCredentials(new AuthScope(config.getHostname(), config.getPort()), creds);
+        client.getParams().setAuthenticationPreemptive(true);
 
         long cutoff = System.currentTimeMillis() + MAX_WAIT_TIME_MS;
 
         List<SlingReadyRule> rules = new ArrayList<>();
         rules.add(new StartLevelSlingReadyRule(client));
         rules.add(new ActiveBundlesSlingReadyRule(client));
+        rules.add(new RepositoryAvailableReadyRule(client));
 
         for (SlingReadyRule rule : rules) {
             while (true) {
@@ -169,6 +171,29 @@ public class ExternalSlingLaunchpad extends ExternalResource {
                     }
                 }
             }
+            return false;
+        }
+    }
+    
+    private class RepositoryAvailableReadyRule implements SlingReadyRule {
+        private final HttpClient client;
+
+        public RepositoryAvailableReadyRule(HttpClient client) {
+            this.client = client;
+        }
+        
+        @Override
+        public boolean evaluate() throws Exception {
+            
+            for ( String prefix: new String[] { "server", "crx/server"} ) {
+                GetMethod get = new GetMethod(config.getUrl() + prefix + "/default/jcr:root/content");
+                
+                int status = client.executeMethod(get);
+                debug("repository check call at entry point " + prefix + " got status " + status);
+                if ( status == 200 ) 
+                    return true;
+            }
+            
             return false;
         }
     }

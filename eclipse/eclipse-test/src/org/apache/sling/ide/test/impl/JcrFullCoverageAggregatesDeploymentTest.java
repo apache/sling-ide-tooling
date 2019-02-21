@@ -237,10 +237,10 @@ public class JcrFullCoverageAggregatesDeploymentTest {
         project.createVltFilterWithRoots("/content");
 
         // create .content.xml structure
-        InputStream contentXml = getClass().getResourceAsStream("content-nested-structure.xml");
+        InputStream contentXml = getClass().getResourceAsStream("content-nested-structure-ordered-nodes.xml");
         project.createOrUpdateFile(Path.fromPortableString("jcr_root/content/test-root/en.xml"), contentXml);
 
-        Matcher<Node> postConditions = allOf(hasPath("/content/test-root/en"), hasPrimaryType("sling:Folder"),
+        Matcher<Node> postConditions = allOf(hasPath("/content/test-root/en"), hasPrimaryType("sling:OrderedFolder"),
                 hasMixinTypes("mix:language"), hasChildrenNames("message", "error", "warning"));
 
         final RepositoryAccessor repo = new RepositoryAccessor(config);
