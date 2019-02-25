@@ -36,7 +36,7 @@ node('ubuntu') {
             withMaven(maven: mvnVersion, jdk: javaVersion, options: [artifactsPublisher(disabled: true)]) {
                 timeout(20) {
                     wrap([$class: 'Xvfb']) {
-                        sh 'mvn -f eclipse clean verify'
+                        sh 'mvn -f eclipse clean verify -Ddebug'
                     }
                     // workaround for https://issues.jenkins-ci.org/browse/JENKINS-55889
                     junit 'eclipse/**/surefire-reports/*.xml' 
