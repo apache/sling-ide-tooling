@@ -62,6 +62,16 @@
                                 <id>org.apache.sling.ide.sightly-feature</id>
                                 <versionRange>0.0.0</versionRange>
                             </requirement>
+                            <requirement>
+                                <type>eclipse-plugin</type>
+                                <id>org.slf4j.binding.simple</id>
+                                <versionRange>0.0.0</versionRange>
+                            </requirement>
+                            <requirement>
+                                <type>eclipse-plugin</type>
+                                <id>org.slf4j.apis.log4j</id>
+                                <versionRange>0.0.0</versionRange>
+                            </requirement>
                         </extraRequirements>
                     </dependency-resolution>
                 </configuration>
@@ -76,6 +86,9 @@
                     <argLine>-XX:MaxPermSize=512m ${ui.test.args}</argLine>
                     <systemProperties>
                         <launchpad.http.port>${http.port}</launchpad.http.port>
+                        <org.slf4j.simpleLogger.showDateTime>true</org.slf4j.simpleLogger.showDateTime>
+                        <org.slf4j.simpleLogger.dateTimeFormat>yyyy-MM-dd HH:mm:ss:SSS Z</org.slf4j.simpleLogger.dateTimeFormat>
+                        <org.slf4j.simpleLogger.defaultLogLevel>${defaultLogLevel}</org.slf4j.simpleLogger.defaultLogLevel>
                     </systemProperties>
                     <environmentVariables>
                         <SWT_GTK3>0</SWT_GTK3>
@@ -138,6 +151,7 @@
 
     <properties>
         <ui.test.args></ui.test.args>
+        <defaultLogLevel>INFO</defaultLogLevel>
     </properties>
 
     <profiles>
@@ -152,6 +166,28 @@
             <properties>
                 <ui.test.args>-XstartOnFirstThread</ui.test.args>
             </properties>
+        </profile>
+        <profile>
+            <id>debug</id>
+            <activation>
+                <property>
+                    <name>debug</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.eclipse.tycho</groupId>
+                        <artifactId>tycho-surefire-plugin</artifactId>
+                        <version>${tycho.version}</version>
+                        <configuration>
+                            <systemProperties>
+                                <org.slf4j.simpleLogger.log.org.apache.sling>debug</org.slf4j.simpleLogger.log.org.apache.sling>
+                            </systemProperties>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
     </profiles>
 </project>

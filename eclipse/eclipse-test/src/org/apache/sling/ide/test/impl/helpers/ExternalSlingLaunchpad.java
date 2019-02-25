@@ -18,7 +18,6 @@ package org.apache.sling.ide.test.impl.helpers;
 
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
@@ -31,6 +30,8 @@ import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.io.IOUtils;
 import org.junit.rules.ExternalResource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.gson.stream.JsonReader;
 
@@ -41,6 +42,7 @@ public class ExternalSlingLaunchpad extends ExternalResource {
     private static final Pattern STARTLEVEL_JSON_SNIPPET = Pattern.compile("\"systemStartLevel\":(\\d+)");
     private static final int EXPECTED_START_LEVEL = 30;
     private static final long MAX_WAIT_TIME_MS = TimeUnit.MINUTES.toMillis(1);
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private final LaunchpadConfig config;
 
@@ -63,28 +65,28 @@ public class ExternalSlingLaunchpad extends ExternalResource {
         rules.add(new StartLevelSlingReadyRule(client));
         rules.add(new ActiveBundlesSlingReadyRule(client));
         rules.add(new RepositoryAvailableReadyRule(client));
+        
+        logger.debug("Starting check");
 
         for (SlingReadyRule rule : rules) {
+            logger.debug("Checking {}", rule);
             while (true) {
                 if (rule.evaluate()) {
+                    logger.debug("Rule {} succeeded.", rule);
                     break;
                 }
                 assertTimeout(cutoff);
-
                 Thread.sleep(100);
             }
         }
+        
+        logger.debug("Checks complete");
     }
 
     private void assertTimeout(long cutoff) throws AssertionFailedError {
+        logger.debug("Checking for timeout, current {}, cutoff {}", System.currentTimeMillis(), cutoff);
         if (System.currentTimeMillis() > cutoff) {
             throw new AssertionFailedError("Sling launchpad did not start within " + MAX_WAIT_TIME_MS + " milliseconds");
-        }
-    }
-
-    private void debug(String string) {
-        if (System.getProperty("sling.ide.it.debug") != null) {
-            System.out.println("[" + new Date() + "] " + string);
         }
     }
 
@@ -107,7 +109,7 @@ public class ExternalSlingLaunchpad extends ExternalResource {
         public boolean evaluate() throws Exception {
 
             int status = client.executeMethod(httpMethod);
-            debug("vmstat http call got return code " + status);
+            logger.debug("vmstat http call got return code {}", status);
 
             if (status == 200) {
 
@@ -117,10 +119,9 @@ public class ExternalSlingLaunchpad extends ExternalResource {
                 Matcher m = STARTLEVEL_JSON_SNIPPET.matcher(responseBody);
                 if (m.find()) {
                     int startLevel = Integer.parseInt(m.group(1));
-                    debug("vmstat http call got startLevel " + startLevel);
+                    logger.debug("vmstat http call got startLevel {}", startLevel);
                     if (startLevel >= EXPECTED_START_LEVEL) {
-                        debug("current startLevel " + startLevel + " >= " + EXPECTED_START_LEVEL
-                                + ", we are done here");
+                        logger.debug("current startLevel {}  >= {}, we are done here", startLevel, EXPECTED_START_LEVEL);
                         return true;
                     }
                 }
@@ -142,7 +143,7 @@ public class ExternalSlingLaunchpad extends ExternalResource {
         @Override
         public boolean evaluate() throws Exception {
             int status = client.executeMethod(httpMethod);
-            debug("bundles http call got return code " + status);
+            logger.debug("bundles http call got return code {}", status);
             
             if ( status != 200) {
                 return false;
@@ -158,10 +159,10 @@ public class ExternalSlingLaunchpad extends ExternalResource {
                         int total = jsonReader.nextInt();
                         int active = jsonReader.nextInt();
                         int fragment = jsonReader.nextInt();
-                        debug("bundle http call status: total = " + total + ", active = " + active + ", fragment = " + fragment);
+                        logger.debug("bundle http call status: total = {}, active = {}, fragment = {}", total, active, fragment);
 
                         if (total == active + fragment) {
-                            debug("All bundles are started, we are done here");
+                            logger.debug("All bundles are started, we are done here");
                             return true;
                         } else {
                             return false;
@@ -189,7 +190,7 @@ public class ExternalSlingLaunchpad extends ExternalResource {
                 GetMethod get = new GetMethod(config.getUrl() + prefix + "/default/jcr:root/content");
                 
                 int status = client.executeMethod(get);
-                debug("repository check call at entry point " + prefix + " got status " + status);
+                logger.debug("repository check call at entry point {}  got status {}", prefix, status);
                 if ( status == 200 ) 
                     return true;
             }

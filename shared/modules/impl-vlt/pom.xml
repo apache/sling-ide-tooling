@@ -46,6 +46,17 @@
                     </excludes>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <systemProperties>
+                        <org.slf4j.simpleLogger.showDateTime>true</org.slf4j.simpleLogger.showDateTime>
+                        <org.slf4j.simpleLogger.dateTimeFormat>yyyy-MM-dd HH:mm:ss:SSS Z</org.slf4j.simpleLogger.dateTimeFormat>
+                        <org.slf4j.simpleLogger.defaultLogLevel>${defaultLogLevel}</org.slf4j.simpleLogger.defaultLogLevel>
+                    </systemProperties>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
@@ -139,8 +150,15 @@
             <version>2.16.0</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
     <properties>
         <sling.java.version>8</sling.java.version>
+        <!-- Jackrabbit is quite verbose on INFO level -->
+        <defaultLogLevel>warn</defaultLogLevel>
     </properties>
 </project>
