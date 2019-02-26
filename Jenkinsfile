@@ -4,39 +4,43 @@ def mvnVersion = 'Maven 3.3.9'
 def javaVersion = 'JDK 1.8 (latest)'
 
 node('ubuntu') {
-
     def helper = new SlingJenkinsHelper()
     helper.runWithErrorHandling({ jobConfig ->
+        parallel 'linux': generateStages('linux', mvnVersion, javaVersion),
+            'windows': generateStages('windows', mvnVersion, javaVersion)
+    })
+}
 
-        stage('Build shared code') {
+// generates os-specific stages
+def generateStages(String os, def mvnVersion, def javaVersion) {
+    def isWindows = os == "windows"
+    def prefix = isWindows ? "win" : "linux"
+
+    def stages = [
+        "[$prefix] Build shared code": {
             withMaven(maven: mvnVersion, jdk: javaVersion, options: [artifactsPublisher(disabled: true)]) {
                 timeout(10) {
-                    sh "mvn -f shared/modules clean install"
+                    runCmd "mvn -f shared/modules clean install"
                 }
             }
-        }
-
-        stage('Build CLI bundles') {
+        }, "[$prefix] Build CLI bundles": {
             withMaven(maven: mvnVersion, jdk: javaVersion, options: [artifactsPublisher(disabled: true)]) {
                 timeout(10) {
-                    sh "mvn -f cli clean install"
+                    runCmd "mvn -f cli clean install"
                 }
             }
-        }
-
-        stage ('Build shared code P2 repository') {
+        }, "[$prefix] Build shared code P2 repository": {
             withMaven(maven: mvnVersion, jdk: javaVersion, options: [artifactsPublisher(disabled: true)]) {
                 timeout(10) {
-                    sh 'mvn -f shared/p2 clean package'
+                    runCmd 'mvn -f shared/p2 clean package'
                 }
             }
-        }
-
-        stage ('Build Eclipse plug-ins') {
+        }, "[$prefix] Build Eclipse plug-ins": {
             withMaven(maven: mvnVersion, jdk: javaVersion, options: [artifactsPublisher(disabled: true)]) {
                 timeout(20) {
-                    wrap([$class: 'Xvfb']) {
-                        sh 'mvn -f eclipse clean verify -Ddebug'
+                    // workaround for https://issues.jenkins-ci.org/browse/JENKINS-39415
+                    wrap([$class: 'Xvfb', autoDisplayName: true]) {
+                        runCmd 'mvn -f eclipse clean verify'
                     }
                     // workaround for https://issues.jenkins-ci.org/browse/JENKINS-55889
                     junit 'eclipse/**/surefire-reports/*.xml' 
@@ -44,5 +48,36 @@ node('ubuntu') {
                 }
             }
         }
-    });
+    ]
+
+    // avoid wrapping Linux nodes again in node() context since that seems to make the 
+    // SCM checkout unavailable
+    if ( isWindows ) {
+        return {
+            node("Windows") {
+                checkout scm
+                stages.each { name, body ->
+                    stage(name) {
+                        body.call()
+                    }
+                }
+            }
+        }
+    }
+
+    return {
+        stages.each { name, body ->
+            stage(name) {
+                body.call()
+            }
+        }
+    }
+}
+
+def runCmd(def cmd) {
+    if (isUnix() ) {
+        sh cmd
+    } else {
+        bat cmd
+    }
 }
