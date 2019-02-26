@@ -16,8 +16,11 @@
  */
 package org.apache.sling.ide.test.impl.ui.sightly;
 
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assume.assumeThat;
 
 import java.io.ByteArrayInputStream;
 import java.util.List;
@@ -59,6 +62,8 @@ public class SightlyAutocompletionTest {
     @Test
     public void tagNameAutocompletion() throws Exception {
         
+        assumeThat(System.getProperty("os.name"), not(containsString("Windows"))); // TODO - SLING-7596
+
         List<String> proposals = new AutocompletionCallable() {
             @Override
             protected void prepareEditor(SWTBotEclipseEditor editor) {
@@ -74,7 +79,9 @@ public class SightlyAutocompletionTest {
     
     @Test
     public void attributeAutocompletion() throws Exception {
-        
+
+        assumeThat(System.getProperty("os.name"), not(containsString("Windows"))); // TODO - SLING-7596
+
         List<String> proposals = new AutocompletionCallable() {
             @Override
             protected void prepareEditor(SWTBotEclipseEditor editor) {
