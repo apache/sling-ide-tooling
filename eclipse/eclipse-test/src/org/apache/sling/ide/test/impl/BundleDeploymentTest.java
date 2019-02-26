@@ -41,6 +41,7 @@ import org.apache.sling.ide.test.impl.helpers.UninstallBundleRule;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.core.JavaCore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -136,6 +137,11 @@ public class BundleDeploymentTest {
                 return null;
             }
         }, nullValue(Void.class));
+        
+        // wait until no jobs are executing
+        poller.pollUntilTrue(() -> {
+            return Job.getJobManager().isIdle();
+        });
 
         // update DS component class
         InputStream simpleServlet2 = getClass().getResourceAsStream("SimpleServlet.java.v2.txt");
