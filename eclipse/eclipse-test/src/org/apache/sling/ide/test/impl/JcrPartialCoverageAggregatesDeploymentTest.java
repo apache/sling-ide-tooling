@@ -22,6 +22,9 @@ import static org.apache.sling.ide.test.impl.helpers.jcr.JcrMatchers.hasPath;
 import static org.apache.sling.ide.test.impl.helpers.jcr.JcrMatchers.hasPrimaryType;
 import static org.apache.sling.ide.test.impl.helpers.jcr.JcrMatchers.hasPropertyValue;
 import static org.hamcrest.CoreMatchers.allOf;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.not;
+import static org.junit.Assume.assumeThat;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -247,7 +250,8 @@ public class JcrPartialCoverageAggregatesDeploymentTest {
     
     @Test
     public void deployNodeWithContentXmlInParentFolder() throws Exception {
-        
+        assumeThat(System.getProperty("os.name"), not(containsString("Windows"))); // TODO - SLING-7596
+
         wstServer.waitForServerToStart();
 
         // create faceted project
@@ -315,7 +319,9 @@ public class JcrPartialCoverageAggregatesDeploymentTest {
     
     @Test
     public void deployNodeWithContentXmlInParentFolder_reverse() throws Exception {
-        
+
+        assumeThat(System.getProperty("os.name"), not(containsString("Windows"))); // TODO - SLING-7596
+
         wstServer.waitForServerToStart();
 
         // create faceted project

@@ -20,9 +20,12 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_DELETE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assume.assumeThat;
 
 import java.io.File;
 import java.io.IOException;
@@ -110,6 +113,8 @@ public class DirWatcherTest {
     
     @Test(timeout = 3000)
     public void deletedFile() throws IOException, InterruptedException {
+        
+        assumeThat(System.getProperty("os.name"), not(containsString("Windows"))); // TODO - SLING-7596
         
         File watchRoot = folder.newFolder();
         File subDir = new File(watchRoot, "subDir");
