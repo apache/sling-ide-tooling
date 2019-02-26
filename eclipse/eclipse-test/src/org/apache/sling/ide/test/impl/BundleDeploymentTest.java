@@ -37,7 +37,7 @@ import org.apache.sling.ide.test.impl.helpers.RepositoryAccessor;
 import org.apache.sling.ide.test.impl.helpers.ServerAdapter;
 import org.apache.sling.ide.test.impl.helpers.SlingWstServer;
 import org.apache.sling.ide.test.impl.helpers.TemporaryProject;
-import org.apache.sling.ide.test.impl.helpers.ToolingSupportBundle;
+import org.apache.sling.ide.test.impl.helpers.UninstallBundleRule;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.Path;
@@ -60,7 +60,7 @@ public class BundleDeploymentTest {
 
     @Rule
     public TestRule chain = RuleChain.outerRule(new ExternalSlingLaunchpad(config))
-            .around(new ToolingSupportBundle(config))
+            .around(new UninstallBundleRule(config, "test.bundle001"))
             .around(wstServer);
 
     @Rule

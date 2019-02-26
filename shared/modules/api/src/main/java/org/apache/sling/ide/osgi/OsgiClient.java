@@ -60,5 +60,13 @@ public interface OsgiClient {
      * @throws OsgiClientException
      */
     List<SourceReference> findSourceReferences() throws OsgiClientException;
+    
+    /**
+     * Uninstalls the bundle with the specified Bundle-SymbolicName, if present
+     * 
+     * @param bundleSymbolicName The Bundle-SymbolicName
+     * @throws OsgiClientException error when trying to uninstall the bundle
+     */
+    void uninstallBundle(String bundleSymbolicName) throws OsgiClientException;
 
 }

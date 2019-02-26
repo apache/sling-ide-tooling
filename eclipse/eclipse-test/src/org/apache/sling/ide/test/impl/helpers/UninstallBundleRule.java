@@ -16,35 +16,40 @@
  */
 package org.apache.sling.ide.test.impl.helpers;
 
-import org.apache.sling.ide.artifacts.EmbeddedArtifact;
-import org.apache.sling.ide.artifacts.EmbeddedArtifactLocator;
 import org.apache.sling.ide.osgi.OsgiClient;
-import org.apache.sling.ide.osgi.OsgiClientFactory;
+import org.apache.sling.ide.osgi.OsgiClientException;
 import org.apache.sling.ide.test.impl.Activator;
 import org.apache.sling.ide.transport.RepositoryInfo;
 import org.junit.rules.ExternalResource;
 
-/**
- * The <tt>ToolingSupportBundle</tt> rules ensures that the tooling support bundle is installed
- *
- */
-public class ToolingSupportBundle extends ExternalResource {
+public class UninstallBundleRule extends ExternalResource {
 
     private final LaunchpadConfig config;
+    private String bundleSymbolicName;
 
-    public ToolingSupportBundle(LaunchpadConfig config) {
+    public UninstallBundleRule(LaunchpadConfig config, String bundleSymbolicName) {
         this.config = config;
+        this.bundleSymbolicName = bundleSymbolicName;
     }
-
+    
     @Override
     protected void before() throws Throwable {
-
-        EmbeddedArtifactLocator locator = Activator.getDefault().getArtifactLocator();
-        EmbeddedArtifact toolingBundle = locator.loadToolingSupportBundle();
-
-        OsgiClientFactory clientFactory = Activator.getDefault().getOsgiClientFactory();
-        OsgiClient osgiClient = clientFactory.createOsgiClient(new RepositoryInfo(config.getUsername(), config
-                .getPassword(), config.getUrl()));
-        osgiClient.installBundle(toolingBundle.openInputStream(), toolingBundle.getName());
+        after();
+    }
+    
+    @Override
+    protected void after() {
+        try {
+            RepositoryInfo repositoryInfo = new RepositoryInfo(config.getUsername(), config.getPassword(), config.getUrl());
+            OsgiClient client = Activator.getDefault().getOsgiClientFactory().createOsgiClient(repositoryInfo);
+            client.uninstallBundle(bundleSymbolicName);
+            new Poller().pollUntilTrue(() -> {
+               return client.getBundleVersion(bundleSymbolicName) == null; 
+            });
+        } catch (OsgiClientException e) {
+            throw new RuntimeException(e);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
     }
 }
