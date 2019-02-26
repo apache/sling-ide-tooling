@@ -168,7 +168,7 @@ public class SlingLaunchpadBehaviour extends ServerBehaviourDelegateWithModulePu
         ISlingLaunchpadServer launchpadServer = (ISlingLaunchpadServer) getServer().loadAdapter(SlingLaunchpadServer.class,
                 monitor);
         if (remoteVersion == null || remoteVersion.compareTo(embeddedVersion) < 0 
-                || ( remoteVersion.equals(embeddedVersion) || "SNAPSHOT".equals(embeddedVersion.getQualifier()))) {
+                || ( remoteVersion.equals(embeddedVersion) && "SNAPSHOT".equals(embeddedVersion.getQualifier()))) {
             try ( InputStream contents = bundle.openInputStream() ){
                 client.installBundle(contents, bundle.getName());
             }
