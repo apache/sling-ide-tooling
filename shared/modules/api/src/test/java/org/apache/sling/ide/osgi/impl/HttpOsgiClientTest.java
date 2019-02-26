@@ -17,6 +17,7 @@
 package org.apache.sling.ide.osgi.impl;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
@@ -38,6 +39,14 @@ public class HttpOsgiClientTest {
     public void testGetBundleVersionFromReader() throws IOException {
         try (InputStream input = getClass().getClassLoader().getResourceAsStream("bundles.json");
              Reader reader = new InputStreamReader(input, StandardCharsets.UTF_8)) {
+            assertThat(HttpOsgiClient.getBundleVersionFromReader("org.apache.commons.lang4", reader), nullValue());
+        }
+    }
+
+    @Test
+    public void testGetBundleVersionFromReader_notFound() throws IOException {
+        try (InputStream input = getClass().getClassLoader().getResourceAsStream("bundles.json");
+                Reader reader = new InputStreamReader(input, StandardCharsets.UTF_8)) {
             Assert.assertEquals(new Version("3.4.0"), HttpOsgiClient.getBundleVersionFromReader("org.apache.commons.lang3", reader));
         }
     }
@@ -56,6 +65,22 @@ public class HttpOsgiClientTest {
             assertThat(mavenSR.getGroupId(), equalTo("org.apache.felix"));
             assertThat(mavenSR.getArtifactId(), equalTo("org.apache.felix.framework"));
             assertThat(mavenSR.getVersion(), equalTo("5.6.6"));
+        }
+    }
+    
+    @Test
+    public void testGetBundleIdFromReader() throws IOException {
+        try (InputStream input = getClass().getClassLoader().getResourceAsStream("bundles.json");
+             Reader reader = new InputStreamReader(input, StandardCharsets.UTF_8)) {
+            Assert.assertEquals(Long.valueOf(84), HttpOsgiClient.getBundleIdFromReader("org.apache.commons.lang3", reader));
+        }
+    }
+
+    @Test
+    public void testGetBundleIdFromReader_notFound() throws IOException {
+        try (InputStream input = getClass().getClassLoader().getResourceAsStream("bundles.json");
+            Reader reader = new InputStreamReader(input, StandardCharsets.UTF_8)) {
+            assertThat(HttpOsgiClient.getBundleIdFromReader("org.apache.commons.lang4", reader), nullValue());
         }
     }
 }

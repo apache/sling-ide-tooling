@@ -67,6 +67,7 @@ public class HttpOsgiClient implements OsgiClient {
     private static final class BundleInfo {
         private String symbolicName;
         private String version;
+        private long id;
 
         public String getSymbolicName() {
             return symbolicName;
@@ -75,9 +76,13 @@ public class HttpOsgiClient implements OsgiClient {
         public Version getVersion() {
             return new Version(version);
         }
+        
+        public long getId() {
+            return id;
+        }
     }
-
-    static Version getBundleVersionFromReader(String bundleSymbolicName, Reader reader) throws IOException {
+    
+    private static BundleInfo readBundleInfo(String bundleSymbolicName, Reader reader) throws IOException {
         Gson gson = new Gson();
         try (JsonReader jsonReader = new JsonReader(reader)) {
             // wait for 'data' attribute
@@ -90,7 +95,7 @@ public class HttpOsgiClient implements OsgiClient {
                         // read json for individual bundle
                         BundleInfo bundleInfo = gson.fromJson(jsonReader, BundleInfo.class);
                         if (bundleSymbolicName.equals(bundleInfo.getSymbolicName())) {
-                            return bundleInfo.getVersion();
+                            return bundleInfo;
                         }
                     }
                     jsonReader.endArray();
@@ -100,8 +105,26 @@ public class HttpOsgiClient implements OsgiClient {
             }
         }
         return null;
+        
     }
 
+    static Version getBundleVersionFromReader(String bundleSymbolicName, Reader reader) throws IOException {
+        BundleInfo bundleInfo = readBundleInfo(bundleSymbolicName, reader);
+        if ( bundleInfo == null ) {
+            return null;
+        }
+        return bundleInfo.getVersion();
+    }
+
+    static Long getBundleIdFromReader(String bundleSymbolicName, Reader reader) throws IOException {
+        BundleInfo bundleInfo = readBundleInfo(bundleSymbolicName, reader);
+        if ( bundleInfo == null ) {
+            return null;
+        }
+        return bundleInfo.getId();
+    }
+
+    
     @Override
     public Version getBundleVersion(String bundleSymbolicName) throws OsgiClientException {
 
@@ -180,6 +203,36 @@ public class HttpOsgiClient implements OsgiClient {
         }
     }
 
+    @Override
+    public void uninstallBundle(String bundleSymbolicName) throws OsgiClientException {
+        GetMethod method = new GetMethod(repositoryInfo.appendPath("system/console/bundles.json"));
+        HttpClient client = getHttpClient();
+
+        try {
+            int result = client.executeMethod(method);
+            if (result != HttpStatus.SC_OK) {
+                throw new HttpException("Got status code " + result + " for call to " + method.getURI());
+            }
+
+            try ( InputStream input = method.getResponseBodyAsStream();
+                  Reader reader = new InputStreamReader(input, StandardCharsets.US_ASCII)) {
+                Long bundleId = getBundleIdFromReader(bundleSymbolicName, reader);
+                if ( bundleId == null ) {
+                    return;
+                }
+                PostMethod postMethod = new PostMethod(repositoryInfo.appendPath("system/console/bundles/") + bundleId);
+                postMethod.addParameter("action", "uninstall");
+                
+                result = client.executeMethod(postMethod);
+                if ( result != HttpStatus.SC_OK )
+                    throw new HttpException("Got status code " + result + " for call to " + postMethod.getURI());
+            }
+        } catch (IOException e) {
+            throw new OsgiClientException(e);
+        } finally {
+            method.releaseConnection();
+        }
+    }
     @Override
     public void installLocalBundle(final String explodedBundleLocation) throws OsgiClientException {
 

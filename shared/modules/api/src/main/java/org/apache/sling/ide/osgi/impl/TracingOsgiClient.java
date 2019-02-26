@@ -52,6 +52,11 @@ public class TracingOsgiClient implements OsgiClient {
     public void installBundle(InputStream in, String fileName) throws OsgiClientException {
         osgiClient.installBundle(in, fileName);
     }
+    
+    @Override
+    public void uninstallBundle(String bundleSymbolicName) throws OsgiClientException {
+        osgiClient.uninstallBundle(bundleSymbolicName);
+    }
 
     @Override
     public void installLocalBundle(String explodedBundleLocation) throws OsgiClientException {
