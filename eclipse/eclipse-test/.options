@@ -1,0 +1,10 @@
+org.apache.sling.ide.eclipse-core/debug=true
+org.apache.sling.ide.eclipse-core/debug/console=true
+org.apache.sling.ide.eclipse-m2e-ui/debug=true
+org.apache.sling.ide.eclipse-m2e-ui/debug/console=true
+org.apache.sling.ide.eclipse-sightly-core/debug=true
+org.apache.sling.ide.eclipse-sightly-core/debug/console=true
+org.apache.sling.ide.eclipse-ui/debug=true
+org.apache.sling.ide.eclipse-ui/debug/console=true
+org.apache.sling.ide.impl-vlt/debug=true
+org.apache.sling.ide.impl-vlt/debug/console=true
