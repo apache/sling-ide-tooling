@@ -184,7 +184,7 @@
                name="Export content to server"
                categoryId="org.eclipse.ui.category.window"
                defaultHandler="org.apache.sling.ide.eclipse.ui.internal.ExportContentAction">
-         </command>         
+         </command>
    </extension>
    
    <extension
@@ -420,7 +420,18 @@
             label="Sling Console">
       </consoleFactory>
    </extension>
-   
+
+   <extension
+         point="org.eclipse.core.expressions.propertyTesters">
+         <propertyTester
+               id="org.apache.sling.ide.eclipse.ui.internal.ContentXmlResourceTester"
+               type="org.apache.sling.ide.eclipse.ui.nav.model.JcrNode"
+               namespace="org.apache.sling.ide.eclipse"
+               properties="isContentXmlFile"
+               class="org.apache.sling.ide.eclipse.ui.internal.ContentXmlResourceTester">
+         </propertyTester>
+   </extension>
+
    <extension
          point="org.eclipse.core.expressions.definitions">
          <definition
@@ -428,6 +439,12 @@
             <iterate ifEmpty="false">
  	           <adapt type="org.apache.sling.ide.eclipse.ui.nav.model.JcrNode"/>
  	         </iterate>
+         </definition>
+         <definition
+            id="org.apache.sling.ide.eclipse.contentXmlFile">
+             <iterate ifEmpty="false">
+               <test property="org.apache.sling.ide.eclipse.isContentXmlFile"/>
+             </iterate>            
          </definition>
          <definition
                id="org.apache.sling.ide.eclipse.nonSlingProject">
@@ -558,6 +575,15 @@
                  </visibleWhen>
               </command>
               <command
+                commandId="org.apache.sling.ide.eclipse.ui.actions.jcrFormatContentXml"
+                icon="icons/obj16/sling_misc.gif"
+                label="Format .content.xml file">
+                 <visibleWhen
+                       checkEnabled="false">
+                    <reference definitionId="org.apache.sling.ide.eclipse.contentXmlFile"/>
+                 </visibleWhen>
+              </command>
+              <command
               	commandId="org.apache.sling.ide.eclipse.ui.actions.openHtmlInBrowserHandler"
               	icon="icons/obj16/internal_browser.png"
               	label="&amp;Open .html (on server) in browser">
@@ -623,6 +649,13 @@
    	      		id="org.apache.sling.ide.eclipse.ui.actions.jcrNewNodeHandler"
    	      		defaultHandler="org.apache.sling.ide.eclipse.ui.actions.JcrNewNodeHandler"
    	      		name="Import JCR content from server...">
+         </command>
+         
+         <!-- Source commands -->
+         <command
+                id="org.apache.sling.ide.eclipse.ui.actions.jcrFormatContentXml"
+                defaultHandler="org.apache.sling.ide.eclipse.ui.actions.JcrNodeFormatHandler"
+                name="Format">
          </command>
    	</extension>
    	
