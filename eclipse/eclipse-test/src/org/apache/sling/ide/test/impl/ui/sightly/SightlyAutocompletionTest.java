@@ -62,7 +62,7 @@ public class SightlyAutocompletionTest {
     @Test
     public void tagNameAutocompletion() throws Exception {
         
-        assumeThat(System.getProperty("os.name"), not(containsString("Windows"))); // TODO - SLING-7596
+        //assumeThat(System.getProperty("os.name"), not(containsString("Windows"))); // TODO - SLING-7596
 
         List<String> proposals = new AutocompletionCallable() {
             @Override

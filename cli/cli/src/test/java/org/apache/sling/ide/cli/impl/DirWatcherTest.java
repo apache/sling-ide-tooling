@@ -114,7 +114,7 @@ public class DirWatcherTest {
     @Test(timeout = 3000)
     public void deletedFile() throws IOException, InterruptedException {
         
-        assumeThat(System.getProperty("os.name"), not(containsString("Windows"))); // TODO - SLING-7596
+//        assumeThat(System.getProperty("os.name"), not(containsString("Windows"))); // TODO - SLING-7596
         
         File watchRoot = folder.newFolder();
         File subDir = new File(watchRoot, "subDir");
