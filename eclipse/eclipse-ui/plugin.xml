@@ -427,8 +427,8 @@
                id="org.apache.sling.ide.eclipse.ui.internal.ContentXmlResourceTester"
                type="org.apache.sling.ide.eclipse.ui.nav.model.JcrNode"
                namespace="org.apache.sling.ide.eclipse"
-               properties="isContentXmlFile"
-               class="org.apache.sling.ide.eclipse.ui.internal.ContentXmlResourceTester">
+               properties="isDocViewFile"
+               class="org.apache.sling.ide.eclipse.ui.internal.DocViewResourceTester">
          </propertyTester>
    </extension>
 
@@ -441,9 +441,9 @@
  	         </iterate>
          </definition>
          <definition
-            id="org.apache.sling.ide.eclipse.contentXmlFile">
+            id="org.apache.sling.ide.eclipse.docViewFile">
              <iterate ifEmpty="false">
-               <test property="org.apache.sling.ide.eclipse.isContentXmlFile"/>
+               <test property="org.apache.sling.ide.eclipse.isDocViewFile"/>
              </iterate>            
          </definition>
          <definition
@@ -580,7 +580,7 @@
                 label="Format .content.xml file">
                  <visibleWhen
                        checkEnabled="false">
-                    <reference definitionId="org.apache.sling.ide.eclipse.contentXmlFile"/>
+                    <reference definitionId="org.apache.sling.ide.eclipse.docViewFile"/>
                  </visibleWhen>
               </command>
               <command
