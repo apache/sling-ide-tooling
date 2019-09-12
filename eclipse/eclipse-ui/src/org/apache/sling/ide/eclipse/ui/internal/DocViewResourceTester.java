@@ -19,16 +19,16 @@ package org.apache.sling.ide.eclipse.ui.internal;
 import org.apache.sling.ide.eclipse.ui.nav.model.JcrNode;
 import org.eclipse.core.expressions.PropertyTester;
 
-public class ContentXmlResourceTester extends PropertyTester {
+public class DocViewResourceTester extends PropertyTester {
 
     // this class should be in the core project, but since the JcrNode class is in the ui project
     // we keep it here
-    private static final String PN_IS_CONTENT_XML = "isContentXmlFile";
+    private static final String PN_IS_DOCVIEW_FILE = "isDocViewFile";
 
     @Override
     public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
         
-        if (!PN_IS_CONTENT_XML.equals(property)) {
+        if (!PN_IS_DOCVIEW_FILE.equals(property)) {
             return false;
         }
 
