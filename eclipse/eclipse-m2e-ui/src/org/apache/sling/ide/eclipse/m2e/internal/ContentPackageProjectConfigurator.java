@@ -16,13 +16,13 @@
  */
 package org.apache.sling.ide.eclipse.m2e.internal;
 
-import java.nio.file.Paths;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.apache.maven.model.Resource;
 import org.apache.maven.project.MavenProject;
 import org.apache.sling.ide.eclipse.core.ConfigurationHelper;
 import org.eclipse.aether.util.StringUtils;
@@ -88,18 +88,24 @@ public class ContentPackageProjectConfigurator extends AbstractProjectConfigurat
         
         // core configuration for sling ide plugin
         
-        Resource folder = MavenProjectUtils.guessJcrRootFolder(mavenProject);
-        
-        java.nio.file.Path contentSyncPath = mavenProject.getBasedir().toPath().relativize(Paths.get(folder.getDirectory()));
-        
-        String jcrRootPath = contentSyncPath.toString();
-        ConfigurationHelper.convertToContentPackageProject(project, progressMonitor, Path.fromOSString(jcrRootPath));   
-        
-        if (getPreferences().isWtpFacetsEnabledInContentPackageProjectConfigurator()) {
-            new WtpProjectConfigurer(configRequest, project, jcrRootPath).configure(progressMonitor);
-            trace("WTP facets for {0} added", mavenProject);
-        } else {
-            trace("WTP facets for packing type 'content-package' are disabled through preferences.");
+        try {
+            Optional<java.nio.file.Path> contentSyncPath = MavenProjectUtils.guessJcrRootFolder(mavenProject);
+            if (contentSyncPath.isPresent()) {
+                // add marker
+                addMarker(configRequest.getPom(), "Could not detect jcr_root path for this content package!", IMarker.SEVERITY_ERROR);
+            }
+            
+            String jcrRootPath = contentSyncPath.toString();
+            ConfigurationHelper.convertToContentPackageProject(project, progressMonitor, Path.fromOSString(jcrRootPath));   
+            
+            if (getPreferences().isWtpFacetsEnabledInContentPackageProjectConfigurator()) {
+                new WtpProjectConfigurer(configRequest, project, jcrRootPath).configure(progressMonitor);
+                trace("WTP facets for {0} added", mavenProject);
+            } else {
+                trace("WTP facets for packing type 'content-package' are disabled through preferences.");
+            }
+        } catch (IOException e) {
+            Activator.getDefault().getPluginLogger().warn("Could not determine jcr_root for project: " + mavenProject.getBasedir() + ": "+e, e);
         }
         
         trace("Done converting .");

@@ -14,10 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sling.ide.eclipse.m2e;
+package org.apache.sling.ide.eclipse.m2e.internal;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
@@ -28,6 +32,7 @@ import org.apache.sling.ide.test.impl.helpers.TemporaryProject;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
+import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -57,5 +62,21 @@ public class MavenProjectUtilsTest {
 			}
 		}, equalTo(modelsDir));
         
+	}
+	
+	@Test
+	public void testGuessJcrRootFolder() throws IOException {
+	    java.nio.file.Path rootPath = Paths.get("src", "org", "apache", "sling", "ide", "eclipse", "m2e", "internal", "project1");
+	    Assert.assertTrue("rootPath not found", Files.exists(rootPath));
+	    // create folder structure, 
+	    Optional<java.nio.file.Path> actualJcrRoot = MavenProjectUtils.guessJcrRootFolder(rootPath);
+	    Assert.assertTrue(actualJcrRoot.isPresent());
+	    Assert.assertEquals(Paths.get("src", "main", "content", "jcr_root"), actualJcrRoot.get());
+	    
+	    // test jcr_root beyond level 4
+	    rootPath = Paths.get("src", "org", "apache", "sling", "ide", "eclipse", "m2e", "internal", "project2");
+        Assert.assertTrue("rootPath not found", Files.exists(rootPath));
+        actualJcrRoot = MavenProjectUtils.guessJcrRootFolder(rootPath);
+        Assert.assertFalse(actualJcrRoot.isPresent());
 	}
 }

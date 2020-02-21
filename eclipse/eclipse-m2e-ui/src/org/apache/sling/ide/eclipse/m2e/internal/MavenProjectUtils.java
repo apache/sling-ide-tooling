@@ -16,16 +16,20 @@
  */
 package org.apache.sling.ide.eclipse.m2e.internal;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Plugin;
-import org.apache.maven.model.Resource;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 
@@ -33,18 +37,22 @@ public class MavenProjectUtils {
 
     private static final String DEFAULT_SERVLET_API_VERSION = "2.5";
     private static final Pattern SERVLET_API_VERSION_MATCHER = Pattern.compile("^(\\d\\.\\d)");
+    private static final int MAX_RELATIVE_DEPTH_OF_JCR_ROOT = 4; // relative depth of jcr_root in content packages from the Maven basedir
 
-    public static Resource guessJcrRootFolder(MavenProject project) {
-        
-        for ( Resource resource : project.getBuild().getResources() ) {
-            if ( resource.getDirectory().endsWith("jcr_root")) {
-                return resource;
-            }
-        }
-        
-        return project.getBuild().getResources().get(0);
+    public static Optional<Path> guessJcrRootFolder(MavenProject project) throws IOException {
+        return guessJcrRootFolder(project.getBasedir().toPath());
     }
-    
+
+    static Optional<Path> guessJcrRootFolder(Path baseDir) throws IOException {
+        try (Stream<Path> stream = Files.find(baseDir, MAX_RELATIVE_DEPTH_OF_JCR_ROOT, (a, b) -> a.endsWith("jcr_root"))) {
+            Optional<Path> jcrRoot = stream.findFirst();
+            if (jcrRoot.isPresent()) {
+                jcrRoot = Optional.of(baseDir.relativize(jcrRoot.get()));
+            }
+            return jcrRoot;
+        }
+    } 
+
     public static String guessServletApiVersion(MavenProject project) {
         
         for ( Dependency dependency :  project.getDependencies() ) {
