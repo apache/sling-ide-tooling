@@ -90,12 +90,13 @@ public class ContentPackageProjectConfigurator extends AbstractProjectConfigurat
         
         try {
             Optional<java.nio.file.Path> contentSyncPath = MavenProjectUtils.guessJcrRootFolder(mavenProject);
-            if (contentSyncPath.isPresent()) {
+            if (!contentSyncPath.isPresent()) {
                 // add marker
                 addMarker(configRequest.getPom(), "Could not detect jcr_root path for this content package!", IMarker.SEVERITY_ERROR);
+                return;
             }
             
-            String jcrRootPath = contentSyncPath.toString();
+            String jcrRootPath = contentSyncPath.get().toString();
             ConfigurationHelper.convertToContentPackageProject(project, progressMonitor, Path.fromOSString(jcrRootPath));   
             
             if (getPreferences().isWtpFacetsEnabledInContentPackageProjectConfigurator()) {
