@@ -65,8 +65,6 @@ public class SightlyAutocompletionTest {
     @Test
     public void tagNameAutocompletion() throws Exception {
         
-        assumeThat(System.getProperty("os.name"), not(containsString("Windows"))); // TODO - SLING-7596
-
         List<String> proposals = new AutocompletionCallable() {
             @Override
             protected void prepareEditor(SWTBotEclipseEditor editor) {
@@ -82,8 +80,6 @@ public class SightlyAutocompletionTest {
     
     @Test
     public void attributeAutocompletion() throws Exception {
-
-        assumeThat(System.getProperty("os.name"), not(containsString("Windows"))); // TODO - SLING-7596
 
         List<String> proposals = new AutocompletionCallable() {
             @Override
