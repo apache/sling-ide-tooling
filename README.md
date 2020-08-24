@@ -1,6 +1,6 @@
 [<img src="https://sling.apache.org/res/logos/sling.png"/>](https://sling.apache.org)
 
- [![Build Status](https://builds.apache.org/buildStatus/icon?job=Sling/sling-ide-tooling/master)](https://builds.apache.org/job/Sling/job/sling-ide-tooling/job/master) [![Test Status](https://img.shields.io/jenkins/t/https/builds.apache.org/job/Sling/job/sling-ide-tooling/job/master.svg)](https://builds.apache.org/job/Sling/job/sling-ide-tooling/job/master/test_results_analyzer/) [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
+ [![Build Status](https://ci-builds.apache.org/job/Sling/job/modules/job/sling-ide-tooling/job/master/badge/icon)](https://ci-builds.apache.org/job/Sling/job/modules/job/sling-ide-tooling/job/master/) [![Test Status](https://img.shields.io/jenkins/tests.svg?jobUrl=https://ci-builds.apache.org/job/Sling/job/modules/job/sling-ide-tooling/job/master/)](https://ci-builds.apache.org/job/Sling/job/modules/job/sling-ide-tooling/job/master/test/?width=800&height=600) [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 
 # Apache Sling IDE Tooling
 
