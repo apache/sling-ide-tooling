@@ -45,7 +45,6 @@ import java.util.stream.Stream;
  * 
  * <p>This implementation works within the same constraints as the {@link WatchService} so
  * consumers are advised to read the documentation, particularly those related to platform limitations.
- * It is recommended to allow for minimal 
  */
 public class DirWatcher implements AutoCloseable {
     

@@ -16,13 +16,20 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.apache.sling</groupId>
-        <artifactId>sling</artifactId>
-        <version>33</version>
+        <artifactId>sling-bundle-parent</artifactId>
+        <version>39</version>
+        <relativePath/>
     </parent>
 
+    <groupId>org.apache.sling.ide</groupId>
     <artifactId>org.apache.sling.ide.cli</artifactId>
     <name>Apache Sling IDE Tools CLI</name>
     <version>1.2.3-SNAPSHOT</version>
+
+    <properties>
+        <sling.java.version>8</sling.java.version>
+        <junit.jupiter.version>5.6.2</junit.jupiter.version>
+    </properties>
 
     <scm>
         <connection>scm:git:https://gitbox.apache.org/repos/asf/sling-ide-tooling.git</connection>
@@ -35,6 +42,27 @@
             <plugin>
                 <groupId>biz.aQute.bnd</groupId>
                 <artifactId>bnd-maven-plugin</artifactId>
+            </plugin>
+            <!-- only overwrite config for surefire/failsafe -->
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <trimStackTrace>false</trimStackTrace>
+                </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <configuration>
+                    <trimStackTrace>false</trimStackTrace>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>biz.aQute.bnd</groupId>
+                <artifactId>bnd-baseline-maven-plugin</artifactId>
+                <configuration>
+                    <!-- no release yet -->
+                    <failOnMissing>false</failOnMissing>
+                </configuration>
             </plugin>
         </plugins>
     </build>
@@ -73,17 +101,13 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.hamcrest</groupId>
-            <artifactId>hamcrest-library</artifactId>
-            <version>1.3</version>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>${junit.jupiter.version}</version>
             <scope>test</scope>
         </dependency>
 
-        <!-- Note that OSGi annotations are OK since they are not retained at compile time -->        
+        <!-- Note that OSGi annotations are OK since they are not retained at compile time -->
         <dependency>
             <groupId>org.osgi</groupId>
             <artifactId>org.osgi.annotation.versioning</artifactId>
@@ -100,8 +124,5 @@
             <scope>provided</scope>
         </dependency>
     </dependencies>
-    <properties>
-        <sling.java.version>8</sling.java.version>
-    </properties>
-    <groupId>org.apache.sling.ide</groupId>
+
 </project>
