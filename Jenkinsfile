@@ -1,11 +1,24 @@
 import org.apache.sling.jenkins.SlingJenkinsHelper;
 
-def mvnVersion = 'Maven 3.3.9'
-def javaVersion = 'JDK 17 (latest)'
+def mvnVersion = 'maven_3_latest' // https://cwiki.apache.org/confluence/x/cRTiAw
+def javaVersion = 'JDK 17 (latest)' // https://cwiki.apache.org/confluence/x/kRLiAw
 
 node('ubuntu') {
     def helper = new SlingJenkinsHelper()
-    helper.runWithErrorHandling({ jobConfig ->
+    def jobConfig = [
+        jdks: [8],
+        upstreamProjects: [],
+        archivePatterns: [],
+        mavenGoal: '',
+        additionalMavenParams: '',
+        rebuildFrequency: '@weekly',
+        enabled: true,
+        emailRecipients: [],
+        sonarQubeEnabled: true,
+        sonarQubeUseAdditionalMavenParams: true,
+        sonarQubeAdditionalParams: ''
+    ]
+    helper.runWithErrorHandling(jobConfig, {
         parallel 'linux': generateStages('linux', mvnVersion, javaVersion),
             'windows': generateStages('windows', mvnVersion, javaVersion)
     })
