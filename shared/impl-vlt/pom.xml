@@ -172,9 +172,4 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-    <properties>
-        <sling.java.version>8</sling.java.version>
-        <!-- Jackrabbit is quite verbose on INFO level -->
-        <defaultLogLevel>warn</defaultLogLevel>
-    </properties>
 </project>

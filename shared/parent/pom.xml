@@ -152,7 +152,8 @@
     </dependencyManagement>
     
     <properties>
-		<sling.java.version>8</sling.java.version>
+		<sling.java.version>11</sling.java.version>
+		<minimalJavaBuildVersion>11</minimalJavaBuildVersion>
 		<!-- must match the version being referenced in the pom.xml of filevault -->
 		<jackrabbit.version>2.20.6</jackrabbit.version>
         <oak.version>1.42.0</oak.version>

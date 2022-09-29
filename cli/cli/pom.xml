@@ -115,7 +115,8 @@
     </dependencies>
 
     <properties>
-        <sling.java.version>8</sling.java.version>
+        <sling.java.version>11</sling.java.version>
+        <minimalJavaBuildVersion>11</minimalJavaBuildVersion>
     </properties>
     
 </project>

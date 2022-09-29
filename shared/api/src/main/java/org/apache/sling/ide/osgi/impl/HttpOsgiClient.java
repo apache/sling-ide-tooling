@@ -40,7 +40,6 @@ import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
 import org.apache.commons.httpclient.methods.multipart.Part;
 import org.apache.commons.httpclient.methods.multipart.PartSource;
 import org.apache.commons.httpclient.methods.multipart.StringPart;
-import org.apache.commons.io.IOUtils;
 import org.apache.sling.ide.osgi.OsgiClient;
 import org.apache.sling.ide.osgi.OsgiClientException;
 import org.apache.sling.ide.osgi.SourceReference;
@@ -183,7 +182,7 @@ public class HttpOsgiClient implements OsgiClient {
             partList.add(new StringPart("action", "install"));
             partList.add(new StringPart("_noredir_", "_noredir_"));
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            IOUtils.copy(in, baos);
+            in.transferTo(baos);
             PartSource partSource = new ByteArrayPartSource(fileName, baos.toByteArray());
             partList.add(new FilePart("bundlefile", partSource));
             partList.add(new StringPart("bundlestart", "start"));
@@ -261,8 +260,10 @@ public class HttpOsgiClient implements OsgiClient {
             @Override
             void configureRequest(PostMethod method) throws IOException {
 
+            	ByteArrayOutputStream out = new ByteArrayOutputStream();
+            	jarredBundle.transferTo(out);
                 Part[] parts = new Part[] { new FilePart("bundle", new ByteArrayPartSource("bundle.jar",
-                        IOUtils.toByteArray(jarredBundle))) };
+                        out.toByteArray())) };
                 method.setRequestEntity(new MultipartRequestEntity(parts, method.getParams()));
             }
         }.installBundle();        
