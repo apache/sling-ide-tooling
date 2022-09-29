@@ -20,7 +20,6 @@ import static org.junit.Assert.assertThat;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 
 import javax.jcr.Credentials;
 import javax.jcr.Node;
@@ -33,7 +32,6 @@ import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.util.Text;
 import org.apache.sling.ide.jcr.RepositoryUtils;
 import org.apache.sling.ide.transport.RepositoryInfo;
@@ -67,13 +65,9 @@ public class RepositoryAccessor {
             int result = client.executeMethod(m);
 
             assertThat("Unexpected status call for " + m.getURI(), result, CoreMatchers.equalTo(200));
-
-            try ( InputStream input = m.getResponseBodyAsStream() ) {
-                String responseBody = IOUtils.toString(input, m.getRequestCharSet());
     
-                assertThat("Unexpected response for " + m.getURI(), responseBody,
-                        CoreMatchers.equalTo(expectedResult));
-            }
+            assertThat("Unexpected response for " + m.getURI(), m.getResponseBodyAsString(),
+                    CoreMatchers.equalTo(expectedResult));
         } finally {
             m.releaseConnection();
         }

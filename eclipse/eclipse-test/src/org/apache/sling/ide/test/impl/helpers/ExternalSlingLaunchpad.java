@@ -28,7 +28,6 @@ import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.io.IOUtils;
 import org.junit.rules.ExternalResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -113,8 +112,7 @@ public class ExternalSlingLaunchpad extends ExternalResource {
 
             if (status == 200) {
 
-                String responseBody = IOUtils.toString(httpMethod.getResponseBodyAsStream(),
-                        httpMethod.getResponseCharSet());
+                String responseBody = httpMethod.getResponseBodyAsString();
 
                 Matcher m = STARTLEVEL_JSON_SNIPPET.matcher(responseBody);
                 if (m.find()) {

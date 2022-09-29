@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 
-import org.apache.commons.io.IOUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -76,7 +75,7 @@ public class HasFileMatcher extends TypeSafeMatcher<IProject> {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
 
         try ( InputStream in = file.getContents()) {
-            IOUtils.copy(in, out);
+            in.transferTo(out);
         } catch (CoreException | IOException e) {
             throw new RuntimeException(e);
         }

@@ -27,7 +27,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.jar.Manifest;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.maven.artifact.Artifact;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
@@ -137,7 +136,11 @@ public class ProjectAdapter {
                 file.create(contents, true, new NullProgressMonitor());
             }
         } finally {
-            IOUtils.closeQuietly(contents);
+            try {
+				contents.close();
+			} catch (IOException e) {
+				// ignore
+			}
         }
 
     }
