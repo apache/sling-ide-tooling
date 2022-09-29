@@ -175,7 +175,7 @@ public class DirWatcher implements AutoCloseable {
         
         @Override
         public String toString() {
-            return getClass().getSimpleName() + "[ kind: " + kind +", path: " + path + ", count: " + count +"]";
+            return getClass().getSimpleName() + " [kind: " + kind +", path: " + path + ", count: " + count +"]";
         }
     }
     
