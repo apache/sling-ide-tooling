@@ -18,7 +18,6 @@ package org.apache.sling.ide.eclipse.ui.internal;
 
 import org.apache.sling.ide.artifacts.EmbeddedArtifactLocator;
 import org.apache.sling.ide.eclipse.core.Preferences;
-import org.apache.sling.ide.eclipse.core.ServiceUtil;
 import org.apache.sling.ide.filter.FilterLocator;
 import org.apache.sling.ide.log.Logger;
 import org.apache.sling.ide.osgi.OsgiClientFactory;
@@ -30,20 +29,11 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.event.EventAdmin;
-import org.osgi.util.tracker.ServiceTracker;
 
 public class Activator extends AbstractUIPlugin {
 
     public static final String PLUGIN_ID = "org.apache.sling.ide.eclipse-core";
     public static Activator INSTANCE;
-
-    private ServiceTracker<SerializationManager, SerializationManager> serializationManager;
-    private ServiceTracker<FilterLocator, FilterLocator> filterLocator;
-    private ServiceTracker<EventAdmin, EventAdmin> eventAdmin;
-    private ServiceTracker<EmbeddedArtifactLocator, EmbeddedArtifactLocator> artifactLocator;
-    private ServiceTracker<OsgiClientFactory, OsgiClientFactory> osgiClientFactory;
-    private ServiceTracker<Logger, Logger> tracer;
-    private ServiceTracker<SyncCommandFactory, SyncCommandFactory> commandFactory;
     
     private ScopedPreferenceStore preferenceStore;
     
@@ -58,73 +48,42 @@ public class Activator extends AbstractUIPlugin {
     public void start(BundleContext context) throws Exception {
         super.start(context);
 
-        serializationManager = new ServiceTracker<>(context, SerializationManager.class, null);
-        serializationManager.open();
-
-        filterLocator = new ServiceTracker<>(context, FilterLocator.class, null);
-        filterLocator.open();
-
-        eventAdmin = new ServiceTracker<>(context, EventAdmin.class, null);
-        eventAdmin.open();
-
-        artifactLocator = new ServiceTracker<>(context,
-                EmbeddedArtifactLocator.class, null);
-        artifactLocator.open();
-
-        osgiClientFactory = new ServiceTracker<>(context, OsgiClientFactory.class,
-                null);
-        osgiClientFactory.open();
-
-        tracer = new ServiceTracker<>(context, Logger.class, null);
-        tracer.open();
-        
-        commandFactory = new ServiceTracker<>(context, SyncCommandFactory.class, null);
-        commandFactory.open();        
-
         INSTANCE = this;
     }
 
     @Override
     public void stop(BundleContext context) throws Exception {
         INSTANCE = null;
-        serializationManager.close();
-        filterLocator.close();
-        eventAdmin.close();
-        artifactLocator.close();
-        osgiClientFactory.close();
-        commandFactory.close();
-        tracer.close();
 
         super.stop(context);
     }
 
     public SerializationManager getSerializationManager() {
-        return ServiceUtil.getNotNull(serializationManager);
+        return org.apache.sling.ide.eclipse.core.internal.Activator.getDefault().getSerializationManager();
     }
 
     public FilterLocator getFilterLocator() {
-        return ServiceUtil.getNotNull(filterLocator);
+        return org.apache.sling.ide.eclipse.core.internal.Activator.getDefault().getFilterLocator();
     }
 
     public EventAdmin getEventAdmin() {
-        return ServiceUtil.getNotNull(eventAdmin);
+        return org.apache.sling.ide.eclipse.core.internal.Activator.getDefault().getEventAdmin();
     }
 
     public EmbeddedArtifactLocator getArtifactLocator() {
-
-        return ServiceUtil.getNotNull(artifactLocator);
+        return org.apache.sling.ide.eclipse.core.internal.Activator.getDefault().getArtifactLocator();
     }
 
     public OsgiClientFactory getOsgiClientFactory() {
-        return ServiceUtil.getNotNull(osgiClientFactory);
+        return org.apache.sling.ide.eclipse.core.internal.Activator.getDefault().getOsgiClientFactory();
     }
 
     public Logger getPluginLogger() {
-        return (Logger) ServiceUtil.getNotNull(tracer);
+        return org.apache.sling.ide.eclipse.core.internal.Activator.getDefault().getPluginLogger();
     }
     
     public SyncCommandFactory getCommandFactory() {
-        return ServiceUtil.getNotNull(commandFactory);
+        return org.apache.sling.ide.eclipse.core.internal.Activator.getDefault().getCommandFactory();
     }
 
     @Override

@@ -17,7 +17,7 @@
     <parent>
         <groupId>org.apache</groupId>
         <artifactId>apache</artifactId>
-        <version>14</version>
+        <version>27</version>
     </parent>
     <groupId>org.apache.sling.ide</groupId>
     <artifactId>sling-ide-tooling-cli</artifactId>

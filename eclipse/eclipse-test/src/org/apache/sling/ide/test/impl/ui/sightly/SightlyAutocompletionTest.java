@@ -35,6 +35,7 @@ import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotEclipseEditor;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotView;
 import org.eclipse.swtbot.swt.finder.junit.SWTBotJunit4ClassRunner;
+import org.eclipse.swtbot.swt.finder.utils.SWTBotPreferences;
 import org.eclipse.swtbot.swt.finder.waits.DefaultCondition;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotTree;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotTreeItem;
@@ -57,6 +58,8 @@ public class SightlyAutocompletionTest {
         if ( bot.activeView().getTitle().equals("Welcome") ) {
             bot.activeView().close();
         }
+        // to prevent issues due to missing keyboard layouts: https://wiki.eclipse.org/SWTBot/Keyboard_Layouts
+        SWTBotPreferences.KEYBOARD_LAYOUT = "EN_US";
     }    
 
     @Test
@@ -149,12 +152,13 @@ public class SightlyAutocompletionTest {
             prepareEditor(editor);
 
             // gather proposals
-            List<String> proposals = editor.getAutoCompleteProposals("");
-            
-            // close editor, otherwise cleanup can hang due to the dialog
-            editor.saveAndClose();
-
-            return proposals;
+            try {
+            	List<String> proposals = editor.getAutoCompleteProposals("");
+            	return proposals;
+            } finally {
+            	// close editor, otherwise cleanup can hang due to the dialog
+                editor.saveAndClose();
+            }
         }
 
         /**

@@ -254,7 +254,7 @@
          unpack="false"/>
 
    <plugin
-         id="org.apache.sling.ide.vlt-wrapper"
+         id="org.apache.sling.ide.filevault.uber-jar"
          download-size="0"
          install-size="0"
          version="0.0.0"
@@ -262,13 +262,6 @@
 
    <plugin
          id="org.apache.commons.io"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.apache.commons.collections"
          download-size="0"
          install-size="0"
          version="0.0.0"

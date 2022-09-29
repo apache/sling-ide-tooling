@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Licensed to the Apache Software Foundation (ASF) under one or more contributor 
+    license agreements. See the NOTICE file distributed with this work for additional 
+    information regarding copyright ownership. The ASF licenses this file to 
+    you under the Apache License, Version 2.0 (the "License"); you may not use 
+    this file except in compliance with the License. You may obtain a copy of 
+    the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required 
+    by applicable law or agreed to in writing, software distributed under the 
+    License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS 
+    OF ANY KIND, either express or implied. See the License for the specific 
+    language governing permissions and limitations under the License. -->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.apache.sling</groupId>
+        <artifactId>sling-bundle-parent</artifactId>
+        <version>49</version>
+        <relativePath />
+    </parent>
+
+    <groupId>org.apache.sling.ide</groupId>
+    <artifactId>sling-ide-shared-parent</artifactId>
+    <packaging>pom</packaging>
+    <version>1.2.3-SNAPSHOT</version>
+
+    <name>Apache Sling IDE - Shared Modules Parent</name>
+
+    <scm>
+        <connection>scm:git:https://gitbox.apache.org/repos/asf/sling-ide-tooling.git</connection>
+        <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/sling-ide-tooling.git</developerConnection>
+        <url>https://gitbox.apache.org/repos/asf?p=sling-ide-tooling.git</url>
+    </scm>
+    
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>biz.aQute.bnd</groupId>
+                    <artifactId>bnd-baseline-maven-plugin</artifactId>
+                    <configuration>
+                        <failOnMissing>false</failOnMissing><!-- no release yet -->
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.rat</groupId>
+                <artifactId>apache-rat-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <exclude>**/MANIFEST.MF</exclude>
+                        <exclude>**/OSGI-INF/*.xml</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencyManagement>
+    	<dependencies>
+    		<!-- START JCR dependencies -->
+		<dependency>
+			<groupId>javax.jcr</groupId>
+			<artifactId>jcr</artifactId>
+			<version>2.0</version>
+			<scope>compile</scope>
+		</dependency>
+		<!-- END JCR dependencies -->
+
+		<!-- START Apache Jackrabbit dependencies -->
+		<dependency>
+			<groupId>org.apache.jackrabbit</groupId>
+			<artifactId>oak-jackrabbit-api</artifactId>
+			<version>${oak.version}</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.jackrabbit</groupId>
+			<artifactId>jackrabbit-webdav</artifactId>
+			<version>${jackrabbit.version}</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.jackrabbit</groupId>
+			<artifactId>jackrabbit-spi-commons</artifactId>
+			<version>${jackrabbit.version}</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.jackrabbit</groupId>
+			<artifactId>jackrabbit-jcr-commons</artifactId>
+			<version>${jackrabbit.version}</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.jackrabbit</groupId>
+			<artifactId>jackrabbit-jcr2spi</artifactId>
+			<version>${jackrabbit.version}</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.jackrabbit</groupId>
+			<artifactId>jackrabbit-jcr-client</artifactId>
+			<version>${jackrabbit.version}</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.jackrabbit</groupId>
+			<artifactId>jackrabbit-spi</artifactId>
+			<version>${jackrabbit.version}</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.jackrabbit</groupId>
+			<artifactId>jackrabbit-spi2dav</artifactId>
+			<version>${jackrabbit.version}</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpclient</artifactId>
+			<version>4.5.8</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpmime</artifactId>
+			<version>4.5.8</version>
+			<scope>compile</scope>
+		</dependency>
+		<!-- END Apache Jackrabbit dependencies -->
+
+		<!-- START Apache Jackrabbit FileVault dependencies -->
+		<dependency>
+			<groupId>org.apache.jackrabbit.vault</groupId>
+			<artifactId>vault-davex</artifactId>
+			<version>${vault.version}</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.jackrabbit.vault</groupId>
+			<artifactId>org.apache.jackrabbit.vault</artifactId>
+			<version>${vault.version}</version>
+			<scope>compile</scope>
+		</dependency>
+		<!-- END Apache Jackrabbit FileVault dependencies -->
+    	</dependencies>
+    </dependencyManagement>
+    
+    <properties>
+		<sling.java.version>8</sling.java.version>
+		<!-- must match the version being referenced in the pom.xml of filevault -->
+		<jackrabbit.version>2.20.6</jackrabbit.version>
+        <oak.version>1.42.0</oak.version>
+		<vault.version>3.6.4</vault.version>
+    </properties>
+</project>

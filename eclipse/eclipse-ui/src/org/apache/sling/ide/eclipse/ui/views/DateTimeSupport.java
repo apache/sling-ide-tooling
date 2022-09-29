@@ -16,12 +16,17 @@
  */
 package org.apache.sling.ide.eclipse.ui.views;
 
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
-import javax.xml.bind.DatatypeConverter;
+import org.apache.jackrabbit.util.ISO8601;
 
+/**
+ * Converts between {@link Calendar} and {@link String} according to 
+ * <a href="https://developer.adobe.com/experience-manager/reference-materials/spec/jcr/2.0/3_Repository_Model.html#3.6.4.3%20From%20DATE%20To">
+ * JCR Spec 2.0, Chapter 3.6.4</a>
+ *
+ */
 public class DateTimeSupport {
 
     public static Date parseAsDate(String vaultDateTime) {
@@ -29,7 +34,7 @@ public class DateTimeSupport {
     }
     
     public static Calendar parseAsCalendar(String vaultDateTime) {
-        final Calendar result = DatatypeConverter.parseDateTime(vaultDateTime);
+        final Calendar result = ISO8601.parse(vaultDateTime);
         return result;
     }
     
@@ -40,12 +45,6 @@ public class DateTimeSupport {
     }
     
     public static String print(Calendar c) {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
-        String result = sdf.format(c.getTime());
-        SimpleDateFormat timezone = new SimpleDateFormat("Z");
-        String timezoneStr = timezone.format(c.getTime());
-        //make it ISO_8601 conform
-        timezoneStr = timezoneStr.substring(0, timezoneStr.length()-2) + ":" + timezoneStr.substring(timezoneStr.length()-2);
-        return result+timezoneStr;
+    	return ISO8601.format(c);
     }
 }

@@ -27,6 +27,7 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.Callable;
 
 import javax.jcr.Node;
@@ -157,7 +158,7 @@ public class ContentDeploymentTest {
         // create filter.xml
         project.createVltFilterWithRoots("/test");
         project.createOrUpdateFile(Path.fromPortableString("jcr_root/test/hello.txt"), new ByteArrayInputStream(
-                "hello, world".getBytes()));
+                "hello, world".getBytes(StandardCharsets.US_ASCII)));
 
         // verifications
         final RepositoryAccessor repo = new RepositoryAccessor(config);
@@ -167,7 +168,7 @@ public class ContentDeploymentTest {
         // change node type to sling:Folder
         InputStream contentXml = getClass().getResourceAsStream("sling-folder-nodetype.xml");
         project.createOrUpdateFile(Path.fromPortableString("jcr_root/test/.content.xml"), contentXml);
-
+     
         // verifications (2)
         assertThatNode(repo, poller, "/test",
                 allOf(hasPath("/test"), hasPrimaryType("sling:Folder"), hasChildrenCount(1)));

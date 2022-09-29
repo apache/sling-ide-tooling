@@ -17,52 +17,25 @@
 package org.apache.sling.ide.test.impl;
 
 import org.apache.sling.ide.artifacts.EmbeddedArtifactLocator;
-import org.apache.sling.ide.eclipse.core.ServiceUtil;
 import org.apache.sling.ide.osgi.OsgiClientFactory;
 import org.apache.sling.ide.serialization.SerializationManager;
 import org.apache.sling.ide.sync.content.SyncCommandFactory;
 import org.eclipse.core.runtime.Plugin;
 import org.osgi.framework.BundleContext;
-import org.osgi.util.tracker.ServiceTracker;
 
 public class Activator extends Plugin {
 
     private static Activator INSTANCE;
 
-    private ServiceTracker<EmbeddedArtifactLocator, EmbeddedArtifactLocator> artifactLocator;
-
-    private ServiceTracker<OsgiClientFactory, OsgiClientFactory> osgiClientFactory;
-
-    private ServiceTracker<SerializationManager, SerializationManager> serializationManager;
-
-    private ServiceTracker <SyncCommandFactory, SyncCommandFactory> commandFactory;
-
     @Override
     public void start(BundleContext context) throws Exception {
         super.start(context);
-
-        artifactLocator = new ServiceTracker<>(context, EmbeddedArtifactLocator.class, null);
-        artifactLocator.open();
-
-        osgiClientFactory = new ServiceTracker<>(context, OsgiClientFactory.class, null);
-        osgiClientFactory.open();
-
-        serializationManager = new ServiceTracker<>(context, SerializationManager.class, null);
-        serializationManager.open();
-        
-        commandFactory = new ServiceTracker<>(context, SyncCommandFactory.class, null);
-        commandFactory.open();
 
         INSTANCE = this;
     }
 
     @Override
     public void stop(BundleContext context) throws Exception {
-
-        artifactLocator.close();
-        osgiClientFactory.close();
-        serializationManager.close();
-        commandFactory.close();
 
         INSTANCE = null;
 
@@ -73,22 +46,21 @@ public class Activator extends Plugin {
         return INSTANCE;
     }
 
-    public EmbeddedArtifactLocator getArtifactLocator() {
 
-        return ServiceUtil.getNotNull(artifactLocator);
+    public SerializationManager getSerializationManager() {
+        return org.apache.sling.ide.eclipse.core.internal.Activator.getDefault().getSerializationManager();
+    }
+
+    public EmbeddedArtifactLocator getArtifactLocator() {
+        return org.apache.sling.ide.eclipse.core.internal.Activator.getDefault().getArtifactLocator();
     }
 
     public OsgiClientFactory getOsgiClientFactory() {
-
-        return ServiceUtil.getNotNull(osgiClientFactory);
+        return org.apache.sling.ide.eclipse.core.internal.Activator.getDefault().getOsgiClientFactory();
     }
-
-    public SerializationManager getSerializationManager() {
-
-        return ServiceUtil.getNotNull(serializationManager);
-    }
-
+    
     public SyncCommandFactory getCommandFactory() {
-        return ServiceUtil.getNotNull(commandFactory);
+        return org.apache.sling.ide.eclipse.core.internal.Activator.getDefault().getCommandFactory();
     }
+
 }

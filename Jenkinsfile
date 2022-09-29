@@ -1,7 +1,7 @@
 import org.apache.sling.jenkins.SlingJenkinsHelper;
 
 def mvnVersion = 'Maven 3.3.9'
-def javaVersion = 'JDK 1.8 (latest)'
+def javaVersion = 'JDK 17 (latest)'
 
 node('ubuntu') {
     def helper = new SlingJenkinsHelper()
@@ -20,19 +20,13 @@ def generateStages(String os, def mvnVersion, def javaVersion) {
         "[$prefix] Build shared code": {
             withMaven(maven: mvnVersion, jdk: javaVersion, options: [artifactsPublisher(disabled: true)]) {
                 timeout(10) {
-                    runCmd "mvn -f shared/modules clean install"
+                    runCmd "mvn -f shared clean install"
                 }
             }
         }, "[$prefix] Build CLI bundles": {
             withMaven(maven: mvnVersion, jdk: javaVersion, options: [artifactsPublisher(disabled: true)]) {
                 timeout(10) {
                     runCmd "mvn -f cli clean install"
-                }
-            }
-        }, "[$prefix] Build shared code P2 repository": {
-            withMaven(maven: mvnVersion, jdk: javaVersion, options: [artifactsPublisher(disabled: true)]) {
-                timeout(10) {
-                    runCmd 'mvn -f shared/p2 clean package'
                 }
             }
         }, "[$prefix] Build Eclipse plug-ins": {

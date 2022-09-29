@@ -11,16 +11,18 @@ documentation page.
 
 ## Repository structure
 
-The modules are split into two sub-trees
+The modules are split into distinct sub-trees
 
 * shared
+* cli
 * eclipse
 
 to ensure that the reusable code is available for usage in other IDEs or
 environments.
 
 The modules placed under `shared/modules` should bring as few external dependencies as
-possible, and must not depend on IDE-specific APIs, such as Eclipse or OSGi.
+possible, and must not depend on IDE-specific APIs, such as Eclipse or OSGi. However,
+all modules come with OSGi bundle headers.
 
 The modules placed under `eclipse` may depend on any Eclipse-specific APIs.
 
@@ -34,7 +36,7 @@ This howto assumes that you are running Eclipse Oxygen or later with the Plug-In
 Development Environment and Maven features installed. You should have
 previously built the projects using
 
-    ./build-eclipse.sh
+    ./build.sh
 
 to ensure that Maven artifacts which are not available on p2 update sites are
 included in the workspace.

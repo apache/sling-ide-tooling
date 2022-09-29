@@ -25,7 +25,7 @@ import java.util.TreeSet;
 
 import org.apache.maven.project.MavenProject;
 import org.apache.sling.ide.eclipse.core.ConfigurationHelper;
-import org.eclipse.aether.util.StringUtils;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
@@ -68,16 +68,17 @@ public class ContentPackageProjectConfigurator extends AbstractProjectConfigurat
     @Override
     public void configure(ProjectConfigurationRequest configRequest, IProgressMonitor progressMonitor) throws CoreException {
 
-        IProject project = configRequest.getProject();
+        IProject project = configRequest.mavenProjectFacade().getProject();
+        IFile pomFile = configRequest.mavenProjectFacade().getPom();
         // delete all previous markers on this pom.xml set by any project configurator
-        deleteMarkers(configRequest.getPom());
+        deleteMarkers(pomFile);
 
         if (!getPreferences().isContentPackageProjectConfiguratorEnabled()) {
             trace("M2E project configurator for packing type 'content-package' was disabled through preference.");
             return;
         }
 
-        MavenProject mavenProject = configRequest.getMavenProject();
+        MavenProject mavenProject = configRequest.mavenProject();
         boolean active = !"false".equalsIgnoreCase(mavenProject.getProperties().getProperty(M2E_ACTIVE));
         if(!active) {
             trace("M2E project configurator for packing type 'content-package' was disabled with Maven property {0}", M2E_ACTIVE);
@@ -92,7 +93,7 @@ public class ContentPackageProjectConfigurator extends AbstractProjectConfigurat
             Optional<java.nio.file.Path> contentSyncPath = MavenProjectUtils.guessJcrRootFolder(mavenProject);
             if (!contentSyncPath.isPresent()) {
                 // add marker
-                addMarker(configRequest.getPom(), "Could not detect jcr_root path for this content package!", IMarker.SEVERITY_ERROR);
+                addMarker(pomFile, "Could not detect jcr_root path for this content package!", IMarker.SEVERITY_ERROR);
                 return;
             }
             
@@ -158,7 +159,7 @@ public class ContentPackageProjectConfigurator extends AbstractProjectConfigurat
         WtpProjectConfigurer(ProjectConfigurationRequest configRequest,
                IProject project, String jcrRootPath) {
 
-            this.configRequest = configRequest;
+           this.configRequest = configRequest;
            this.project = project;
            this.jcrRootPath = jcrRootPath;
        }
@@ -168,24 +169,26 @@ public class ContentPackageProjectConfigurator extends AbstractProjectConfigurat
            
            trace("Configuring content-package with WTP facets/natures");
            
-            addNatures(project, getDefaultWtpNatures(), progressMonitor, configRequest.getPom());
+            addNatures(project, getDefaultWtpNatures(), progressMonitor, configRequest.mavenProjectFacade().getPom());
            addWtpFacets(progressMonitor);
        }
 
        void addWtpFacets( IProgressMonitor progressMonitor) throws CoreException {
-           MavenProject mavenProject = configRequest.getMavenProject();
-           String javaFacetVersion;
-           if ( !StringUtils.isEmpty(mavenProject.getProperties().getProperty(M2E_JAVA_FACET_VERSION))) {
-               javaFacetVersion = mavenProject.getProperties().getProperty(M2E_JAVA_FACET_VERSION);
+           MavenProject mavenProject = configRequest.mavenProject();
+           final String javaFacetVersion;
+           String javaFacetVersionPropertyValue = mavenProject.getProperties().getProperty(M2E_JAVA_FACET_VERSION, "");
+           if (!javaFacetVersionPropertyValue.isBlank()) {
+               javaFacetVersion = javaFacetVersionPropertyValue;
                trace("Configured Java facet version {0} from pom property {1}", javaFacetVersion, M2E_JAVA_FACET_VERSION);
            } else {
                javaFacetVersion = JavaFacetUtil.getCompilerLevel(project);
                trace("Configured Java facet version {0} using JavaFacetUtil", javaFacetVersion);
            }
            
-           String webFacetVersion;
-           if ( !StringUtils.isEmpty(mavenProject.getProperties().getProperty(M2E_WEB_FACET_VERSION))) {
-               webFacetVersion = mavenProject.getProperties().getProperty(M2E_WEB_FACET_VERSION);
+           final String webFacetVersion;
+           String webFacetVersionPropertyValue = mavenProject.getProperties().getProperty(M2E_WEB_FACET_VERSION);
+           if (!webFacetVersionPropertyValue.isBlank()) {
+               webFacetVersion = webFacetVersionPropertyValue;
                trace("Configured Web facet version {0} from pom property {1}", webFacetVersion, M2E_WEB_FACET_VERSION);
            } else {
                webFacetVersion = MavenProjectUtils.guessServletApiVersion(mavenProject);

@@ -34,16 +34,12 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.wizard.WizardPage;
-import org.eclipse.m2e.core.MavenPlugin;
-import org.eclipse.m2e.core.internal.MavenPluginActivator;
-import org.eclipse.m2e.core.internal.archetype.ArchetypeCatalogFactory;
-import org.eclipse.m2e.core.internal.archetype.ArchetypeManager;
-import org.eclipse.m2e.core.internal.index.IndexListener;
-import org.eclipse.m2e.core.repository.IRepository;
+import org.eclipse.m2e.core.ui.internal.M2EUIPluginActivator;
+import org.eclipse.m2e.core.ui.internal.archetype.ArchetypeCatalogFactory;
+import org.eclipse.m2e.core.ui.internal.archetype.ArchetypePlugin;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -61,7 +57,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 
 @SuppressWarnings("restriction")
-public class ChooseArchetypeWizardPage extends WizardPage implements IndexListener {
+public class ChooseArchetypeWizardPage extends WizardPage {
 	
     static final Comparator<String> ARTIFACT_KEY_COMPARATOR = new Comparator<String>() {
         @Override
@@ -209,15 +205,12 @@ public class ChooseArchetypeWizardPage extends WizardPage implements IndexListen
 		
 		setPageComplete(false);
 
-        MavenPlugin.getIndexManager().addIndexListener(this);
-
 		setControl(container);
 	}
 
     @Override
     public void dispose() {
 
-        MavenPlugin.getIndexManager().removeIndexListener(this);
         super.dispose();
     }
 
@@ -297,43 +290,6 @@ public class ChooseArchetypeWizardPage extends WizardPage implements IndexListen
 		}
 	}
 
-    @Override
-    public void indexAdded(IRepository repository) {
-
-    }
-
-    @Override
-    public void indexChanged(IRepository repository) {
-
-        Activator.getDefault().getPluginLogger()
-                .trace("Reloading archetypes as index for repository {0} has changed", repository);
-
-        try {
-            new RefreshArchetypesRunnable().run(new NullProgressMonitor());
-        } catch (final InvocationTargetException e) {
-            Display.getDefault().asyncExec(new Runnable() {
-                @Override
-                public void run() {
-                    if (isCurrentPage()) {
-                        setErrorMessage("Failed refreshing archetypes : " + e.getCause().getMessage());
-                    }
-                }
-            });
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-    }
-
-    @Override
-    public void indexRemoved(IRepository repository) {
-
-    }
-
-    @Override
-    public void indexUpdating(IRepository repository) {
-
-    }
-
     class RefreshArchetypesRunnable implements IRunnableWithProgress {
         @Override
         public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
@@ -341,10 +297,11 @@ public class ChooseArchetypeWizardPage extends WizardPage implements IndexListen
             Logger logger = Activator.getDefault().getPluginLogger();
 
             monitor.beginTask("Discovering archetypes...", 5);
-            ArchetypeManager manager = MavenPluginActivator.getDefault().getArchetypeManager();
+            // rely on internal API, until https://github.com/eclipse-m2e/m2e-core/issues/921 is solved
+        	ArchetypePlugin archetypeManager = M2EUIPluginActivator.getDefault().getArchetypePlugin();
             monitor.worked(1);
 
-            Collection<ArchetypeCatalogFactory> archetypeCatalogs = manager.getArchetypeCatalogs();
+            Collection<ArchetypeCatalogFactory> archetypeCatalogs = archetypeManager.getActiveArchetypeCatalogs();
             monitor.worked(2);
             ArrayList<Archetype> candidates = new ArrayList<>();
             for (ArchetypeCatalogFactory catalogFactory : archetypeCatalogs) {

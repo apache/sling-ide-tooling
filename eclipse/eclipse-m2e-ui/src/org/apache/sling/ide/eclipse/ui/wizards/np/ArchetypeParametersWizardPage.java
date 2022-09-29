@@ -23,7 +23,6 @@ import java.util.StringTokenizer;
 
 import org.apache.maven.archetype.catalog.Archetype;
 import org.apache.maven.archetype.metadata.RequiredProperty;
-import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.jface.dialogs.IDialogPage;
@@ -39,8 +38,9 @@ import org.eclipse.jface.viewers.TableViewerEditor;
 import org.eclipse.jface.viewers.TableViewerFocusCellManager;
 import org.eclipse.jface.viewers.TextCellEditor;
 import org.eclipse.jface.wizard.WizardPage;
-import org.eclipse.m2e.core.internal.MavenPluginActivator;
-import org.eclipse.m2e.core.internal.archetype.ArchetypeManager;
+import org.eclipse.m2e.core.ui.internal.M2EUIPluginActivator;
+import org.eclipse.m2e.core.ui.internal.archetype.ArchetypePlugin;
+import org.eclipse.m2e.core.ui.internal.archetype.MavenArchetype;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
@@ -270,9 +270,10 @@ public class ArchetypeParametersWizardPage extends WizardPage {
 		}
 		
         try {
-        	ArchetypeManager archetypeManager = MavenPluginActivator.getDefault().getArchetypeManager();
-        	ArtifactRepository remoteArchetypeRepository = archetypeManager.getArchetypeRepository(archetype);
-			properties = (List<RequiredProperty>) archetypeManager.getRequiredProperties(archetype, remoteArchetypeRepository, null);
+        	// rely on internal API, until https://github.com/eclipse-m2e/m2e-core/issues/921 is solved
+        	ArchetypePlugin archetypeManager = M2EUIPluginActivator.getDefault().getArchetypePlugin();
+        	MavenArchetype mavenArchetype = new MavenArchetype(archetype);
+			properties = (List<RequiredProperty>) archetypeManager.getRequiredProperties(mavenArchetype, null);
 			
 			Table table = propertiesViewer.getTable();
 			table.setItemCount(properties.size());

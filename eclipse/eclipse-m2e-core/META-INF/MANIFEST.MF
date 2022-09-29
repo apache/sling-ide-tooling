@@ -5,7 +5,7 @@ Bundle-Name: Sling IDE M2E Core
 Bundle-SymbolicName: org.apache.sling.ide.eclipse-m2e-core;singleton:=true
 Bundle-Version: 1.2.3.qualifier
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-ClassPath: .
 Import-Package: org.apache.sling.ide.eclipse.core.launch,
  org.apache.sling.ide.osgi,

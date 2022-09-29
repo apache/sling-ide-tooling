@@ -17,10 +17,8 @@
 package org.apache.sling.ide.eclipse.sightly.internal;
 
 import org.apache.sling.ide.log.Logger;
-import org.apache.sling.ide.eclipse.core.ServiceUtil;
 import org.eclipse.core.runtime.Plugin;
 import org.osgi.framework.BundleContext;
-import org.osgi.util.tracker.ServiceTracker;
 
 public class Activator extends Plugin {
 
@@ -30,13 +28,8 @@ public class Activator extends Plugin {
     // The shared instance
     private static Activator plugin;
 
-    private ServiceTracker<Logger, Logger> loggerTracker;
-
 
     public void start(BundleContext context) throws Exception {
-        
-        loggerTracker = new ServiceTracker<>(context, Logger.class, null);
-        loggerTracker.open();
         
         super.start(context);
         plugin = this;
@@ -49,8 +42,6 @@ public class Activator extends Plugin {
     public void stop(BundleContext context) throws Exception {
 
         plugin = null;
-        
-        loggerTracker.close();
         
         super.stop(context);
     }
@@ -65,8 +56,7 @@ public class Activator extends Plugin {
     }
     
     public Logger getLogger() {
-        
-        return ServiceUtil.getNotNull(loggerTracker);
+        return org.apache.sling.ide.eclipse.core.internal.Activator.getDefault().getPluginLogger();
     }
 }
 

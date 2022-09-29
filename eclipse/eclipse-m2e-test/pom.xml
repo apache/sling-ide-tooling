@@ -54,26 +54,6 @@
                 </archive>
             </configuration>
         </plugin>
-        <plugin>
-            <groupId>org.eclipse.tycho</groupId>
-            <artifactId>target-platform-configuration</artifactId>
-            <configuration>
-                <dependency-resolution>
-                    <extraRequirements>
-                        <requirement>
-                            <type>eclipse-plugin</type>
-                            <id>org.slf4j.binding.simple</id>
-                            <versionRange>0.0.0</versionRange>
-                        </requirement>
-                        <requirement>
-                            <type>eclipse-plugin</type>
-                            <id>org.slf4j.apis.log4j</id>
-                            <versionRange>0.0.0</versionRange>
-                        </requirement>
-                    </extraRequirements>
-                </dependency-resolution>
-            </configuration>
-        </plugin>        
     </plugins>
   </build>  
 </project>
