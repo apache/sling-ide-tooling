@@ -3,31 +3,30 @@ import org.apache.sling.jenkins.SlingJenkinsHelper;
 def mvnVersion = 'maven_3_latest' // https://cwiki.apache.org/confluence/x/cRTiAw
 def javaVersion = 'jdk_17_latest' // https://cwiki.apache.org/confluence/x/kRLiAw
 
-node('ubuntu') {
-    def helper = new SlingJenkinsHelper()
-    def jobConfig = [
-        jdks: [8],
-        upstreamProjects: [],
-        archivePatterns: [],
-        mavenGoal: '',
-        additionalMavenParams: '',
-        rebuildFrequency: '@weekly',
-        enabled: true,
-        emailRecipients: [],
-        sonarQubeEnabled: true,
-        sonarQubeUseAdditionalMavenParams: true,
-        sonarQubeAdditionalParams: ''
-    ]
-    helper.runWithErrorHandling(jobConfig, {
-        parallel 'linux': generateStages('linux', mvnVersion, javaVersion),
-            'windows': generateStages('windows', mvnVersion, javaVersion)
-    })
-}
+def helper = new SlingJenkinsHelper()
+def jobConfig = [
+    jdks: [8],
+    upstreamProjects: [],
+    archivePatterns: [],
+    mavenGoal: '',
+    additionalMavenParams: '',
+    rebuildFrequency: '@weekly',
+    enabled: true,
+    emailRecipients: [],
+    sonarQubeEnabled: true,
+    sonarQubeUseAdditionalMavenParams: true,
+    sonarQubeAdditionalParams: ''
+]
+helper.runWithErrorHandling(jobConfig, {
+    parallel 'linux': generateStages('linux', mvnVersion, javaVersion),
+        'windows': generateStages('windows', mvnVersion, javaVersion)
+})
 
 // generates os-specific stages
 def generateStages(String os, def mvnVersion, def javaVersion) {
     def isWindows = os == "windows"
     def prefix = isWindows ? "win" : "linux"
+    def nodeName = isWindows ? "Windows" : "ubuntu"
 
     def stages = [
         "[$prefix] Build shared code": {
@@ -57,26 +56,14 @@ def generateStages(String os, def mvnVersion, def javaVersion) {
         }
     ]
 
-    // avoid wrapping Linux nodes again in node() context since that seems to make the 
-    // SCM checkout unavailable
-    if ( isWindows ) {
-        return {
-            node("Windows") {
-                checkout scm
-                stages.each { name, body ->
-                    stage(name) {
-                        body.call()
-                    }
-                }
-            }
-        }
-    }
-
     return {
-        stages.each { name, body ->
-            stage(name) {
-                body.call()
-            }
+    	node(nodeName) {
+    		checkout scm
+	        stages.each { name, body ->
+	            stage(name) {
+	                body.call()
+	            }
+	        }
         }
     }
 }
