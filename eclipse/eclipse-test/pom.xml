@@ -137,6 +137,7 @@
     <properties>
         <ui.test.args></ui.test.args>
         <defaultLogLevel>INFO</defaultLogLevel>
+        <startTimeoutSeconds>60</startTimeoutSeconds>
     </properties>
 
     <profiles>
