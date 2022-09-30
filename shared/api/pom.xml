@@ -30,47 +30,146 @@
         <url>https://gitbox.apache.org/repos/asf?p=sling-ide-tooling.git</url>
     </scm>
 
-    <build>
-        <plugins>
+	<build>
+		<plugins>
+			<plugin>
+		        <groupId>org.apache.maven.plugins</groupId>
+		        <artifactId>maven-dependency-plugin</artifactId>
+		        <executions>
+		          <execution>
+		            <id>copy</id>
+		            <phase>process-test-resources</phase>
+		            <goals>
+		              <goal>copy</goal>
+		            </goals>
+		            <configuration>
+		              <outputDirectory>target/test-classes</outputDirectory>
+		              <stripVersion>true</stripVersion>
+		              <artifactItems>
+		                <artifactItem>
+				            <groupId>org.apache.sling</groupId>
+				            <artifactId>org.apache.sling.tooling.support.install</artifactId>
+				            <version>1.0.6</version>
+		                </artifactItem>
+		                <artifactItem>
+		                	<groupId>org.apache.sling</groupId>
+				            <artifactId>org.apache.sling.tooling.support.source</artifactId>
+				            <version>1.0.4</version>
+		                </artifactItem>
+		                <artifactItem>
+		                	<groupId>org.apache.sling</groupId>
+		                	<artifactId>org.apache.sling.commons.messaging</artifactId>
+		                	<version>1.0.2</version>
+		                </artifactItem>
+		              </artifactItems>
+		              <!-- other configurations here -->
+		            </configuration>
+		          </execution>
+		        </executions>
+		      </plugin>
             <plugin>
-                <groupId>biz.aQute.bnd</groupId>
-                <artifactId>bnd-maven-plugin</artifactId>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>reserve-network-port</id>
+                        <goals>
+                            <goal>reserve-network-port</goal>
+                        </goals>
+                        <phase>pre-integration-test</phase>
+                        <configuration>
+                            <portNames>
+                                <portName>http.port</portName>
+                            </portNames>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
-        </plugins>
-    </build>
-
+			<plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <executions>
+                	<execution>
+			            <goals>
+			                <goal>integration-test</goal>
+			                <goal>verify</goal>
+			            </goals>
+			            <configuration>
+			                <systemPropertyVariables>
+			                    <sling.starter.port>${http.port}</sling.starter.port>
+			                </systemPropertyVariables>
+			            </configuration>
+			        </execution>
+                </executions>
+            </plugin>
+            <!-- launch the Sling instances to test; only oak-tar -->
+            <plugin>
+                <groupId>org.apache.sling</groupId>
+                <artifactId>feature-launcher-maven-plugin</artifactId>
+                <version>0.1.2</version>
+                <configuration>
+                    <!-- newer versions don't work due to https://issues.apache.org/jira/browse/SLING-11158 -->
+                    <featureLauncherVersion>1.1.26</featureLauncherVersion>
+                    <launches>
+                        <launch>
+                            <id>sling-starter-oak-tar</id>
+                            <!-- launch the regular Starter distribution (based on Oak with Segment Node Store) -->
+                            <feature>
+                                <groupId>org.apache.sling</groupId>
+                                <artifactId>org.apache.sling.starter</artifactId>
+                                <version>12</version>
+                                <classifier>oak_tar</classifier>
+                                <type>slingosgifeature</type>
+                            </feature>
+                            <launcherArguments>
+                                <frameworkProperties>
+                                    <org.osgi.service.http.port>${http.port}</org.osgi.service.http.port>
+                                </frameworkProperties>
+                            </launcherArguments>
+                            <startTimeoutSeconds>${startTimeoutSeconds}</startTimeoutSeconds>
+                        </launch>
+                    </launches>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>start</goal>
+                            <goal>stop</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+		</plugins>
+	</build>
     <dependencies>
         <dependency>
             <groupId>javax.jcr</groupId>
             <artifactId>jcr</artifactId>
             <scope>provided</scope>
         </dependency>
-        <!-- TODO: update 3rd party dependencies -->
         <dependency>
-            <groupId>commons-httpclient</groupId>
-            <artifactId>commons-httpclient</artifactId>
-            <version>3.0</version>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+		    <groupId>org.apache.httpcomponents</groupId>
+		    <artifactId>httpmime</artifactId>
+		    <scope>provided</scope>
+		</dependency>
+        <!-- gson should be internal -->
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
             <version>2.8.0</version>
             <scope>provided</scope>
         </dependency>
-        <!-- TODO - must be removed, OSGi deps not allowed here -->
         <dependency>
             <groupId>org.osgi</groupId>
-            <artifactId>osgi.core</artifactId>
+            <artifactId>org.osgi.framework</artifactId>
             <scope>provided</scope>
         </dependency>
-        <!-- TODO - must be removed, OSGi deps not allowed here -->
-        <dependency>
-            <groupId>org.osgi</groupId>
-            <artifactId>org.osgi.service.event</artifactId>
-            <scope>provided</scope>
-        </dependency>
-
+        
         <!-- Note that OSGi annotations are OK since they are not retained at compile time -->        
         <dependency>
             <groupId>org.osgi</groupId>
@@ -87,5 +186,23 @@
             <artifactId>org.osgi.service.metatype.annotations</artifactId>
             <scope>provided</scope>
         </dependency>
+        
+        <!-- Test dependencies -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+		  <groupId>commons-io</groupId>
+		  <artifactId>commons-io</artifactId>
+		  <version>2.11.0</version>
+		  <scope>test</scope>
+		</dependency>
     </dependencies>
 </project>

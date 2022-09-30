@@ -17,6 +17,8 @@
 
 package org.apache.sling.ide.osgi;
 
+import java.net.URI;
+
 public class OsgiClientException extends Exception {
 
     private static final long serialVersionUID = 1L;
@@ -37,4 +39,8 @@ public class OsgiClientException extends Exception {
         super(cause);
     }
 
+    public OsgiClientException(URI uri, String method, Throwable cause) {
+        super(cause);
+    }
+    
 }

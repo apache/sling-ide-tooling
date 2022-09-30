@@ -46,7 +46,7 @@ public abstract class AbstractCommand<T> implements Command<T> {
 
     private String createFullPath(String relativePath) {
 
-        return PathUtil.join(repositoryInfo.getUrl(), relativePath);
+        return repositoryInfo.getUrl().resolve(relativePath).toString();
     }
 
     protected Result<T> resultForResponseStatus(int responseStatus) {

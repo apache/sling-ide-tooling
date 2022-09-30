@@ -16,6 +16,7 @@
  */
 package org.apache.sling.ide.jcr;
 
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
@@ -60,7 +61,7 @@ public abstract class RepositoryUtils {
         for (String webDavUrlLocation : WEBDAV_URL_LOCATIONS) {
 
             Session session = null;
-            String url = repositoryInfo.appendPath(webDavUrlLocation);
+            URI url = repositoryInfo.getUrl().resolve(webDavUrlLocation);
             try {
                 RepositoryAddress address = new RepositoryAddress(url);
                 Repository repository;

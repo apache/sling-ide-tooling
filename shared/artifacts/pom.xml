@@ -29,30 +29,7 @@
         <url>https://gitbox.apache.org/repos/asf?p=sling-ide-tooling.git</url>
     </scm>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>biz.aQute.bnd</groupId>
-                <artifactId>bnd-maven-plugin</artifactId>
-            </plugin>
-        </plugins>
-    </build>
-
     <dependencies>
-
-        <!-- TODO - must be removed, OSGi deps not allowed here -->
-        <dependency>
-            <groupId>org.osgi</groupId>
-            <artifactId>osgi.core</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <!-- TODO - must be removed, OSGi deps not allowed here -->
-        <dependency>
-            <groupId>org.osgi</groupId>
-            <artifactId>osgi.cmpn</artifactId>
-            <scope>provided</scope>
-        </dependency>
-
         <!-- Note that OSGi annotations are OK since they are not retained 
             at compile time -->
         <dependency>

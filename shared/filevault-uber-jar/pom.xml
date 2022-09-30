@@ -27,26 +27,6 @@
 		<url>https://gitbox.apache.org/repos/asf?p=sling-ide-tooling.git</url>
 	</scm>
 
-	<build>
-		<pluginManagement>
-			<plugins>
-				<plugin>
-					<groupId>org.codehaus.mojo</groupId>
-	                <artifactId>animal-sniffer-maven-plugin</artifactId>
-	                <configuration>
-	                	<skip>true</skip>
-	                </configuration>
-				</plugin>
-			</plugins>
-		</pluginManagement>
-		<plugins>
-			<plugin>
-				<groupId>biz.aQute.bnd</groupId>
-				<artifactId>bnd-maven-plugin</artifactId>
-			</plugin>
-		</plugins>
-	</build>
-
 	<dependencies>
 		<!-- START JCR dependencies -->
 		<dependency>

@@ -16,9 +16,6 @@
  */
 package org.apache.sling.ide.impl.vlt;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import javax.jcr.Credentials;
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
@@ -27,21 +24,15 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 
 import org.apache.sling.ide.log.Logger;
-import org.apache.sling.ide.transport.CommandExecutionProperties;
 import org.apache.sling.ide.transport.ResourceProxy;
-import org.osgi.service.event.Event;
-import org.osgi.service.event.EventAdmin;
 
 public class ListTreeCommand extends JcrCommand<ResourceProxy> {
 
     private final int levels;
-    private final EventAdmin eventAdmin;
 
-    public ListTreeCommand(Repository repository, Credentials credentials, String path, int levels,
-            EventAdmin eventAdmin, Logger logger) {
+    public ListTreeCommand(Repository repository, Credentials credentials, String path, int levels, Logger logger) {
         super(repository, credentials, path, logger);
         this.levels = Math.max(1,levels);
-        this.eventAdmin = eventAdmin;
     }
 
     @Override
@@ -61,10 +52,7 @@ public class ListTreeCommand extends JcrCommand<ResourceProxy> {
             // paranoia check
             throw new IllegalArgumentException("remainingLevels must be >=0, not: "+remainingLevels);
         }
-        final long start = System.currentTimeMillis();
         NodeIterator nodes = node.getNodes();
-        final long end = System.currentTimeMillis();
-        log("ListTreeCommand.child -> "+node.getPath(), start, end);
         while (nodes.hasNext()) {
             Node childNode = nodes.nextNode();
 
@@ -80,18 +68,6 @@ public class ListTreeCommand extends JcrCommand<ResourceProxy> {
                 addChildren(childResourceProxy, childNode, remainingLevels-1);
             }
         }
-    }
-
-    private void log(String text, long start, long end) {
-        Map<String, Object> props = new HashMap<>();
-        props.put(CommandExecutionProperties.RESULT_TEXT, text);
-        props.put(CommandExecutionProperties.RESULT_STATUS, Boolean.TRUE);
-        props.put(CommandExecutionProperties.ACTION_TYPE, getClass().getSimpleName());
-        props.put(CommandExecutionProperties.ACTION_TARGET, getPath());
-        props.put(CommandExecutionProperties.TIMESTAMP_START, start);
-        props.put(CommandExecutionProperties.TIMESTAMP_END, end);
-        Event event = new Event(CommandExecutionProperties.REPOSITORY_TOPIC, props);
-        eventAdmin.postEvent(event);
     }
 
 }

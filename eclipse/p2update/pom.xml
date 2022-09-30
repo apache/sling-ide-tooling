@@ -59,6 +59,32 @@
             <id>codesign</id>
             <build>
                 <plugins>
+                	<plugin>
+          <groupId>net.jsign</groupId>
+          <artifactId>jsign-maven-plugin</artifactId>
+          <version>4.2</version>
+          <executions>
+            <execution>
+              <goals>
+                <goal>sign</goal>
+              </goals>
+              <configuration>
+                <fileSet>
+                  <directory>target/repository</directory>
+                  <includes>
+                  	<include>**/org.apache.sling.*.jar</include>
+                  </includes>
+                </fileSet>
+                <name>Apache Sling IDE Tooling for Eclipse</name>
+                <url>https://sling.apache.org/documentation/development/ide-tooling.html</url>
+                <alias>Sling-PMC-cert-2022-09_4f01e1ed-9fde-4f84-a5ac-adf82e114a3b</alias>
+                <storepass>${settings.server.digicertoneasf.passphrase}|path</storepass>
+                <storetype>DIGICERTONE</storetype>
+              </configuration>
+            </execution>
+          </executions>
+        </plugin>
+        
                     <!-- 
                     This plugin is not yet released. To use this code signing, install the 
                     pluging locally and then run with the 'codesign' profile. See the Sling IDE

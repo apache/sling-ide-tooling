@@ -16,13 +16,14 @@
  */
 package org.apache.sling.ide.impl.resource.transport;
 
+import org.apache.sling.ide.log.Logger;
 import org.apache.sling.ide.transport.Repository;
 import org.apache.sling.ide.transport.RepositoryException;
 import org.apache.sling.ide.transport.RepositoryFactory;
 import org.apache.sling.ide.transport.RepositoryInfo;
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
-import org.osgi.service.event.EventAdmin;
 
 /**
  * The <tt>RepositoryFactoryImpl</tt> creates <tt>RepositoryImpl</tt> instances
@@ -31,32 +32,29 @@ import org.osgi.service.event.EventAdmin;
 @Component(service = RepositoryFactory.class)
 public class RepositoryFactoryImpl implements RepositoryFactory {
 
-    @Reference
-    private EventAdmin eventAdmin;
-
-    public RepositoryFactoryImpl() {
-    }
+	private final Logger logger;
 
     /**
-     * Constructor to create this instance outside of an OSGi Container
+     * Constructor to create this instance
      *
-     * @param eventAdmin Event Admin for tracing the Repository. If null then there is no tracing.
+     * @param logger the logger
      */
-    public RepositoryFactoryImpl(EventAdmin eventAdmin) {
-        bindEventAdmin(eventAdmin);
+	@Activate
+    public RepositoryFactoryImpl(@Reference Logger logger) {
+        this.logger = logger;
     }
 
     @Override
     public Repository connectRepository(RepositoryInfo repositoryInfo) throws RepositoryException {
         //TODO: currently not doing repository-caching
-        return new RepositoryImpl(repositoryInfo, eventAdmin);
+        return new RepositoryImpl(repositoryInfo, logger);
     }
     
     @Override
     public Repository getRepository(RepositoryInfo repositoryInfo,
             boolean acceptsDisconnectedRepository) throws RepositoryException {
         //TODO: currently not doing repository-caching
-        return new RepositoryImpl(repositoryInfo, eventAdmin);
+        return new RepositoryImpl(repositoryInfo, logger);
     }
     
     @Override
@@ -64,11 +62,4 @@ public class RepositoryFactoryImpl implements RepositoryFactory {
         //TODO: not yet implemented
     }
 
-    protected void bindEventAdmin(EventAdmin eventAdmin) {
-        this.eventAdmin = eventAdmin;
-    }
-
-    protected void unbindEventAdmin(EventAdmin eventAdmin) {
-        this.eventAdmin = null;
-    }
 }

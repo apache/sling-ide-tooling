@@ -28,8 +28,6 @@ import org.apache.sling.ide.transport.NodeTypeRegistry;
 import org.apache.sling.ide.transport.Repository;
 import org.apache.sling.ide.transport.RepositoryInfo;
 import org.apache.sling.ide.transport.ResourceProxy;
-import org.apache.sling.ide.transport.TracingCommand;
-import org.osgi.service.event.EventAdmin;
 
 /**
  * The <tt>VltRepository</tt> is a Repository implementation backed by <tt>FileVault</tt>
@@ -38,7 +36,6 @@ import org.osgi.service.event.EventAdmin;
 public class VltRepository implements Repository {
 
     private final RepositoryInfo repositoryInfo;
-    private EventAdmin eventAdmin;
     private NodeTypeRegistry ntRegistry;
 
     private javax.jcr.Repository jcrRepo;
@@ -46,9 +43,8 @@ public class VltRepository implements Repository {
     private boolean disconnected = false;
     private final Logger logger;
 
-    public VltRepository(RepositoryInfo repositoryInfo, EventAdmin eventAdmin, Logger logger) {
+    public VltRepository(RepositoryInfo repositoryInfo, Logger logger) {
         this.repositoryInfo = repositoryInfo;
-        this.eventAdmin = eventAdmin;
         this.logger = logger;
     }
 
@@ -87,52 +83,36 @@ public class VltRepository implements Repository {
     @Override
     public Command<Void> newAddOrUpdateNodeCommand(CommandContext context, FileInfo fileInfo, ResourceProxy resource,
             CommandExecutionFlag... flags) {
-        return TracingCommand.wrap(new AddOrUpdateNodeCommand(jcrRepo, credentials, context, fileInfo, resource, logger, flags),
-                eventAdmin);
+        return new AddOrUpdateNodeCommand(jcrRepo, credentials, context, fileInfo, resource, logger, flags);
     }
 
     @Override
     public Command<Void> newReorderChildNodesCommand(ResourceProxy resource) {
-        return TracingCommand.wrap(new ReorderChildNodesCommand(jcrRepo, credentials, resource, logger), eventAdmin);
+        return new ReorderChildNodesCommand(jcrRepo, credentials, resource, logger);
     }
 
     @Override
     public Command<Void> newDeleteNodeCommand(String path) {
-        return TracingCommand.wrap(new DeleteNodeCommand(jcrRepo, credentials, path, logger), eventAdmin);
+        return new DeleteNodeCommand(jcrRepo, credentials, path, logger);
     }
 
     @Override
     public Command<ResourceProxy> newListChildrenNodeCommand(String path) {
-
-        return TracingCommand.wrap(new ListChildrenCommand(jcrRepo, credentials, path, logger), eventAdmin);
+        return new ListChildrenCommand(jcrRepo, credentials, path, logger);
     }
 
     @Override
     public Command<ResourceProxy> newGetNodeContentCommand(String path) {
-
-        return TracingCommand.wrap(new GetNodeContentCommand(jcrRepo, credentials, path, logger), eventAdmin);
+        return new GetNodeContentCommand(jcrRepo, credentials, path, logger);
     }
 
     @Override
     public Command<byte[]> newGetNodeCommand(String path) {
-
-        return TracingCommand.wrap(new GetNodeCommand(jcrRepo, credentials, path, logger), eventAdmin);
+    	return new GetNodeCommand(jcrRepo, credentials, path, logger);
     }
 
-    protected void bindEventAdmin(EventAdmin eventAdmin) {
-
-        this.eventAdmin = eventAdmin;
-    }
-
-    protected void unbindEventAdmin(EventAdmin eventAdmin) {
-
-        this.eventAdmin = null;
-    }
-    
     Command<ResourceProxy> newListTreeNodeCommand(String path, int levels) {
-
-        return TracingCommand.wrap(new ListTreeCommand(jcrRepo, credentials, path, levels, eventAdmin, logger),
-                eventAdmin);
+        return new ListTreeCommand(jcrRepo, credentials, path, levels, logger);
     }
     
     @Override

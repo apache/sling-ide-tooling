@@ -36,7 +36,7 @@ import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
-public class AddOrUpdateNodeCommandTest {
+public class AddOrUpdateNodeCommandIT {
 
 	private static final CommandContext DEFAULT_CONTEXT = new CommandContext(new Filter() {
 		@Override

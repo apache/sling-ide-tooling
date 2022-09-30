@@ -17,6 +17,7 @@
 package org.apache.sling.ide.impl.resource.transport;
 
 import org.apache.commons.httpclient.HttpClient;
+import org.apache.sling.ide.log.Logger;
 import org.apache.sling.ide.transport.Command;
 import org.apache.sling.ide.transport.CommandContext;
 import org.apache.sling.ide.transport.FileInfo;
@@ -25,43 +26,36 @@ import org.apache.sling.ide.transport.Repository;
 import org.apache.sling.ide.transport.RepositoryInfo;
 import org.apache.sling.ide.transport.ResourceProxy;
 import org.apache.sling.ide.transport.Result;
-import org.apache.sling.ide.transport.TracingCommand;
-import org.osgi.service.event.EventAdmin;
 
 public class RepositoryImpl implements Repository {
 	
     private final HttpClient httpClient = new HttpClient();
     private final RepositoryInfo repositoryInfo;
-    private final EventAdmin eventAdmin;
+    private final Logger logger;
 
-    public RepositoryImpl(RepositoryInfo repositoryInfo, EventAdmin eventAdmin) {
+    public RepositoryImpl(RepositoryInfo repositoryInfo, Logger logger) {
         this.repositoryInfo = repositoryInfo;
-        this.eventAdmin = eventAdmin;
-    }
-
-    private <T> Command<T> wrap(AbstractCommand<T> command) {
-        return new TracingCommand<>(command, eventAdmin);
+        this.logger = logger;
     }
 
 	@Override
     public Command<Void> newDeleteNodeCommand(final String path) {
-        return wrap(new DeleteNodeCommand(path, repositoryInfo, httpClient));
+        return new DeleteNodeCommand(path, repositoryInfo, httpClient);
 	}
 	
 	@Override
     public Command<ResourceProxy> newListChildrenNodeCommand(final String path) {
-        return wrap(new ListChildrenCommand(repositoryInfo, httpClient, path + ".1.json"));
+        return new ListChildrenCommand(repositoryInfo, httpClient, path + ".1.json");
 	}
 
 	@Override
 	public Command<byte[]> newGetNodeCommand(final String path) {
-		
-        return wrap(new GetNodeCommand(repositoryInfo, httpClient, path));
+        return new GetNodeCommand(repositoryInfo, httpClient, path);
 	}
 	
 	@Override
     public Command<ResourceProxy> newGetNodeContentCommand(final String path) {
-        return wrap(new GetNodeContentCommand(repositoryInfo, httpClient, path + ".json"));
+        return new GetNodeContentCommand(repositoryInfo, httpClient, path + ".json");
 	}
 	
 	@Override
@@ -71,19 +65,19 @@ public class RepositoryImpl implements Repository {
             throw new UnsupportedOperationException("This implementation does not support any flags");
         }
 		
-        return wrap(new UpdateContentCommand(repositoryInfo, httpClient, fileInfo.getRelativeLocation(),
-                resource.getProperties(), fileInfo));
+        return new UpdateContentCommand(repositoryInfo, httpClient, fileInfo.getRelativeLocation(),
+                resource.getProperties(), fileInfo);
 	}
 
     @Override
     public Command<Void> newReorderChildNodesCommand(ResourceProxy resourceProxy) {
-        return wrap(new AbstractCommand<Void>(repositoryInfo, httpClient, resourceProxy.getPath()) {
+        return new AbstractCommand<Void>(repositoryInfo, httpClient, resourceProxy.getPath()) {
             @Override
             public Result<Void> execute() {
                 // TODO - this is a no-op
                 return null;
             }
-        });
+        };
     }
 
     @Override

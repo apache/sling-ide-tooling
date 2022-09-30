@@ -16,43 +16,26 @@
  */
 package org.apache.sling.ide.osgi.impl;
 
+import org.apache.sling.ide.log.Logger;
 import org.apache.sling.ide.osgi.OsgiClient;
 import org.apache.sling.ide.osgi.OsgiClientFactory;
 import org.apache.sling.ide.transport.RepositoryInfo;
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
-import org.osgi.service.event.EventAdmin;
 
 @Component(service = OsgiClientFactory.class)
 public class HttpOsgiClientFactory implements OsgiClientFactory {
 
-    @Reference
-    private EventAdmin eventAdmin;
+	private final Logger logger;
 
-    public HttpOsgiClientFactory() {
+    @Activate
+    public HttpOsgiClientFactory(@Reference Logger logger) {
+    	this.logger = logger;
     }
-
-    /**
-     * Constructor to create this instance outside of an OSGi Container
-     *
-     * @param eventAdmin Event Admin for tracing the OSGi Client. If null then there is no tracing.
-     */
-    public HttpOsgiClientFactory(EventAdmin eventAdmin) {
-        bindEventAdmin(eventAdmin);
-    }
-
+    
     public OsgiClient createOsgiClient(RepositoryInfo repositoryInfo) {
-        if (eventAdmin != null) {
-            return new TracingOsgiClient(new HttpOsgiClient(repositoryInfo), eventAdmin);
-        }
-        return new HttpOsgiClient(repositoryInfo);
+        return new HttpOsgiClient(repositoryInfo, logger);
     }
 
-    protected void bindEventAdmin(EventAdmin eventAdmin) {
-        this.eventAdmin = eventAdmin;
-    }
-
-    protected void unbindEventAdmin(EventAdmin eventAdmin) {
-        this.eventAdmin = null;
-    }
 }

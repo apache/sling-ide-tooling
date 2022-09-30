@@ -20,29 +20,23 @@ import java.net.URL;
 
 import org.apache.sling.ide.artifacts.EmbeddedArtifact;
 import org.apache.sling.ide.artifacts.EmbeddedArtifactLocator;
-import org.osgi.framework.BundleContext;
-import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Component;
 
 @Component(service = EmbeddedArtifactLocator.class)
 public class ArtifactsLocatorImpl implements EmbeddedArtifactLocator {
 
-    private ComponentContext context;
-
-    protected void activate(ComponentContext context) {
-        this.context = context;
-    }
+	public ArtifactsLocatorImpl() {
+		
+	}
 
     @Override
     public EmbeddedArtifact loadToolingSupportBundle() {
-
-        BundleContext bundleContext = context.getBundleContext();
 
         String version = "1.0.6"; // TODO - remove version hardcoding
         String artifactId = "org.apache.sling.tooling.support.install";
         String extension = "jar";
 
-        URL jarUrl = loadResource(bundleContext, artifactId + "-" + version
+        URL jarUrl = loadResource(artifactId + "-" + version
                 + "." + extension);
 
         return new EmbeddedArtifact(artifactId + "-" + version + "." + extension, version, jarUrl);
@@ -51,21 +45,19 @@ public class ArtifactsLocatorImpl implements EmbeddedArtifactLocator {
     @Override
     public EmbeddedArtifact loadSourceSupportBundle() {
         
-        BundleContext bundleContext = context.getBundleContext();
-        
         String version = "1.0.4"; // TODO - remove version hardcoding
         String artifactId = "org.apache.sling.tooling.support.source";
         String extension = "jar";
         
-        URL jarUrl = loadResource(bundleContext, artifactId + "-" + version
+        URL jarUrl = loadResource(artifactId + "-" + version
                 + "." + extension);
         
         return new EmbeddedArtifact(artifactId + "-" + version + "." + extension, version, jarUrl);
     }
 
-    private URL loadResource(BundleContext bundleContext, String resourceLocation) {
+    private URL loadResource(String resourceLocation) {
 
-        URL resourceUrl = bundleContext.getBundle().getResource(resourceLocation);
+        URL resourceUrl = this.getClass().getResource(resourceLocation);
         if (resourceUrl == null) {
             throw new RuntimeException("Unable to locate bundle resource " + resourceLocation);
         }

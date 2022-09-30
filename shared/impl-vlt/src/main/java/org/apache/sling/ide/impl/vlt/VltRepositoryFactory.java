@@ -24,9 +24,9 @@ import org.apache.sling.ide.transport.Repository;
 import org.apache.sling.ide.transport.RepositoryException;
 import org.apache.sling.ide.transport.RepositoryFactory;
 import org.apache.sling.ide.transport.RepositoryInfo;
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
-import org.osgi.service.event.EventAdmin;
 
 /**
  * The <tt>VltRepositoryFactory</tt> instatiantes <tt>VltRepository</tt> instances
@@ -36,25 +36,19 @@ import org.osgi.service.event.EventAdmin;
 @Component(service = RepositoryFactory.class, property="service.ranking:Integer=1000", immediate = true)
 public class VltRepositoryFactory implements RepositoryFactory {
 
-    @Reference
-    private EventAdmin eventAdmin;
-    
-    @Reference
-    private Logger logger;
+    private final Logger logger;
     
     private Map<String,VltRepository> repositoryMap = new HashMap<>();
 
-    public VltRepositoryFactory() {
-    }
+    
 
     /**
-     * Constructor to create this instance outside of an OSGi Container
+     * Constructor to create this instance
      *
-     * @param eventAdmin Event Admin for tracing the OSGi Client. If null then there is no tracing.
      * @param logger Sling IDE Logger which must not be null
      */
-    public VltRepositoryFactory(EventAdmin eventAdmin, Logger logger) {
-        bindEventAdmin(eventAdmin);
+    @Activate
+    public VltRepositoryFactory(@Reference Logger logger) {
         this.logger = logger;
     }
 
@@ -88,7 +82,7 @@ public class VltRepositoryFactory implements RepositoryFactory {
                 return repo;
             }
             
-            repo = new VltRepository(repositoryInfo, eventAdmin, logger);
+            repo = new VltRepository(repositoryInfo, logger);
             repo.connect();
             
             repositoryMap.put(key, repo);
@@ -112,13 +106,5 @@ public class VltRepositoryFactory implements RepositoryFactory {
 
     private String getKey(RepositoryInfo repositoryInfo) {
         return repositoryInfo.getUsername()+":"+repositoryInfo.getPassword()+"@"+repositoryInfo.getUrl();
-    }
-
-    protected void bindEventAdmin(EventAdmin eventAdmin) {
-        this.eventAdmin = eventAdmin;
-    }
-
-    protected void unbindEventAdmin(EventAdmin eventAdmin) {
-        this.eventAdmin = null;
     }
 }

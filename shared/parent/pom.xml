@@ -46,108 +46,83 @@
                 </plugin>
             </plugins>
         </pluginManagement>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.rat</groupId>
-                <artifactId>apache-rat-plugin</artifactId>
-                <configuration>
-                    <excludes>
-                        <exclude>**/MANIFEST.MF</exclude>
-                        <exclude>**/OSGI-INF/*.xml</exclude>
-                    </excludes>
-                </configuration>
-            </plugin>
-        </plugins>
     </build>
 
     <dependencyManagement>
     	<dependencies>
     		<!-- START JCR dependencies -->
-		<dependency>
-			<groupId>javax.jcr</groupId>
-			<artifactId>jcr</artifactId>
-			<version>2.0</version>
-			<scope>compile</scope>
-		</dependency>
-		<!-- END JCR dependencies -->
-
-		<!-- START Apache Jackrabbit dependencies -->
-		<dependency>
-			<groupId>org.apache.jackrabbit</groupId>
-			<artifactId>oak-jackrabbit-api</artifactId>
-			<version>${oak.version}</version>
-			<scope>compile</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.jackrabbit</groupId>
-			<artifactId>jackrabbit-webdav</artifactId>
-			<version>${jackrabbit.version}</version>
-			<scope>compile</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.jackrabbit</groupId>
-			<artifactId>jackrabbit-spi-commons</artifactId>
-			<version>${jackrabbit.version}</version>
-			<scope>compile</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.jackrabbit</groupId>
-			<artifactId>jackrabbit-jcr-commons</artifactId>
-			<version>${jackrabbit.version}</version>
-			<scope>compile</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.jackrabbit</groupId>
-			<artifactId>jackrabbit-jcr2spi</artifactId>
-			<version>${jackrabbit.version}</version>
-			<scope>compile</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.jackrabbit</groupId>
-			<artifactId>jackrabbit-jcr-client</artifactId>
-			<version>${jackrabbit.version}</version>
-			<scope>compile</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.jackrabbit</groupId>
-			<artifactId>jackrabbit-spi</artifactId>
-			<version>${jackrabbit.version}</version>
-			<scope>compile</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.jackrabbit</groupId>
-			<artifactId>jackrabbit-spi2dav</artifactId>
-			<version>${jackrabbit.version}</version>
-			<scope>compile</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.httpcomponents</groupId>
-			<artifactId>httpclient</artifactId>
-			<version>4.5.8</version>
-			<scope>compile</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.httpcomponents</groupId>
-			<artifactId>httpmime</artifactId>
-			<version>4.5.8</version>
-			<scope>compile</scope>
-		</dependency>
-		<!-- END Apache Jackrabbit dependencies -->
-
-		<!-- START Apache Jackrabbit FileVault dependencies -->
-		<dependency>
-			<groupId>org.apache.jackrabbit.vault</groupId>
-			<artifactId>vault-davex</artifactId>
-			<version>${vault.version}</version>
-			<scope>compile</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.jackrabbit.vault</groupId>
-			<artifactId>org.apache.jackrabbit.vault</artifactId>
-			<version>${vault.version}</version>
-			<scope>compile</scope>
-		</dependency>
-		<!-- END Apache Jackrabbit FileVault dependencies -->
+			<dependency>
+				<groupId>javax.jcr</groupId>
+				<artifactId>jcr</artifactId>
+				<version>2.0</version>
+			</dependency>
+			<!-- END JCR dependencies -->
+	
+			<!-- START Apache Jackrabbit dependencies -->
+			<dependency>
+				<groupId>org.apache.jackrabbit</groupId>
+				<artifactId>oak-jackrabbit-api</artifactId>
+				<version>${oak.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.jackrabbit</groupId>
+				<artifactId>jackrabbit-webdav</artifactId>
+				<version>${jackrabbit.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.jackrabbit</groupId>
+				<artifactId>jackrabbit-spi-commons</artifactId>
+				<version>${jackrabbit.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.jackrabbit</groupId>
+				<artifactId>jackrabbit-jcr-commons</artifactId>
+				<version>${jackrabbit.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.jackrabbit</groupId>
+				<artifactId>jackrabbit-jcr2spi</artifactId>
+				<version>${jackrabbit.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.jackrabbit</groupId>
+				<artifactId>jackrabbit-jcr-client</artifactId>
+				<version>${jackrabbit.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.jackrabbit</groupId>
+				<artifactId>jackrabbit-spi</artifactId>
+				<version>${jackrabbit.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.jackrabbit</groupId>
+				<artifactId>jackrabbit-spi2dav</artifactId>
+				<version>${jackrabbit.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.httpcomponents</groupId>
+				<artifactId>httpclient</artifactId>
+				<version>4.5.8</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.httpcomponents</groupId>
+				<artifactId>httpmime</artifactId>
+				<version>4.5.8</version>
+			</dependency>
+			<!-- END Apache Jackrabbit dependencies -->
+	
+			<!-- START Apache Jackrabbit FileVault dependencies -->
+			<dependency>
+				<groupId>org.apache.jackrabbit.vault</groupId>
+				<artifactId>vault-davex</artifactId>
+				<version>${vault.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.jackrabbit.vault</groupId>
+				<artifactId>org.apache.jackrabbit.vault</artifactId>
+				<version>${vault.version}</version>
+			</dependency>
+			<!-- END Apache Jackrabbit FileVault dependencies -->
     	</dependencies>
     </dependencyManagement>
     
@@ -156,7 +131,7 @@
 		<minimalJavaBuildVersion>11</minimalJavaBuildVersion>
 		<!-- must match the version being referenced in the pom.xml of filevault -->
 		<jackrabbit.version>2.20.6</jackrabbit.version>
-        <oak.version>1.42.0</oak.version>
+        <oak.version>1.44.0</oak.version>
 		<vault.version>3.6.4</vault.version>
     </properties>
 </project>

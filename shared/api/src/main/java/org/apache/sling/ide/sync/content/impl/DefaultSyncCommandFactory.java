@@ -47,20 +47,16 @@ import org.apache.sling.ide.transport.RepositoryException;
 import org.apache.sling.ide.transport.ResourceAndInfo;
 import org.apache.sling.ide.transport.ResourceProxy;
 import org.apache.sling.ide.util.PathUtil;
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
 @Component(service = SyncCommandFactory.class)
 public class DefaultSyncCommandFactory implements SyncCommandFactory {
     
-    @Reference
-    private SerializationManager serializationManager;
+    private final SerializationManager serializationManager;
     
-    @Reference
-    private Logger logger;
-
-    public DefaultSyncCommandFactory() {
-    }
+    private final Logger logger;
 
     /**
      * Constructor to create this instance outside of an OSGi Container
@@ -68,7 +64,8 @@ public class DefaultSyncCommandFactory implements SyncCommandFactory {
      * @param serializationManager Serialization Manager to be used which must not be null
      * @param logger Sling IDE Logger which must not be null
      */
-    public DefaultSyncCommandFactory(SerializationManager serializationManager, Logger logger) {
+    @Activate
+    public DefaultSyncCommandFactory(@Reference SerializationManager serializationManager, @Reference Logger logger) {
         this.serializationManager = serializationManager;
         this.logger = logger;
     }

@@ -30,15 +30,6 @@
         <url>https://gitbox.apache.org/repos/asf?p=sling-ide-tooling.git</url>
     </scm>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>biz.aQute.bnd</groupId>
-                <artifactId>bnd-maven-plugin</artifactId>
-            </plugin>
-        </plugins>
-    </build>
-
     <dependencies>
         <dependency>
             <groupId>org.apache.sling.ide</groupId>
@@ -56,12 +47,6 @@
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
             <version>2.8.0</version>
-            <scope>provided</scope>
-        </dependency>
-        <!-- TODO - must be removed, OSGi deps not allowed here -->
-        <dependency>
-            <groupId>org.osgi</groupId>
-            <artifactId>org.osgi.service.event</artifactId>
             <scope>provided</scope>
         </dependency>
 

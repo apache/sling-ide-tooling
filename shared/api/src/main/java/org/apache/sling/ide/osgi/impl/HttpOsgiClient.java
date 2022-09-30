@@ -16,30 +16,40 @@
  */
 package org.apache.sling.ide.osgi.impl;
 
-
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
-import org.apache.commons.httpclient.Credentials;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpException;
-import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.httpclient.UsernamePasswordCredentials;
-import org.apache.commons.httpclient.auth.AuthScope;
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.httpclient.methods.multipart.ByteArrayPartSource;
-import org.apache.commons.httpclient.methods.multipart.FilePart;
-import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
-import org.apache.commons.httpclient.methods.multipart.Part;
-import org.apache.commons.httpclient.methods.multipart.PartSource;
-import org.apache.commons.httpclient.methods.multipart.StringPart;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpHost;
+import org.apache.http.NameValuePair;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.AuthCache;
+import org.apache.http.client.CredentialsProvider;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.protocol.HttpClientContext;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.http.impl.auth.BasicScheme;
+import org.apache.http.impl.client.AbstractResponseHandler;
+import org.apache.http.impl.client.BasicAuthCache;
+import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.impl.client.BasicResponseHandler;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.sling.ide.log.Logger;
 import org.apache.sling.ide.osgi.OsgiClient;
 import org.apache.sling.ide.osgi.OsgiClientException;
 import org.apache.sling.ide.osgi.SourceReference;
@@ -51,361 +61,346 @@ import com.google.gson.JsonParseException;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.stream.JsonReader;
 
-public class HttpOsgiClient implements OsgiClient {
+public class HttpOsgiClient implements OsgiClient, AutoCloseable {
 
-    private static final int DEFAULT_SOCKET_TIMEOUT_SECONDS = 30;
-    private static final int DEFAULT_CONNECT_TIMEOUT_SECONDS = 30;
+	private static final int DEFAULT_SOCKET_TIMEOUT_SECONDS = 30;
+	private static final int DEFAULT_CONNECT_TIMEOUT_SECONDS = 15;
 
-    private RepositoryInfo repositoryInfo;
+	private final RepositoryInfo repositoryInfo;
+	private final AuthCache authCache;
+	private final Logger logger;
+	private final CloseableHttpClient httpClient;
 
-    public HttpOsgiClient(RepositoryInfo repositoryInfo) {
+	public HttpOsgiClient(RepositoryInfo repositoryInfo, Logger logger) {
+		this.repositoryInfo = repositoryInfo;
+		this.logger = logger;
 
-        this.repositoryInfo = repositoryInfo;
-    }
-    
-    private static final class BundleInfo {
-        private String symbolicName;
-        private String version;
-        private long id;
+		HttpHost targetHost = new HttpHost(repositoryInfo.getUrl().getHost(), repositoryInfo.getUrl().getPort(), repositoryInfo.getUrl().getScheme());
+		CredentialsProvider credsProvider = new BasicCredentialsProvider();
+		credsProvider.setCredentials(
+				new AuthScope(targetHost),
+				new UsernamePasswordCredentials(repositoryInfo.getUsername(), repositoryInfo.getPassword()));
+		// Create AuthCache instance
+		authCache = new BasicAuthCache();
+		// Generate BASIC scheme object and add it to the local auth cache
+		BasicScheme basicAuth = new BasicScheme();
+		authCache.put(targetHost, basicAuth);
+		// set timeouts
+		RequestConfig requestConfig = RequestConfig.custom()
+				.setConnectTimeout(DEFAULT_CONNECT_TIMEOUT_SECONDS * 1000) 
+				.setSocketTimeout(DEFAULT_SOCKET_TIMEOUT_SECONDS * 1000).build();
+		httpClient = HttpClients.custom().setDefaultCredentialsProvider(credsProvider)
+				.setDefaultRequestConfig(requestConfig).build();
+		
+	}
 
-        public String getSymbolicName() {
-            return symbolicName;
-        }
+	private static final class BundleInfo {
+		private String symbolicName;
+		private String version;
+		private long id;
 
-        public Version getVersion() {
-            return new Version(version);
-        }
-        
-        public long getId() {
-            return id;
-        }
-    }
-    
-    private static BundleInfo readBundleInfo(String bundleSymbolicName, Reader reader) throws IOException {
-        Gson gson = new Gson();
-        try (JsonReader jsonReader = new JsonReader(reader)) {
-            // wait for 'data' attribute
-            jsonReader.beginObject();
-            while (jsonReader.hasNext()) {
-                String name = jsonReader.nextName();
-                if (name.equals("data")) {
-                    jsonReader.beginArray();
-                    while (jsonReader.hasNext()) {
-                        // read json for individual bundle
-                        BundleInfo bundleInfo = gson.fromJson(jsonReader, BundleInfo.class);
-                        if (bundleSymbolicName.equals(bundleInfo.getSymbolicName())) {
-                            return bundleInfo;
-                        }
-                    }
-                    jsonReader.endArray();
-                } else {
-                    jsonReader.skipValue();
-                }
-            }
-        }
-        return null;
-        
-    }
+		public String getSymbolicName() {
+			return symbolicName;
+		}
 
-    static Version getBundleVersionFromReader(String bundleSymbolicName, Reader reader) throws IOException {
-        BundleInfo bundleInfo = readBundleInfo(bundleSymbolicName, reader);
-        if ( bundleInfo == null ) {
-            return null;
-        }
-        return bundleInfo.getVersion();
-    }
+		public Version getVersion() {
+			return new Version(version);
+		}
 
-    static Long getBundleIdFromReader(String bundleSymbolicName, Reader reader) throws IOException {
-        BundleInfo bundleInfo = readBundleInfo(bundleSymbolicName, reader);
-        if ( bundleInfo == null ) {
-            return null;
-        }
-        return bundleInfo.getId();
-    }
+		public long getId() {
+			return id;
+		}
+	}
 
-    
-    @Override
-    public Version getBundleVersion(String bundleSymbolicName) throws OsgiClientException {
+	private static BundleInfo readBundleInfo(String bundleSymbolicName, Reader reader) throws IOException {
+		Gson gson = new Gson();
+		try (JsonReader jsonReader = new JsonReader(reader)) {
+			// wait for 'data' attribute
+			jsonReader.beginObject();
+			while (jsonReader.hasNext()) {
+				String name = jsonReader.nextName();
+				if (name.equals("data")) {
+					jsonReader.beginArray();
+					while (jsonReader.hasNext()) {
+						// read json for individual bundle
+						BundleInfo bundleInfo = gson.fromJson(jsonReader, BundleInfo.class);
+						if (bundleSymbolicName.equals(bundleInfo.getSymbolicName())) {
+							return bundleInfo;
+						}
+					}
+					jsonReader.endArray();
+				} else {
+					jsonReader.skipValue();
+				}
+			}
+		}
+		return null;
 
-        GetMethod method = new GetMethod(repositoryInfo.appendPath("system/console/bundles.json"));
-        HttpClient client = getHttpClient();
+	}
 
-        try {
-            int result = client.executeMethod(method);
-            if (result != HttpStatus.SC_OK) {
-                throw new HttpException("Got status code " + result + " for call to " + method.getURI());
-            }
+	static Version getBundleVersionFromReader(String bundleSymbolicName, Reader reader) throws IOException {
+		BundleInfo bundleInfo = readBundleInfo(bundleSymbolicName, reader);
+		if (bundleInfo == null) {
+			return null;
+		}
+		return bundleInfo.getVersion();
+	}
 
-            try ( InputStream input = method.getResponseBodyAsStream();
-                  Reader reader = new InputStreamReader(input, StandardCharsets.US_ASCII)) {
-                return getBundleVersionFromReader(bundleSymbolicName, reader);
-            }
-        } catch (IOException e) {
-            throw new OsgiClientException(e);
-        } finally {
-            method.releaseConnection();
-        }
-    }
+	static Long getBundleIdFromReader(String bundleSymbolicName, Reader reader) throws IOException {
+		BundleInfo bundleInfo = readBundleInfo(bundleSymbolicName, reader);
+		if (bundleInfo == null) {
+			return null;
+		}
+		return bundleInfo.getId();
+	}
 
-    private HttpClient getHttpClient() {
+	@Override
+	public Version getBundleVersion(String bundleSymbolicName) throws OsgiClientException {
 
-        HttpClient client = new HttpClient();
-        client.getHttpConnectionManager().getParams().setConnectionTimeout(DEFAULT_CONNECT_TIMEOUT_SECONDS * 1000);
-        client.getHttpConnectionManager().getParams().setSoTimeout(DEFAULT_SOCKET_TIMEOUT_SECONDS * 1000);
-        client.getParams().setAuthenticationPreemptive(true);
-        Credentials defaultcreds = new UsernamePasswordCredentials(repositoryInfo.getUsername(),
-                repositoryInfo.getPassword());
-        client.getState().setCredentials(
-                new AuthScope(repositoryInfo.getHost(), repositoryInfo.getPort(), AuthScope.ANY_REALM), defaultcreds);
-        return client;
-    }
+		HttpGet method = new HttpGet(repositoryInfo.getUrl().resolve("system/console/bundles.json"));
 
-    @Override
-    public void installBundle(InputStream in, String fileName) throws OsgiClientException {
+		try {
+			return httpClient.execute(method, new AbstractResponseHandler<Version>() {
 
-        if (in == null) {
-            throw new IllegalArgumentException("in may not be null");
-        }
+				@Override
+				public Version handleEntity(HttpEntity entity) throws IOException {
+					try (InputStream input = entity.getContent();
+							Reader reader = new InputStreamReader(input, StandardCharsets.US_ASCII)) {
+						return getBundleVersionFromReader(bundleSymbolicName, reader);
+					}
+				}
 
-        if (fileName == null) {
-            throw new IllegalArgumentException("fileName may not be null");
-        }
+			}, createContextForPreemptiveBasicAuth());
 
-        // append pseudo path after root URL to not get redirected for nothing
-        final PostMethod filePost = new PostMethod(repositoryInfo.appendPath("system/console/install"));
+		} catch (IOException e) {
+			throw new OsgiClientException(e);
+		}
+	}
 
-        try {
-            // set referrer
-            filePost.setRequestHeader("referer", "about:blank");
+	public HttpClientContext createContextForPreemptiveBasicAuth() {
+		// Add AuthCache to the execution context
+        HttpClientContext localContext = HttpClientContext.create();
+        localContext.setAuthCache(authCache);
+		return localContext;
+	}
 
-            List<Part> partList = new ArrayList<>();
-            partList.add(new StringPart("action", "install"));
-            partList.add(new StringPart("_noredir_", "_noredir_"));
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            in.transferTo(baos);
-            PartSource partSource = new ByteArrayPartSource(fileName, baos.toByteArray());
-            partList.add(new FilePart("bundlefile", partSource));
-            partList.add(new StringPart("bundlestart", "start"));
+	@Override
+	public void installBundle(InputStream in, String fileName) throws OsgiClientException {
 
-            Part[] parts = partList.toArray(new Part[partList.size()]);
+		if (in == null) {
+			throw new IllegalArgumentException("in may not be null");
+		}
 
-            filePost.setRequestEntity(new MultipartRequestEntity(parts, filePost.getParams()));
+		if (fileName == null) {
+			throw new IllegalArgumentException("fileName may not be null");
+		}
 
-            int status = getHttpClient().executeMethod(filePost);
-            if (status != 200) {
-                throw new OsgiClientException("Method execution returned status " + status);
-            }
-        } catch (IOException e) {
-            throw new OsgiClientException(e);
-        } finally {
-            filePost.releaseConnection();
-        }
-    }
+		// append pseudo path after root URL to not get redirected for nothing
+		final HttpPost filePost = new HttpPost(repositoryInfo.getUrl().resolve("system/console/install"));
 
-    @Override
-    public void uninstallBundle(String bundleSymbolicName) throws OsgiClientException {
-        GetMethod method = new GetMethod(repositoryInfo.appendPath("system/console/bundles.json"));
-        HttpClient client = getHttpClient();
+		try {
+			// set referrer
+			filePost.setHeader("referer", "about:blank");
 
-        try {
-            int result = client.executeMethod(method);
-            if (result != HttpStatus.SC_OK) {
-                throw new HttpException("Got status code " + result + " for call to " + method.getURI());
-            }
+			MultipartEntityBuilder entityBuilder = MultipartEntityBuilder.create();
+			entityBuilder.addTextBody("action", "install");
+			entityBuilder.addTextBody("_noredir_", "_noredir_");
+			entityBuilder.addTextBody("bundlestart", "start");
+			entityBuilder.addBinaryBody("bundlefile", in, ContentType.DEFAULT_BINARY, "bundle.jar");
 
-            try ( InputStream input = method.getResponseBodyAsStream();
-                  Reader reader = new InputStreamReader(input, StandardCharsets.US_ASCII)) {
-                Long bundleId = getBundleIdFromReader(bundleSymbolicName, reader);
-                if ( bundleId == null ) {
-                    return;
-                }
-                PostMethod postMethod = new PostMethod(repositoryInfo.appendPath("system/console/bundles/") + bundleId);
-                postMethod.addParameter("action", "uninstall");
-                
-                result = client.executeMethod(postMethod);
-                if ( result != HttpStatus.SC_OK )
-                    throw new HttpException("Got status code " + result + " for call to " + postMethod.getURI());
-            }
-        } catch (IOException e) {
-            throw new OsgiClientException(e);
-        } finally {
-            method.releaseConnection();
-        }
-    }
-    @Override
-    public void installLocalBundle(final String explodedBundleLocation) throws OsgiClientException {
+			filePost.setEntity(entityBuilder.build());
+			logger.trace("Installing bundle {0} via POST to {1}", fileName, filePost.getURI());
+			httpClient.execute(filePost, new BasicResponseHandler(), createContextForPreemptiveBasicAuth());
+		} catch (IOException e) {
+			throw new OsgiClientException(e);
+		}
+	}
 
-        if (explodedBundleLocation == null) {
-            throw new IllegalArgumentException("explodedBundleLocation may not be null");
-        }
+	@Override
+	public void uninstallBundle(String bundleSymbolicName) throws OsgiClientException {
+		HttpGet method = new HttpGet(repositoryInfo.getUrl().resolve("system/console/bundles.json"));
 
-        new LocalBundleInstaller(getHttpClient(), repositoryInfo) {
+		try {
+			logger.trace("Retrieving bundle id for bsn {0} via GET to {1}", bundleSymbolicName, method.getURI());
+			Long bundleId = httpClient.execute(method, new AbstractResponseHandler<Long>() {
 
-            @Override
-            void configureRequest(PostMethod method) {
-                method.addParameter("dir", explodedBundleLocation);
-            }
-        }.installBundle();
-    }
+				@Override
+				public Long handleEntity(HttpEntity entity) throws IOException {
+					try (Reader reader = new InputStreamReader(entity.getContent(), StandardCharsets.US_ASCII)) {
+						return getBundleIdFromReader(bundleSymbolicName, reader);
+					}
+				}
 
-    @Override
-    public void installLocalBundle(final InputStream jarredBundle, String sourceLocation) throws OsgiClientException {
+			}, createContextForPreemptiveBasicAuth());
 
-        if (jarredBundle == null) {
-            throw new IllegalArgumentException("jarredBundle may not be null");
-        }
-        
-        new LocalBundleInstaller(getHttpClient(), repositoryInfo) {
+			HttpPost postMethod = new HttpPost(repositoryInfo.getUrl().resolve("system/console/bundles/" + bundleId));
+			List<? extends NameValuePair> parameters = Collections
+					.singletonList(new BasicNameValuePair("action", "uninstall"));
+			postMethod.setEntity(new UrlEncodedFormEntity(parameters));
+			logger.trace("Uninstalling bundle via POST to {0}", postMethod.getURI());
+			httpClient.execute(postMethod, new BasicResponseHandler(),
+					createContextForPreemptiveBasicAuth());
 
-            @Override
-            void configureRequest(PostMethod method) throws IOException {
+		} catch (IOException e) {
+			throw new OsgiClientException(e);
+		}
+	}
 
-            	ByteArrayOutputStream out = new ByteArrayOutputStream();
-            	jarredBundle.transferTo(out);
-                Part[] parts = new Part[] { new FilePart("bundle", new ByteArrayPartSource("bundle.jar",
-                        out.toByteArray())) };
-                method.setRequestEntity(new MultipartRequestEntity(parts, method.getParams()));
-            }
-        }.installBundle();        
-    }
-    
-    @Override
-    public List<SourceReference> findSourceReferences() throws OsgiClientException {
-        GetMethod method = new GetMethod(repositoryInfo.appendPath("system/sling/tooling/sourceReferences.json"));
-        HttpClient client = getHttpClient();
+	@Override
+	public void installLocalBundle(final Path explodedBundleLocation) throws OsgiClientException {
 
-        try {
-            int result = client.executeMethod(method);
-            if (result != HttpStatus.SC_OK) {
-                throw new HttpException("Got status code " + result + " for call to " + method.getURI());
-            }
-            return parseSourceReferences(method.getResponseBodyAsStream());
-        } catch (IOException e) {
-            throw new OsgiClientException(e);
-        } finally {
-            method.releaseConnection();
-        }
-    }
+		if (explodedBundleLocation == null) {
+			throw new IllegalArgumentException("explodedBundleLocation may not be null");
+		}
 
-    // visible for testing
-    static List<SourceReference> parseSourceReferences(InputStream response) throws IOException {
+		List<? extends NameValuePair> parameters = Collections
+				.singletonList(new BasicNameValuePair("dir", explodedBundleLocation.toString()));
+		try {
+			installLocalBundle(new UrlEncodedFormEntity(parameters));
+		} catch (UnsupportedEncodingException e) {
+			throw new OsgiClientException(e);
+		}
+	}
 
-        try (JsonReader jsonReader = new JsonReader(
-                new InputStreamReader(response, StandardCharsets.US_ASCII))) {
-            
-            SourceBundleData[] refs = new Gson().fromJson(jsonReader, SourceBundleData[].class);
-            List<SourceReference> res = new ArrayList<>(refs.length);
-            for ( SourceBundleData sourceData : refs ) {
-                for (  SourceReferenceFromJson ref : sourceData.sourceReferences ) {
-                    if ( ref.isMavenType() ) {
-                        res.add(ref.getMavenSourceReference());
-                    }
-                }
-            }
-            
-            return res;
-        }
-    }
+	@Override
+	public void installLocalBundle(final InputStream jarredBundle, String sourceLocation) throws OsgiClientException {
 
-    /**
-     * Encapsulates the JSON response from the tooling.installer
-     */
-    private static final class BundleInstallerResult {
-        private String status; // either OK or FAILURE
-        private String message;
-        
-        public boolean hasMessage() {
-            if (message != null && message.length() > 0) {
-                return true;
-            }
-            return false;
-        }
+		if (jarredBundle == null) {
+			throw new IllegalArgumentException("jarredBundle may not be null");
+		}
 
-        public String getMessage() {
-            return message;
-        }
-        
-        public boolean isSuccessful() {
-            return "OK".equalsIgnoreCase(status);
-        }
-    }
-    
-    private static final class SourceBundleData {
-        
-        @SerializedName("Bundle-SymbolicName")
-        private String bsn;
-        @SerializedName("Bundle-Version")
-        private String version;
-        
-        private List<SourceReferenceFromJson> sourceReferences;
-    }
-    
-    private static final class SourceReferenceFromJson {
-        @SerializedName("__type__")
-        private String type; // should be "maven" 
-        private String groupId;
-        private String artifactId;
-        private String version;
-        
-        public boolean isMavenType() {
-            return "maven".equals(type);
-        }
-        
-        public MavenSourceReferenceImpl getMavenSourceReference() {
-            if (!isMavenType()) {
-                throw new IllegalStateException("The type is not a Maven source reference but a " + type);
-            }
-            return new MavenSourceReferenceImpl(groupId, artifactId, version);
-        }
-    }
-    
-    static abstract class LocalBundleInstaller {
+		MultipartEntityBuilder entityBuilder = MultipartEntityBuilder.create();
+		entityBuilder.addBinaryBody("bundle", jarredBundle, ContentType.DEFAULT_BINARY, "bundle.jar");
+		installLocalBundle(entityBuilder.build());
+	}
 
-        private final HttpClient httpClient;
-        private final RepositoryInfo repositoryInfo;
+	@Override
+	public List<SourceReference> findSourceReferences() throws OsgiClientException {
+		HttpGet method = new HttpGet(repositoryInfo.getUrl().resolve("system/sling/tooling/sourceReferences.json"));
+		logger.trace("Getting source references via GET to {0}", method.getURI());
+		try {
+			return httpClient.execute(method, new AbstractResponseHandler<List<SourceReference>>() {
 
-        public LocalBundleInstaller(HttpClient httpClient, RepositoryInfo repositoryInfo) {
-            this.httpClient = httpClient;
-            this.repositoryInfo = repositoryInfo;
-        }
+				@Override
+				public List<SourceReference> handleEntity(HttpEntity entity) throws IOException {
+					return parseSourceReferences(entity.getContent());
+				}
+				
+			}, createContextForPreemptiveBasicAuth());
+			
+		} catch (IOException e) {
+			throw new OsgiClientException(e);
+		} finally {
+			method.releaseConnection();
+		}
+	}
 
-        void installBundle() throws OsgiClientException {
+	@Override
+	public void close() throws Exception {
+		httpClient.close();
+	}
 
-            PostMethod method = new PostMethod(repositoryInfo.appendPath("system/sling/tooling/install"));
+	// visible for testing
+	static List<SourceReference> parseSourceReferences(InputStream response) throws IOException {
 
-            try {
-                configureRequest(method);
-                Gson gson = new Gson();
-                int status = httpClient.executeMethod(method);
-                
-                try (JsonReader jsonReader = new JsonReader(
-                        new InputStreamReader(method.getResponseBodyAsStream(), StandardCharsets.UTF_8))) {
-                    BundleInstallerResult result = null;
-                    if (status != 200) {
-                        try {
-                            result = gson.fromJson(jsonReader, BundleInstallerResult.class);
-                            if (result.hasMessage()) {
-                                throw new OsgiClientException(result.getMessage());
-                            }
-                        } catch (JsonParseException e) {
-                            // ignore, fallback to status code reporting
-                        }
-                        throw new OsgiClientException("Method execution returned status " + status);
-                    }
-                    result = gson.fromJson(jsonReader, BundleInstallerResult.class);
-                    if (!result.isSuccessful()) {
-                        String errorMessage = !result.hasMessage() ? "Bundle deployment failed, please check the Sling logs"
-                                : result.getMessage();
-                        throw new OsgiClientException(errorMessage);
-                    }
-                }
-            } catch (IOException e) {
-                throw new OsgiClientException(e);
-            } finally {
-                method.releaseConnection();
-            }
-        }
+		try (JsonReader jsonReader = new JsonReader(new InputStreamReader(response, StandardCharsets.US_ASCII))) {
 
-        abstract void configureRequest(PostMethod method) throws IOException;
-    }
+			SourceBundleData[] refs = new Gson().fromJson(jsonReader, SourceBundleData[].class);
+			List<SourceReference> res = new ArrayList<>(refs.length);
+			for (SourceBundleData sourceData : refs) {
+				for (SourceReferenceFromJson ref : sourceData.sourceReferences) {
+					if (ref.isMavenType()) {
+						res.add(ref.getMavenSourceReference());
+					}
+				}
+			}
+
+			return res;
+		}
+	}
+
+	/**
+	 * Encapsulates the JSON response from the tooling.installer
+	 */
+	private static final class BundleInstallerResult {
+		private String status; // either OK or FAILURE
+		private String message;
+
+		public boolean hasMessage() {
+			if (message != null && message.length() > 0) {
+				return true;
+			}
+			return false;
+		}
+
+		public String getMessage() {
+			return message;
+		}
+
+		public boolean isSuccessful() {
+			return "OK".equalsIgnoreCase(status);
+		}
+	}
+
+	private static final class SourceBundleData {
+
+		@SerializedName("Bundle-SymbolicName")
+		private String bsn;
+		@SerializedName("Bundle-Version")
+		private String version;
+
+		private List<SourceReferenceFromJson> sourceReferences;
+	}
+
+	private static final class SourceReferenceFromJson {
+		@SerializedName("__type__")
+		private String type; // should be "maven"
+		private String groupId;
+		private String artifactId;
+		private String version;
+
+		public boolean isMavenType() {
+			return "maven".equals(type);
+		}
+
+		public MavenSourceReferenceImpl getMavenSourceReference() {
+			if (!isMavenType()) {
+				throw new IllegalStateException("The type is not a Maven source reference but a " + type);
+			}
+			return new MavenSourceReferenceImpl(groupId, artifactId, version);
+		}
+	}
+
+	void installLocalBundle(HttpEntity httpEntity) throws OsgiClientException {
+
+		HttpPost method = new HttpPost(repositoryInfo.getUrl().resolve("system/sling/tooling/install"));
+		method.setEntity(httpEntity);
+		try {
+			Gson gson = new Gson();
+			logger.trace("Installing local bundle via GET to {0}", method.getURI());
+			httpClient.execute(method, new AbstractResponseHandler<Void>() {
+
+				@Override
+				public Void handleEntity(HttpEntity entity) throws IOException {
+					try (JsonReader jsonReader = new JsonReader(
+							new InputStreamReader(entity.getContent(), StandardCharsets.UTF_8))) {
+						BundleInstallerResult result = gson.fromJson(jsonReader, BundleInstallerResult.class);
+						if (!result.isSuccessful()) {
+							String errorMessage = !result.hasMessage() ? "Bundle deployment failed, please check the Sling logs"
+									: result.getMessage();
+							throw new IOException(errorMessage);
+						}
+					} catch (JsonParseException e) {
+						throw new IOException("Error parsing JSON response", e);
+					}
+					return null;
+				}
+				
+			}, createContextForPreemptiveBasicAuth());
+
+		} catch (IOException e) {
+			throw new OsgiClientException(e);
+		}
+	}
+
 }

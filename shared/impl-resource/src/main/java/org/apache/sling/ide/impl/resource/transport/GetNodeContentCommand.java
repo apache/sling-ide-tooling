@@ -44,7 +44,7 @@ class GetNodeContentCommand extends AbstractCommand<ResourceProxy> {
     	try{
     		httpClient.getParams().setAuthenticationPreemptive(true);
     	    Credentials defaultcreds = new UsernamePasswordCredentials(repositoryInfo.getUsername(), repositoryInfo.getPassword());
-    	    httpClient.getState().setCredentials(new AuthScope(repositoryInfo.getHost(),repositoryInfo.getPort(), AuthScope.ANY_REALM), defaultcreds); 
+    	    httpClient.getState().setCredentials(new AuthScope(repositoryInfo.getUrl().getHost(),repositoryInfo.getUrl().getPort(), AuthScope.ANY_REALM), defaultcreds); 
     		int responseStatus=httpClient.executeMethod(get);
     		//TODO change responseAsString with something like
     		// return EncodingUtil.getString(rawdata, m.getResponseCharSet());

@@ -17,13 +17,19 @@
 package org.apache.sling.ide.osgi;
 
 import java.io.InputStream;
+import java.nio.file.Path;
 import java.util.List;
 
 import org.osgi.framework.Version;
 
 /**
- * The <tt>OsgiClient</tt> exposes information and actions related to the OSGi subsystem of Sling
- * 
+ * The <tt>OsgiClient</tt> exposes information and actions related to the OSGi subsystem of Sling.
+ * It leverages ReST services exposed from the 
+ * <ol>
+ * <li><a href="https://felix.apache.org/documentation/subprojects/apache-felix-web-console/web-console-restful-api.html">Felix Web Console</a></li>
+ * <li><a href="https://github.com/apache/sling-org-apache-sling-tooling-support-install">Sling Tooling Support Install</a></li>
+ * <li><a href="https://github.com/apache/sling-org-apache-sling-tooling-support-source">Sling Tooling Support Source</a></li>
+ * </ol>
  */
 public interface OsgiClient {
 
@@ -41,7 +47,7 @@ public interface OsgiClient {
      * @param explodedBundleLocation
      * @throws OsgiClientException
      */
-    void installLocalBundle(String explodedBundleLocation) throws OsgiClientException;
+    void installLocalBundle(Path explodedBundleLocation) throws OsgiClientException;
 
     /**
      * Installs a local bundle from an already-built jar file

@@ -32,7 +32,7 @@ import org.apache.sling.ide.transport.ResourceProxy;
 import org.junit.Rule;
 import org.junit.Test;
 
-public class ReorderChildNodesCommandTest {
+public class ReorderChildNodesCommandIT {
 
     private Logger logger = new Slf4jLogger();
 

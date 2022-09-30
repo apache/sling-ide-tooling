@@ -18,15 +18,13 @@ package org.apache.sling.ide.transport;
 
 import java.net.URI;
 
-import org.apache.sling.ide.util.PathUtil;
-
 public class RepositoryInfo {
 	
 	private String username;
 	private String password;
-	private String url;
+	private URI url;
 	
-	public RepositoryInfo(String username, String password, String url) {
+	public RepositoryInfo(String username, String password, URI url) {
 		super();
 		this.username = username;
 		this.password = password;
@@ -44,27 +42,10 @@ public class RepositoryInfo {
 	/**
 	 * Returns the URL for this repository
 	 * 
-	 * <p>If you need to manipulate the URL by appending a path it's recommended to use {@link #appendPath(String)}</p>
-	 * 
 	 * @return the URL for this repository
 	 */
-	public String getUrl() {
+	public URI getUrl() {
 		return url;
-	}
-	
-	public String getHost(){
-		String host=url.substring(7);
-		return host.split(":")[0];
-	}
-	
-	public int getPort(){
-
-        return URI.create(url).getPort();
-	}
-	
-	public String appendPath(String url) {
-	    
-	    return PathUtil.join(this.url, url);
 	}
 
 	@Override
