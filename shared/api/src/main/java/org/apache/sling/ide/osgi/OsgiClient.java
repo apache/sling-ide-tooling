@@ -19,6 +19,7 @@ package org.apache.sling.ide.osgi;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.concurrent.TimeoutException;
 
 import org.osgi.framework.Version;
 
@@ -74,5 +75,18 @@ public interface OsgiClient {
      * @throws OsgiClientException error when trying to uninstall the bundle
      */
     void uninstallBundle(String bundleSymbolicName) throws OsgiClientException;
+
+	/**
+	 * Wait until the component with the given name is registered. This means the component must be either in state "Registered" or "Active".
+	 * The state registered is called "satisfied" in the Felix DS Web Console
+	 * @param componentName the component's name (by default the 
+	 * @param timeout how long to wait for the component to become registered before throwing a {@code TimeoutException} in milliseconds
+	 * @param delay time to wait between checks of the state in milliseconds
+	 * @throws TimeoutException if the component did not become registered before timeout was reached
+	 * @throws InterruptedException if interrupted
+	 * @see "OSGi Comp. R6, §112.5 Component Life Cycle"
+	 */
+	void waitForComponentRegistered(final String componentName, final long timeout, final long delay)
+			throws TimeoutException, InterruptedException;
 
 }

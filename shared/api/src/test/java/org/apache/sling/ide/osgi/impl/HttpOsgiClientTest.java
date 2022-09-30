@@ -18,6 +18,7 @@ package org.apache.sling.ide.osgi.impl;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
@@ -26,9 +27,12 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Objects;
 
 import org.apache.sling.ide.osgi.MavenSourceReference;
 import org.apache.sling.ide.osgi.SourceReference;
+import org.apache.sling.ide.osgi.impl.HttpOsgiClient.ComponentInfo;
+import org.apache.sling.ide.osgi.impl.HttpOsgiClient.ComponentsInfo;
 import org.junit.Assert;
 import org.junit.Test;
 import org.osgi.framework.Version;
@@ -51,22 +55,6 @@ public class HttpOsgiClientTest {
         }
     }
     
-    @Test
-    public void parseSourceReferences() throws IOException {
-        
-        try ( InputStream input = getClass().getClassLoader().getResourceAsStream("sourceReferences.json")) {
-            List<SourceReference> references = HttpOsgiClient.parseSourceReferences(input);
-            assertThat("references.size", references.size(), equalTo(241));
-            
-            SourceReference first = references.get(0);
-            assertThat(first.getType(), equalTo(SourceReference.Type.MAVEN));
-            
-            MavenSourceReference mavenSR = (MavenSourceReference) first;
-            assertThat(mavenSR.getGroupId(), equalTo("org.apache.felix"));
-            assertThat(mavenSR.getArtifactId(), equalTo("org.apache.felix.framework"));
-            assertThat(mavenSR.getVersion(), equalTo("5.6.6"));
-        }
-    }
     
     @Test
     public void testGetBundleIdFromReader() throws IOException {
@@ -82,5 +70,15 @@ public class HttpOsgiClientTest {
             Reader reader = new InputStreamReader(input, StandardCharsets.UTF_8)) {
             assertThat(HttpOsgiClient.getBundleIdFromReader("org.apache.commons.lang4", reader), nullValue());
         }
+    }
+    
+    @Test
+    public void testComponentsInfoJson() throws IOException {
+    	try (InputStream input = Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream("components.json"))) {
+    		ComponentsInfo componentsInfo = HttpOsgiClient.parseJson(ComponentsInfo.class, input);
+    		assertEquals(1, componentsInfo.components.length);
+    		assertEquals(ComponentInfo.Status.ACTIVE, componentsInfo.components[0].status);
+    		assertEquals("org.apache.sling.tooling.support.install.impl.InstallServlet", componentsInfo.components[0].pid);
+    	}
     }
 }

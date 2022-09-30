@@ -30,10 +30,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.TimeoutException;
 import java.util.function.Predicate;
 
 import org.apache.commons.io.file.PathUtils;
 import org.apache.sling.ide.osgi.MavenSourceReference;
+import org.apache.sling.ide.osgi.OsgiClient;
 import org.apache.sling.ide.osgi.OsgiClientException;
 import org.apache.sling.ide.osgi.SourceReference;
 import org.apache.sling.ide.transport.RepositoryInfo;
@@ -46,7 +48,7 @@ import org.osgi.framework.Version;
 
 public class HttpOsgiClientIT {
 
-	private HttpOsgiClient osgiClient;
+	private OsgiClient osgiClient;
 
 	@Rule
 	public TemporaryFolder tmpFolder = new TemporaryFolder();
@@ -65,7 +67,7 @@ public class HttpOsgiClientIT {
     }
 
     @Test
-    public void testInstallBundle() throws IOException, URISyntaxException, OsgiClientException, InterruptedException {
+    public void testInstallBundle() throws IOException, URISyntaxException, OsgiClientException, InterruptedException, TimeoutException {
     	// create an exploded jar folder
     	URI jarUri = new URI("jar:" + this.getClass().getResource("/org.apache.sling.commons.messaging.jar").toString());
     	
@@ -79,8 +81,7 @@ public class HttpOsgiClientIT {
     	try (InputStream input = Objects.requireNonNull(this.getClass().getResourceAsStream("/org.apache.sling.tooling.support.install.jar"))) {
     		osgiClient.installBundle(input, "org.apache.sling.api");
     	}
-    	Thread.sleep(5000);
-    	// TODO: how long to wait until just deployed service is available?
+    	osgiClient.waitForComponentRegistered("org.apache.sling.tooling.support.install.impl.InstallServlet", 20000, 500);
     	try (InputStream input = Objects.requireNonNull(this.getClass().getResourceAsStream("/org.apache.sling.commons.messaging.jar"))) {
     		osgiClient.installLocalBundle(input, "commons-messaging.jar");
     	}
@@ -90,13 +91,12 @@ public class HttpOsgiClientIT {
     }
     
     @Test
-    public void testFindSourceReferences() throws IOException, URISyntaxException, OsgiClientException, InterruptedException {
+    public void testFindSourceReferences() throws IOException, URISyntaxException, OsgiClientException, InterruptedException, TimeoutException {
     	// first install the necessary tooling
     	try (InputStream input = Objects.requireNonNull(this.getClass().getResourceAsStream("/org.apache.sling.tooling.support.source.jar"))) {
     		osgiClient.installBundle(input, "org.apache.sling.api");
     	}
-    	Thread.sleep(5000);
-    	// TODO: how long to wait until just deployed service is available?
+    	osgiClient.waitForComponentRegistered("org.apache.sling.tooling.support.source.impl.SourceReferencesServlet", 20000, 500);
     	List<SourceReference> sourceReferences = osgiClient.findSourceReferences();
     	Optional<SourceReference> source = sourceReferences.stream().filter(new MavenSourceRefenceMatchingPredicate("org.apache.sling", "org.apache.sling.api")).findFirst();
     	assertTrue(source.isPresent());
