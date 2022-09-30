@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.sling.ide.impl.vlt.Slf4jLogger;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Rule;
@@ -40,7 +41,7 @@ public class VltSerializationManagerTest {
 
     @Before
     public void init() {
-        serializationManager = new VltSerializationManager();
+        serializationManager = new VltSerializationManager(new Slf4jLogger(), null);
     }
 
     @Test

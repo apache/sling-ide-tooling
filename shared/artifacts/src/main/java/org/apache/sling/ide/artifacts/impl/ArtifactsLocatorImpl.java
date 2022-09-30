@@ -57,7 +57,7 @@ public class ArtifactsLocatorImpl implements EmbeddedArtifactLocator {
 
     private URL loadResource(String resourceLocation) {
 
-        URL resourceUrl = this.getClass().getResource(resourceLocation);
+        URL resourceUrl = this.getClass().getClassLoader().getResource(resourceLocation);
         if (resourceUrl == null) {
             throw new RuntimeException("Unable to locate bundle resource " + resourceLocation);
         }

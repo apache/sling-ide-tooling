@@ -20,6 +20,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertThrows;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -40,7 +41,7 @@ import org.osgi.framework.Version;
 public class HttpOsgiClientTest {
 
     @Test
-    public void testGetBundleVersionFromReader() throws IOException {
+    public void testGetBundleVersionFromReader_notFound() throws IOException {
         try (InputStream input = getClass().getClassLoader().getResourceAsStream("bundles.json");
              Reader reader = new InputStreamReader(input, StandardCharsets.UTF_8)) {
             assertThat(HttpOsgiClient.getBundleVersionFromReader("org.apache.commons.lang4", reader), nullValue());
@@ -48,7 +49,7 @@ public class HttpOsgiClientTest {
     }
 
     @Test
-    public void testGetBundleVersionFromReader_notFound() throws IOException {
+    public void testGetBundleVersionFromReader() throws IOException {
         try (InputStream input = getClass().getClassLoader().getResourceAsStream("bundles.json");
                 Reader reader = new InputStreamReader(input, StandardCharsets.UTF_8)) {
             Assert.assertEquals(new Version("3.4.0"), HttpOsgiClient.getBundleVersionFromReader("org.apache.commons.lang3", reader));

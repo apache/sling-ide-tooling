@@ -45,6 +45,7 @@ import org.apache.sling.ide.serialization.SerializationException;
 import org.apache.sling.ide.serialization.SerializationKind;
 import org.apache.sling.ide.serialization.SerializationManager;
 import org.apache.sling.ide.transport.ResourceProxy;
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.xml.sax.InputSource;
@@ -54,11 +55,8 @@ public class VltSerializationManager implements SerializationManager {
 
     static final String EXTENSION_XML = ".xml";
 
-    @Reference
-    private Logger logger;
-
-    @Reference
-    private VaultFsLocator fsLocator;
+    private final Logger logger;
+    private final VaultFsLocator fsLocator;
 
     public static void main(String[] args) throws RepositoryException, URISyntaxException, IOException {
         RepositoryAddress address = new RepositoryAddress("http://localhost:8080/server/root");
@@ -86,16 +84,15 @@ public class VltSerializationManager implements SerializationManager {
 
     }
 
-    public VltSerializationManager() {
-    }
-
+  
     /**
-     * Constructor to create this instance outside of an OSGi Container
+     * Constructor to create this instance
      *
      * @param logger Sling IDE Logger which must not be null
      * @param fsLocator Vault File System Locator which must not be null
      */
-    public VltSerializationManager(Logger logger, VaultFsLocator fsLocator) {
+    @Activate
+    public VltSerializationManager(@Reference Logger logger, @Reference VaultFsLocator fsLocator) {
         this.logger = logger;
         this.fsLocator = fsLocator;
     }

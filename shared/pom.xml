@@ -39,7 +39,6 @@
         <module>impl-vlt</module>
         <module>artifacts</module>
         <module>sync-fs</module>
-        <module>filevault-uber-jar</module>
     </modules>
     
     <properties>

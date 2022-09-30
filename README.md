@@ -22,7 +22,7 @@ environments.
 
 The modules placed under `shared/modules` should bring as few external dependencies as
 possible, and must not depend on IDE-specific APIs, such as Eclipse or OSGi. However,
-all modules come with OSGi bundle headers.
+all modules come with OSGi bundle headers and provide even some OSGi DS components.
 
 The modules placed under `eclipse` may depend on any Eclipse-specific APIs.
 

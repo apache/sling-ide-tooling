@@ -24,7 +24,6 @@ import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
@@ -186,62 +185,6 @@ public class HttpOsgiClient implements OsgiClient, AutoCloseable {
         localContext.setAuthCache(authCache);
 		return localContext;
 	}
-
-//	/**
-//     * Wait until the service with the given name is registered. This means the component must be either in state "Registered" or "Active".
-//     * @param type the type of the service (usually the name of a Java interface)
-//     * @param bundleSymbolicName the symbolic name of the bundle supposed to register that service.
-//     * May be {@code null} in which case this method just waits for any service with the requested type being registered (independent of the registering bundle).
-//     * @param timeout how long to wait for the component to become registered before throwing a {@code TimeoutException} in milliseconds
-//     * @param delay time to wait between checks of the state in milliseconds
-//     * @throws TimeoutException if the component did not become registered before timeout was reached
-//     * @throws InterruptedException if interrupted
-//     */
-//    public void waitForServiceRegistered(final String type, final String bundleSymbolicName, final long timeout, final long delay) throws TimeoutException, InterruptedException {
-//        Polling p = new Polling() {
-//            @Override
-//            public Boolean call() throws Exception {
-//                Collection<ServiceInfo> infos = getServiceInfos(type);
-//                if (infos != null) {
-//                    if (bundleSymbolicName != null) {
-//                        for (ServiceInfo info : infos) {
-//                            if (bundleSymbolicName.equals(info.getBundleSymbolicName())) {
-//                                return true;
-//                            }
-//                        }
-//                        LOG.debug("Could not find service info for service type {} provided by bundle {}", type, bundleSymbolicName);
-//                        return false;
-//                    } else {
-//                        return !infos.isEmpty();
-//                    }
-//                } else {
-//                    LOG.debug("Could not find any service info for service type {}", type);
-//                }
-//                return false;
-//            }
-//
-//            @Override
-//            protected String message() {
-//                return "Service with type " + type + " was not registered in %1$d ms";
-//            }
-//        };
-//        p.poll(timeout, delay);
-//    }
-//
-//    
-//    /**
-//     * Returns the service info wrapper for all services implementing the given type.
-//     *
-//     * @param name the type of the service
-//     * @return the service infos or {@code null} if no service for the given type is registered
-//     */
-//    private Collection<ServiceInfo> getServiceInfos(String type) throws ClientException {
-//        SlingHttpResponse resp = this.doGet(URL_SERVICES + ".json");
-//        if (HttpUtils.getHttpStatus(resp) == SC_OK) {
-//            return new ServicesInfo(JsonUtils.getJsonNodeFromString(resp.getContent())).forType(type);
-//        }
-//        return null;
-//    }
     
     @Override
 	public void waitForComponentRegistered(final String componentName, final long timeout, final long delay) throws TimeoutException, InterruptedException {
@@ -273,7 +216,7 @@ public class HttpOsgiClient implements OsgiClient, AutoCloseable {
      * @throws ClientException if the response status does not match any of the expectedStatus
      */
     public ComponentsInfo getComponentsInfo(String id) throws OsgiClientException {
-        return executeJsonGetRequest("system/console/components/" + id + ".json", ComponentsInfo.class);
+        return executeJsonGetRequest("system/console/components/" + id + ".json", ComponentsInfo.class, "get DS component info");
     }
     
     @Override
@@ -304,17 +247,17 @@ public class HttpOsgiClient implements OsgiClient, AutoCloseable {
 			logger.trace("Installing bundle {0} via POST to {1}", fileName, filePost.getURI());
 			httpClient.execute(filePost, new BasicResponseHandler(), createContextForPreemptiveBasicAuth());
 		} catch (IOException e) {
-			throw new OsgiClientException(e);
+			throw new OsgiClientException("Error installing bundle via " + filePost, e);
 		}
 	}
 
 	@Override
-	public void uninstallBundle(String bundleSymbolicName) throws OsgiClientException {
+	public boolean uninstallBundle(String bundleSymbolicName) throws OsgiClientException {
 		HttpGet method = new HttpGet(repositoryInfo.getUrl().resolve("system/console/bundles.json"));
-
+		Long bundleId;
 		try {
-			logger.trace("Retrieving bundle id for bsn {0} via GET to {1}", bundleSymbolicName, method.getURI());
-			Long bundleId = httpClient.execute(method, new AbstractResponseHandler<Long>() {
+			logger.trace("Retrieving bundle id for bsn {0} via {1}", bundleSymbolicName, method);
+			bundleId = httpClient.execute(method, new AbstractResponseHandler<Long>() {
 
 				@Override
 				public Long handleEntity(HttpEntity entity) throws IOException {
@@ -324,18 +267,27 @@ public class HttpOsgiClient implements OsgiClient, AutoCloseable {
 				}
 
 			}, createContextForPreemptiveBasicAuth());
-
-			HttpPost postMethod = new HttpPost(repositoryInfo.getUrl().resolve("system/console/bundles/" + bundleId));
+		} catch (IOException e) {
+			throw new OsgiClientException("Error retrieving bundle id for bundle " + bundleSymbolicName + " via " + method);
+		}
+		// no bundle found with that BSN
+		if (bundleId == null) {
+			logger.trace("No bundle found with bsn {0}, skipping uninstallation", bundleSymbolicName, method);
+			return false;
+		}
+		HttpPost postMethod = new HttpPost(repositoryInfo.getUrl().resolve("system/console/bundles/" + bundleId));
+	    try {
 			List<? extends NameValuePair> parameters = Collections
 					.singletonList(new BasicNameValuePair("action", "uninstall"));
 			postMethod.setEntity(new UrlEncodedFormEntity(parameters));
-			logger.trace("Uninstalling bundle via POST to {0}", postMethod.getURI());
+			logger.trace("Uninstalling bundle via {0}", postMethod);
 			httpClient.execute(postMethod, new BasicResponseHandler(),
 					createContextForPreemptiveBasicAuth());
 
 		} catch (IOException e) {
-			throw new OsgiClientException(e);
+			throw new OsgiClientException("Error uninstalling bundle " + bundleSymbolicName + " via " + postMethod);
 		}
+	    return true;
 	}
 
 	@Override
@@ -350,7 +302,7 @@ public class HttpOsgiClient implements OsgiClient, AutoCloseable {
 		try {
 			installLocalBundle(new UrlEncodedFormEntity(parameters));
 		} catch (UnsupportedEncodingException e) {
-			throw new OsgiClientException(e);
+			throw new OsgiClientException("Cannot install local bundle due to unsupported encoding", e);
 		}
 	}
 
@@ -368,7 +320,7 @@ public class HttpOsgiClient implements OsgiClient, AutoCloseable {
 
 	@Override
 	public List<SourceReference> findSourceReferences() throws OsgiClientException {
-		SourceBundleData[] sourceBundleData = executeJsonGetRequest("system/sling/tooling/sourceReferences.json", SourceBundleData[].class);
+		SourceBundleData[] sourceBundleData = executeJsonGetRequest("system/sling/tooling/sourceReferences.json", SourceBundleData[].class, "find source references");
 		List<SourceReference> res = new ArrayList<>(sourceBundleData.length);
 		for (SourceBundleData sourceData : sourceBundleData) {
 			for (SourceReferenceFromJson ref : sourceData.sourceReferences) {
@@ -493,10 +445,9 @@ public class HttpOsgiClient implements OsgiClient, AutoCloseable {
 	}
 
 	void installLocalBundle(HttpEntity httpEntity) throws OsgiClientException {
-		logger.trace("Installing local bundle...");
 		HttpPost request = new HttpPost(repositoryInfo.getUrl().resolve("system/sling/tooling/install"));
 		request.setEntity(httpEntity);
-		BundleInstallerResult result = executeJsonRequest(request, BundleInstallerResult.class);
+		BundleInstallerResult result = executeJsonRequest(request, BundleInstallerResult.class, "install local bundle");
 		if (!result.isSuccessful()) {
 			String errorMessage = !result.hasMessage() ? "Bundle deployment failed, please check the Sling logs"
 					: result.getMessage();
@@ -504,14 +455,14 @@ public class HttpOsgiClient implements OsgiClient, AutoCloseable {
 		}
 	}
 
-	private <T> T executeJsonGetRequest(String relativePath, Class<T> jsonObjectClass) throws OsgiClientException {
+	private <T> T executeJsonGetRequest(String relativePath, Class<T> jsonObjectClass, String requestLabel) throws OsgiClientException {
 		HttpGet request = new HttpGet(repositoryInfo.getUrl().resolve(relativePath));
-		return executeJsonRequest(request, jsonObjectClass);
+		return executeJsonRequest(request, jsonObjectClass, requestLabel);
 	}
 	
-	private <T> T executeJsonRequest(HttpRequestBase request, Class<T> jsonObjectClass) throws OsgiClientException {
+	private <T> T executeJsonRequest(HttpRequestBase request, Class<T> jsonObjectClass, String requestLabel) throws OsgiClientException {
 		try {
-			logger.trace("Executing {0} to {1}", request.getMethod(), request.getURI());
+			logger.trace("{0} via {1}", requestLabel, request);
 			return httpClient.execute(request, new AbstractResponseHandler<T>() {
 
 				@Override
@@ -522,7 +473,7 @@ public class HttpOsgiClient implements OsgiClient, AutoCloseable {
 			}, createContextForPreemptiveBasicAuth());
 
 		} catch (IOException e) {
-			throw new OsgiClientException(e);
+			throw new OsgiClientException("Cannot " + requestLabel + " via " + request, e);
 		}
 	}
 	

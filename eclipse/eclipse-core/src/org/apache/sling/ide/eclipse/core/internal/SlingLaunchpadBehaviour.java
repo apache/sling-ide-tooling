@@ -356,7 +356,7 @@ public class SlingLaunchpadBehaviour extends ServerBehaviourDelegateWithModulePu
             //TODO SLING-3767:
             //osgiClient must have a timeout!!!
             if ( installLocally ) {
-                osgiClient.installLocalBundle(outputLocation.toOSString());
+                osgiClient.installLocalBundle(outputLocation.toFile().toPath());
                 monitor.worked(3);
             } else {
 

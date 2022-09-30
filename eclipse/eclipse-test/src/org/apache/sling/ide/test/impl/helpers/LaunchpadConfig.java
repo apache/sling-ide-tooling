@@ -54,10 +54,9 @@ public class LaunchpadConfig {
         return "/";
     }
 
-    public String getUrl() {
+    public URI getUrl() {
         try {
-            return new URI(getProtocol(), null, getHostname(), getPort(), getContextPath(), null, null)
-                    .toString();
+            return new URI(getProtocol(), null, getHostname(), getPort(), getContextPath(), null, null);
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }

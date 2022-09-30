@@ -72,9 +72,10 @@ public interface OsgiClient {
      * Uninstalls the bundle with the specified Bundle-SymbolicName, if present
      * 
      * @param bundleSymbolicName The Bundle-SymbolicName
+     * @return true in case a bundle with that BSN was found and uninstalled, false in case the BSN was not found
      * @throws OsgiClientException error when trying to uninstall the bundle
      */
-    void uninstallBundle(String bundleSymbolicName) throws OsgiClientException;
+    boolean uninstallBundle(String bundleSymbolicName) throws OsgiClientException;
 
 	/**
 	 * Wait until the component with the given name is registered. This means the component must be either in state "Registered" or "Active".
