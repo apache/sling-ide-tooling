@@ -16,18 +16,22 @@
  */
 package org.apache.sling.ide.test.impl.helpers;
 
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.http.HttpClient;
+import java.net.http.HttpClient.Version;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.net.http.HttpResponse.BodyHandlers;
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.httpclient.Credentials;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.UsernamePasswordCredentials;
-import org.apache.commons.httpclient.auth.AuthScope;
-import org.apache.commons.httpclient.methods.GetMethod;
 import org.junit.rules.ExternalResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,18 +56,19 @@ public class ExternalSlingLaunchpad extends ExternalResource {
     @Override
     protected void before() throws Throwable {
 
-        Credentials creds = new UsernamePasswordCredentials(config.getUsername(), config.getPassword());
-
-        HttpClient client = new HttpClient();
-        client.getState().setCredentials(new AuthScope(config.getHostname(), config.getPort()), creds);
-        client.getParams().setAuthenticationPreemptive(true);
+    	String authorizationHeaderValue = "Basic " + Base64.getEncoder()
+                .encodeToString((config.getUsername() + ":" + config.getPassword()).getBytes(StandardCharsets.UTF_8));
+        HttpClient client = HttpClient.newBuilder()
+                .version(Version.HTTP_1_1)
+                .connectTimeout(Duration.ofSeconds(10))
+                .build();
 
         long cutoff = System.currentTimeMillis() + MAX_WAIT_TIME_MS;
 
         List<SlingReadyRule> rules = new ArrayList<>();
-        rules.add(new StartLevelSlingReadyRule(client));
-        rules.add(new ActiveBundlesSlingReadyRule(client));
-        rules.add(new RepositoryAvailableReadyRule(client));
+        rules.add(new StartLevelSlingReadyRule(client, authorizationHeaderValue));
+        rules.add(new ActiveBundlesSlingReadyRule(client, authorizationHeaderValue));
+        rules.add(new RepositoryAvailableReadyRule(client, authorizationHeaderValue));
         
         logger.debug("Starting check");
 
@@ -97,24 +102,26 @@ public class ExternalSlingLaunchpad extends ExternalResource {
     private class StartLevelSlingReadyRule implements SlingReadyRule {
 
         private final HttpClient client;
-        private final GetMethod httpMethod;
+        private final HttpRequest request;
 
-        public StartLevelSlingReadyRule(HttpClient client) {
+        public StartLevelSlingReadyRule(HttpClient client, String authorizationHeaderValue) {
             this.client = client;
-            httpMethod = new GetMethod(config.getUrl() + "system/console/vmstat");
+            request = HttpRequest.newBuilder()
+            		.uri(config.getUrl().resolve("system/console/vmstat"))
+            		.header("Authorization", authorizationHeaderValue)
+            		.build();
         }
 
         @Override
         public boolean evaluate() throws Exception {
 
-            int status = client.executeMethod(httpMethod);
-            logger.debug("vmstat http call got return code {}", status);
+            HttpResponse<String> response = client.send(request, BodyHandlers.ofString());
+            logger.debug("vmstat http call got return code {}", response.statusCode());
 
-            if (status == 200) {
+            if (response.statusCode() == 200) {
 
-                String responseBody = httpMethod.getResponseBodyAsString();
 
-                Matcher m = STARTLEVEL_JSON_SNIPPET.matcher(responseBody);
+                Matcher m = STARTLEVEL_JSON_SNIPPET.matcher(response.body());
                 if (m.find()) {
                     int startLevel = Integer.parseInt(m.group(1));
                     logger.debug("vmstat http call got startLevel {}", startLevel);
@@ -131,24 +138,27 @@ public class ExternalSlingLaunchpad extends ExternalResource {
 
     private class ActiveBundlesSlingReadyRule implements SlingReadyRule {
         private final HttpClient client;
-        private final GetMethod httpMethod;
+        private final HttpRequest request;
 
-        public ActiveBundlesSlingReadyRule(HttpClient client) {
+        public ActiveBundlesSlingReadyRule(HttpClient client, String authorizationHeaderValue) {
             this.client = client;
-            httpMethod = new GetMethod(config.getUrl() + "system/console/bundles.json");
+            request = HttpRequest.newBuilder()
+            		.uri(config.getUrl().resolve("system/console/bundles.json"))
+            		.header("Authorization", authorizationHeaderValue)
+            		.build();
         }
 
         @Override
         public boolean evaluate() throws Exception {
-            int status = client.executeMethod(httpMethod);
-            logger.debug("bundles http call got return code {}", status);
+        	HttpResponse<InputStream> response = client.send(request, BodyHandlers.ofInputStream());
+            logger.debug("bundles http call got return code {}", response.statusCode());
             
-            if ( status != 200) {
+            if (response.statusCode() != 200) {
                 return false;
             }
 
             try (JsonReader jsonReader = new JsonReader(
-                    new InputStreamReader(httpMethod.getResponseBodyAsStream(), httpMethod.getResponseCharSet()))) {
+                    new InputStreamReader(response.body(), StandardCharsets.UTF_8))) {
                 jsonReader.beginObject();
                 while (jsonReader.hasNext()) {
                     String name = jsonReader.nextName();
@@ -176,20 +186,25 @@ public class ExternalSlingLaunchpad extends ExternalResource {
     
     private class RepositoryAvailableReadyRule implements SlingReadyRule {
         private final HttpClient client;
+        private final String authorizationHeaderValue;
 
-        public RepositoryAvailableReadyRule(HttpClient client) {
+        public RepositoryAvailableReadyRule(HttpClient client, String authorizationHeaderValue) {
             this.client = client;
+            this.authorizationHeaderValue = authorizationHeaderValue;
         }
         
         @Override
         public boolean evaluate() throws Exception {
             
             for ( String prefix: new String[] { "server", "crx/server"} ) {
-                GetMethod get = new GetMethod(config.getUrl() + prefix + "/default/jcr:root/content");
+            	HttpRequest request = HttpRequest.newBuilder()
+                		.uri(config.getUrl().resolve(prefix+"/default/jcr:root/content"))
+                		.header("Authorization", authorizationHeaderValue)
+                		.build();
                 
-                int status = client.executeMethod(get);
-                logger.debug("repository check call at entry point {}  got status {}", prefix, status);
-                if ( status == 200 ) 
+                HttpResponse<Void> response = client.send(request, BodyHandlers.discarding());
+                logger.debug("repository check call at entry point {}  got status {}", prefix, response.statusCode());
+                if (response.statusCode() == 200 ) 
                     return true;
             }
             

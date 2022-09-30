@@ -334,7 +334,7 @@ public class HttpOsgiClient implements OsgiClient, AutoCloseable {
 	}
 
 	@Override
-	public void close() throws Exception {
+	public void close() throws IOException {
 		httpClient.close();
 	}
 

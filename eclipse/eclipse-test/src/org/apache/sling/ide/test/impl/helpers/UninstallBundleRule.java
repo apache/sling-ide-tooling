@@ -16,6 +16,8 @@
  */
 package org.apache.sling.ide.test.impl.helpers;
 
+import java.io.IOException;
+
 import org.apache.sling.ide.osgi.OsgiClient;
 import org.apache.sling.ide.osgi.OsgiClientException;
 import org.apache.sling.ide.test.impl.Activator;
@@ -39,14 +41,13 @@ public class UninstallBundleRule extends ExternalResource {
     
     @Override
     protected void after() {
-        try {
-            RepositoryInfo repositoryInfo = new RepositoryInfo(config.getUsername(), config.getPassword(), config.getUrl());
-            OsgiClient client = Activator.getDefault().getOsgiClientFactory().createOsgiClient(repositoryInfo);
+    	RepositoryInfo repositoryInfo = new RepositoryInfo(config.getUsername(), config.getPassword(), config.getUrl());
+        try (OsgiClient client = Activator.getDefault().getOsgiClientFactory().createOsgiClient(repositoryInfo)) {
             client.uninstallBundle(bundleSymbolicName);
             new Poller().pollUntilTrue(() -> {
                return client.getBundleVersion(bundleSymbolicName) == null; 
             });
-        } catch (OsgiClientException e) {
+        } catch (OsgiClientException|IOException e) {
             throw new RuntimeException(e);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();

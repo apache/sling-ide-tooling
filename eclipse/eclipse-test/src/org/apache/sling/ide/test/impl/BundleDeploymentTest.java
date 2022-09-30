@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.Callable;
 
-import org.apache.commons.httpclient.HttpException;
 import org.apache.sling.ide.eclipse.core.ISlingLaunchpadServer;
 import org.apache.sling.ide.test.impl.helpers.DefaultJavaVMInstall;
 import org.apache.sling.ide.test.impl.helpers.DisableDebugStatusHandlers;
@@ -132,7 +131,7 @@ public class BundleDeploymentTest {
         Poller poller = new Poller();
         poller.pollUntil(new Callable<Void>() {
             @Override
-            public Void call() throws HttpException, IOException {
+            public Void call() throws IOException, InterruptedException {
                 repo.assertGetIsSuccessful("simple-servlet", "Version 1");
                 return null;
             }
@@ -149,7 +148,7 @@ public class BundleDeploymentTest {
 
         poller.pollUntil(new Callable<Void>() {
             @Override
-            public Void call() throws HttpException, IOException {
+            public Void call() throws InterruptedException, IOException {
                 repo.assertGetIsSuccessful("simple-servlet", "Version 2");
                 return null;
             }

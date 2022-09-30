@@ -33,8 +33,6 @@ import java.util.concurrent.Callable;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 
-import org.apache.commons.httpclient.HttpException;
-import org.apache.commons.httpclient.URIException;
 import org.apache.sling.ide.test.impl.helpers.DisableDebugStatusHandlers;
 import org.apache.sling.ide.test.impl.helpers.ExternalSlingLaunchpad;
 import org.apache.sling.ide.test.impl.helpers.FailOnUnsuccessfulEventsRule;
@@ -80,7 +78,7 @@ public class ContentDeploymentTest {
     public DisableDebugStatusHandlers disableDebugHandlers = new DisableDebugStatusHandlers();
 
     @Test
-    public void deployFile() throws CoreException, InterruptedException, URIException, HttpException, IOException {
+    public void deployFile() throws CoreException, InterruptedException, IOException {
 
         wstServer.waitForServerToStart();
 
@@ -106,7 +104,7 @@ public class ContentDeploymentTest {
         Poller poller = new Poller();
         poller.pollUntil(new Callable<Void>() {
             @Override
-            public Void call() throws HttpException, IOException {
+            public Void call() throws InterruptedException, IOException {
                 repo.assertGetIsSuccessful("test/hello.txt", "hello, world");
                 return null;
             }
@@ -118,7 +116,7 @@ public class ContentDeploymentTest {
         // verify that file is updated
         poller.pollUntil(new Callable<Void>() {
             @Override
-            public Void call() throws HttpException, IOException {
+            public Void call() throws InterruptedException, IOException {
                 repo.assertGetIsSuccessful("test/hello.txt", "goodbye, world");
                 return null;
             }
@@ -130,7 +128,7 @@ public class ContentDeploymentTest {
         // verify that file is deleted
         poller.pollUntil(new Callable<Void>() {
             @Override
-            public Void call() throws HttpException, IOException {
+            public Void call() throws InterruptedException, IOException {
                 repo.assertGetReturns404("test/hello.txt");
                 return null;
             }

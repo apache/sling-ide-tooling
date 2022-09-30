@@ -16,6 +16,7 @@
  */
 package org.apache.sling.ide.osgi;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.List;
@@ -32,7 +33,7 @@ import org.osgi.framework.Version;
  * <li><a href="https://github.com/apache/sling-org-apache-sling-tooling-support-source">Sling Tooling Support Source</a></li>
  * </ol>
  */
-public interface OsgiClient {
+public interface OsgiClient extends AutoCloseable {
 
     Version getBundleVersion(String bundleSymbolicName) throws OsgiClientException;
 
@@ -90,4 +91,5 @@ public interface OsgiClient {
 	void waitForComponentRegistered(final String componentName, final long timeout, final long delay)
 			throws TimeoutException, InterruptedException;
 
+	void close() throws IOException;
 }

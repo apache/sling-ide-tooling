@@ -40,6 +40,7 @@ import org.apache.sling.ide.osgi.OsgiClientException;
 import org.apache.sling.ide.osgi.SourceReference;
 import org.apache.sling.ide.transport.RepositoryInfo;
 import org.apache.sling.ide.util.Slf4jLogger;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -59,6 +60,11 @@ public class HttpOsgiClientIT {
     	URI url = new URI("http", null, "localhost", port, "/", null, null);
     	RepositoryInfo repoInfo = new RepositoryInfo("admin", "admin", url);
         osgiClient = new HttpOsgiClient(repoInfo, new Slf4jLogger());
+	}
+	
+	@After
+	public void tearDown() throws Exception {
+		osgiClient.close();
 	}
 	
     @Test
