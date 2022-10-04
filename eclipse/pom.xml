@@ -51,6 +51,15 @@
         <module>p2update</module>
     </modules>
 
+	<repositories>
+		<!-- don't use apache.snapsthots repo for resolving version ranges, compare with https://github.com/eclipse-tycho/tycho/issues/1464 -->
+		<repository>
+      		<snapshots>
+      			<enabled>false</enabled>
+      		</snapshots>
+      		<id>apache.snapshots</id>
+    	</repository>
+	</repositories>
     <build>
         <plugins>
             <plugin>
