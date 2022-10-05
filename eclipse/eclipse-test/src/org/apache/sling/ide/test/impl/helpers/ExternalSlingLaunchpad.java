@@ -79,7 +79,7 @@ public class ExternalSlingLaunchpad extends ExternalResource {
                     logger.debug("Rule {} succeeded.", rule);
                     break;
                 }
-                assertTimeout(cutoff);
+                assertTimeout(cutoff, rule);
                 Thread.sleep(100);
             }
         }
@@ -87,10 +87,10 @@ public class ExternalSlingLaunchpad extends ExternalResource {
         logger.debug("Checks complete");
     }
 
-    private void assertTimeout(long cutoff) throws AssertionFailedError {
+    private void assertTimeout(long cutoff, SlingReadyRule rule) throws AssertionFailedError {
         logger.debug("Checking for timeout, current {}, cutoff {}", System.currentTimeMillis(), cutoff);
         if (System.currentTimeMillis() > cutoff) {
-            throw new AssertionFailedError("Sling launchpad did not start within " + MAX_WAIT_TIME_MS + " milliseconds");
+            throw new AssertionFailedError("Sling launchpad did not fulfill rule " + rule.getClass().getName() + " within " + MAX_WAIT_TIME_MS + " milliseconds" );
         }
     }
 
