@@ -43,7 +43,7 @@ def generateStages(String os, def mvnVersion, def javaVersion) {
             }
         }, "[$prefix] Build Eclipse plug-ins": {
             // use a local repository due to using version ranges, otherwise resolving metadata might fail as the global repo seems to have invalid metadata
-            withMaven(maven: mvnVersion, jdk: javaVersion, mavenLocalRepo: .repository, options: [artifactsPublisher(disabled: true)]) {
+            withMaven(maven: mvnVersion, jdk: javaVersion, mavenLocalRepo: '.repository', options: [artifactsPublisher(disabled: true)]) {
                 timeout(20) {
                     // workaround for https://issues.jenkins-ci.org/browse/JENKINS-39415
                     wrap([$class: 'Xvfb', autoDisplayName: true]) {
