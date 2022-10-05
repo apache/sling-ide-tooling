@@ -52,13 +52,20 @@
     </modules>
 
 	<repositories>
-		<!-- don't use apache.snapsthots repo for resolving version ranges, compare with https://github.com/eclipse-tycho/tycho/issues/1464 -->
+		<!-- don't use apache.snapsthots repo for resolving version ranges, compare with https://github.com/eclipse-tycho/tycho/issues/1464
+			 duplicate elements from parent pom due to https://issues.apache.org/jira/browse/MNGSITE-495
+		 -->
 		<repository>
-      		<snapshots>
-      			<enabled>false</enabled>
-      		</snapshots>
-      		<id>apache.snapshots</id>
-    	</repository>
+	      <id>apache.snapshots</id>
+	      <name>Apache Snapshot Repository</name>
+	      <url>https://repository.apache.org/snapshots</url>
+	      <releases>
+	        <enabled>false</enabled>
+	      </releases>
+	      <snapshots>
+	      	<enabled>false</enabled>
+	      </snapshots>
+	    </repository>
 	</repositories>
     <build>
         <plugins>
@@ -144,6 +151,15 @@
         </plugins>
         <pluginManagement>
             <plugins>
+	        	<plugin>
+					<groupId>org.eclipse.tycho</groupId>
+					<artifactId>tycho-ds-plugin</artifactId>
+					<version>${tycho.version}</version>
+					<configuration>
+						<dsVersion>1.4</dsVersion>
+						<enabled>true</enabled><!-- always generate DS component descriptors even if not enabled in PDE settings -->
+					</configuration>
+				</plugin>
                 <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself. -->
                 <!--
                     We embed some bundles that are not available on p2 update sites. To make the build seamless, we copy them early in the process.
