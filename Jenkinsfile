@@ -29,20 +29,21 @@ def generateStages(String os, def mvnVersion, def javaVersion) {
     def nodeName = isWindows ? "Windows" : "ubuntu"
 
     def stages = [
+        // use a local repository due to using version ranges in Tycho (https://github.com/eclipse-tycho/tycho/issues/1464)
+        // otherwise resolving metadata might fail as the global repo seems to have invalid metadata
         "[$prefix] Build shared code": {
-            withMaven(maven: mvnVersion, jdk: javaVersion, options: [artifactsPublisher(disabled: true)]) {
+            withMaven(maven: mvnVersion, jdk: javaVersion, mavenLocalRepo: '.repository', options: [artifactsPublisher(disabled: true)]) {
                 timeout(10) {
                     runCmd "mvn -f shared clean install"
                 }
             }
         }, "[$prefix] Build CLI bundles": {
-            withMaven(maven: mvnVersion, jdk: javaVersion, options: [artifactsPublisher(disabled: true)]) {
+            withMaven(maven: mvnVersion, jdk: javaVersion, mavenLocalRepo: '.repository', options: [artifactsPublisher(disabled: true)]) {
                 timeout(10) {
                     runCmd "mvn -f cli clean install"
                 }
             }
         }, "[$prefix] Build Eclipse plug-ins": {
-            // use a local repository due to using version ranges, otherwise resolving metadata might fail as the global repo seems to have invalid metadata
             withMaven(maven: mvnVersion, jdk: javaVersion, mavenLocalRepo: '.repository', options: [artifactsPublisher(disabled: true)]) {
                 timeout(20) {
                     // workaround for https://issues.jenkins-ci.org/browse/JENKINS-39415
