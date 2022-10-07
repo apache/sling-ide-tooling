@@ -16,9 +16,6 @@
  */
 package org.apache.sling.ide.eclipse.core.internal;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 
 import org.apache.sling.ide.artifacts.EmbeddedArtifactLocator;
@@ -31,14 +28,10 @@ import org.apache.sling.ide.osgi.OsgiClientFactory;
 import org.apache.sling.ide.serialization.SerializationManager;
 import org.apache.sling.ide.sync.content.SyncCommandFactory;
 import org.apache.sling.ide.transport.BatcherFactory;
-import org.apache.sling.ide.transport.CommandExecutionProperties;
 import org.apache.sling.ide.transport.RepositoryFactory;
 import org.eclipse.core.runtime.Plugin;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
-import org.osgi.service.event.Event;
-import org.osgi.service.event.EventAdmin;
-import org.osgi.util.tracker.ServiceTracker;
 
 /**
  * The activator class controls the plug-in life cycle
@@ -56,7 +49,6 @@ public class Activator extends Plugin {
 	// The shared instance
 	private static Activator plugin;
 
-    private ServiceTracker<EventAdmin, EventAdmin> eventAdmin;
     private ExtendedServiceTracker<RepositoryFactory> repositoryFactory;
     private ExtendedServiceTracker<SerializationManager> serializationManager;
     private ExtendedServiceTracker<FilterLocator> filterLocator;
@@ -84,9 +76,6 @@ public class Activator extends Plugin {
 		getFirstBundle(context, BSN_VAULT_IMPL).start();
 		getFirstBundle(context, BSN_ARTIFACTS).start();
 		
-        eventAdmin = new ServiceTracker<>(context, EventAdmin.class, null);
-        eventAdmin.open(true);
-
         repositoryFactory = new ExtendedServiceTracker<>(context, RepositoryFactory.class);
         serializationManager = new ExtendedServiceTracker<>(context, SerializationManager.class);
         filterLocator = new ExtendedServiceTracker<>(context, FilterLocator.class);
@@ -167,25 +156,6 @@ public class Activator extends Plugin {
     
     public SyncCommandFactory getCommandFactory() {
         return commandFactory.getNotNull();
-    }
-    
-    /**
-     * @deprecated This should not be used directly to communicate with the client . There is no direct replacement
-     */
-    @Deprecated
-    public void issueConsoleLog(String actionType, String path, String message) {
-        Map<String, Object> props = new HashMap<>();
-        props.put(CommandExecutionProperties.RESULT_TEXT, message);
-        props.put(CommandExecutionProperties.ACTION_TYPE, actionType);
-        props.put(CommandExecutionProperties.ACTION_TARGET, path);
-        props.put(CommandExecutionProperties.TIMESTAMP_START, System.currentTimeMillis());
-        props.put(CommandExecutionProperties.TIMESTAMP_END, System.currentTimeMillis());
-        Event event = new Event(CommandExecutionProperties.REPOSITORY_TOPIC, props);
-        getEventAdmin().postEvent(event);
-    }
-    
-    public EventAdmin getEventAdmin() {
-        return Objects.requireNonNull(eventAdmin.getService(), "No OSGi EventAdmin service registered in the system");
     }
     
     /**

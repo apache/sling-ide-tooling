@@ -61,3 +61,6 @@ the target platform is set up, you can create a new launch configuration.
 Now you can use the 'Sling IDE Tooling' launch configuration which is present 
 in the org.apache.sling.ide.target-definition project to launch a local instance
 of Eclipse with Sling IDE Tooling plug-ins picked up from the local workspace.
+
+Due to the unclear future of https://github.com/tesla/m2eclipse-tycho (compare with https://github.com/eclipse-m2e/m2e-core/issues/605)
+for the time being the pom.xml configuration is duplicated in the project settings (which is checked in)

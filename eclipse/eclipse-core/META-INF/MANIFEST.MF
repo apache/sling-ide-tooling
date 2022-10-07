@@ -44,14 +44,16 @@ Import-Package: org.apache.sling.ide.artifacts,
  org.osgi.service.component;version="1.1.0",
  org.osgi.service.component.runtime;version="1.5.0",
  org.osgi.service.component.runtime.dto;version="1.5.0",
- org.osgi.service.event;version="1.4.1",
  org.osgi.service.prefs;version="1.1.2",
  org.osgi.util.tracker;version="1.5.3"
 Export-Package: org.apache.sling.ide.eclipse.core,
  org.apache.sling.ide.eclipse.core.facet,
  org.apache.sling.ide.eclipse.core.internal,
  org.apache.sling.ide.eclipse.core.launch,
+ org.apache.sling.ide.eclipse.core.logger,
  org.apache.sling.ide.eclipse.core.progress,
  org.apache.sling.ide.eclipse.internal.validation;x-friends:="org.apache.sling.ide.eclipse-test"
-Service-Component: OSGI-INF/TraceCommandExecutionEventsHandler.xml, OSGI-INF/Tracer.xml
 Provide-Capability: osgi.service;objectClass=org.apache.sling.ide.log.Logger
+Service-Component: OSGI-INF/org.apache.sling.ide.eclipse.core.debug.impl.Tracer.xml,
+ OSGI-INF/org.apache.sling.ide.eclipse.core.logger.CompositeLogger.xml,
+ OSGI-INF/org.apache.sling.ide.eclipse.core.logger.DefaultEclipseLogger.xml

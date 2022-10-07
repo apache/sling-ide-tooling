@@ -28,7 +28,6 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
 import org.osgi.framework.BundleContext;
-import org.osgi.service.event.EventAdmin;
 
 public class Activator extends AbstractUIPlugin {
 
@@ -64,10 +63,6 @@ public class Activator extends AbstractUIPlugin {
 
     public FilterLocator getFilterLocator() {
         return org.apache.sling.ide.eclipse.core.internal.Activator.getDefault().getFilterLocator();
-    }
-
-    public EventAdmin getEventAdmin() {
-        return org.apache.sling.ide.eclipse.core.internal.Activator.getDefault().getEventAdmin();
     }
 
     public EmbeddedArtifactLocator getArtifactLocator() {

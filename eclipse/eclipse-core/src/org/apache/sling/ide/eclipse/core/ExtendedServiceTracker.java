@@ -84,7 +84,7 @@ public class ExtendedServiceTracker<T> implements AutoCloseable {
     		info.append(" is not available"); // why?
     	} else {
     		for (ComponentConfigurationDTO componentConfiguration : componentConfigurations) {
-    			info.append("has state ").append(getState(componentConfiguration));
+    			info.append(" has state \"").append(getState(componentConfiguration)).append("\"");
     		}
     	}
     	return info.toString();

@@ -346,7 +346,6 @@ public class SlingLaunchpadBehaviour extends ServerBehaviourDelegateWithModulePu
             IResource manifest = outputFolder.findMember("META-INF/MANIFEST.MF");
             if (manifest==null) {
                 Activator.getDefault().getPluginLogger().warn("Project "+project+" does not have a META-INF/MANIFEST.MF (yet) - not publishing this time");
-                Activator.getDefault().issueConsoleLog("InstallBundle", outputFolder.getLocation().toOSString(), "Project "+project+" does not have a META-INF/MANIFEST.MF (yet) - not publishing this time");
                 monitor.done();
                 setModulePublishState(module, IServer.PUBLISH_STATE_FULL);
                 return;

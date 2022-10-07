@@ -55,7 +55,11 @@
                     <manifestFile>META-INF/MANIFEST.MF</manifestFile>
                 </archive>
             </configuration>
-        </plugin>        
+        </plugin>    
+        <plugin>
+			<groupId>org.eclipse.tycho</groupId>
+			<artifactId>tycho-ds-plugin</artifactId>
+		</plugin>    
     </plugins>
   </build>  
 </project>

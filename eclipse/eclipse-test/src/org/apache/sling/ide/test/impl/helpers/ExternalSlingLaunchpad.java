@@ -88,7 +88,7 @@ public class ExternalSlingLaunchpad extends ExternalResource {
     }
 
     private void assertTimeout(long cutoff, SlingReadyRule rule) throws AssertionFailedError {
-        logger.debug("Checking for timeout, current {}, cutoff {}", System.currentTimeMillis(), cutoff);
+        logger.debug("Checking for timeout of rule {}, current {}, cutoff {}", rule, System.currentTimeMillis(), cutoff);
         if (System.currentTimeMillis() > cutoff) {
             throw new AssertionFailedError("Sling launchpad did not fulfill rule " + rule.getClass().getName() + " within " + MAX_WAIT_TIME_MS + " milliseconds" );
         }

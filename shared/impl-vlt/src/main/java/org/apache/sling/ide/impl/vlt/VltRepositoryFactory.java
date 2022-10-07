@@ -27,20 +27,21 @@ import org.apache.sling.ide.transport.RepositoryInfo;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferencePolicyOption;
+import org.osgi.service.component.propertytypes.ServiceRanking;
 
 /**
- * The <tt>VltRepositoryFactory</tt> instatiantes <tt>VltRepository</tt> instances
+ * The <tt>VltRepositoryFactory</tt> instantiates <tt>VltRepository</tt> instances
  * This service should get precedence over {@code org.apache.sling.ide.impl.resource.transport.RepositoryFactoryImpl} in
  * case both are deployed in an OSGi container.
  */
-@Component(service = RepositoryFactory.class, property="service.ranking:Integer=1000", immediate = true)
+@Component(service = RepositoryFactory.class)
+@ServiceRanking(1000)
 public class VltRepositoryFactory implements RepositoryFactory {
 
     private final Logger logger;
     
     private Map<String,VltRepository> repositoryMap = new HashMap<>();
-
-    
 
     /**
      * Constructor to create this instance

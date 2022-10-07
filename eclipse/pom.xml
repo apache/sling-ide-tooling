@@ -51,22 +51,6 @@
         <module>p2update</module>
     </modules>
 
-	<repositories>
-		<!-- don't use apache.snapsthots repo for resolving version ranges, compare with https://github.com/eclipse-tycho/tycho/issues/1464
-			 duplicate elements from parent pom due to https://issues.apache.org/jira/browse/MNGSITE-495
-		 -->
-		<repository>
-	      <id>apache.snapshots</id>
-	      <name>Apache Snapshot Repository</name>
-	      <url>https://repository.apache.org/snapshots</url>
-	      <releases>
-	        <enabled>false</enabled>
-	      </releases>
-	      <snapshots>
-	      	<enabled>false</enabled>
-	      </snapshots>
-	    </repository>
-	</repositories>
     <build>
         <plugins>
             <plugin>
@@ -137,6 +121,7 @@
                         <!-- Jenkins Xvfb plugin -->
                         <exclude>.Xauthority-*</exclude>
                         <exclude>.*</exclude>
+                        <exclude>OSGI-INF/**</exclude>
                     </excludes>
                 </configuration>
                 <executions>

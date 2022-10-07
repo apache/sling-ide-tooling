@@ -12,6 +12,6 @@ Import-Package: org.apache.sling.ide.eclipse.core.launch,
  org.eclipse.core.resources,
  org.eclipse.core.runtime;version="3.4.0",
  org.eclipse.jdt.launching
-Service-Component: OSGI-INF/MavenSourceReferenceResolver.xml
+Service-Component: OSGI-INF/org.apache.sling.ide.eclipse.m2e.core.internal.launch.MavenSourceReferenceResolver.xml
 Require-Bundle: org.eclipse.m2e.core;bundle-version="1.4.0",
  org.eclipse.m2e.maven.runtime;bundle-version="1.4.0"

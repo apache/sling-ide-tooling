@@ -3,7 +3,10 @@ target
 .classpath
 .metadata
 .project
-.settings
+OSGI-INF
+**/.settings/*
+# include the PDE DS annotation settings until https://github.com/eclipse-m2e/m2e-core/pull/967 is released and prerequisite
+!**/.settings/org.eclipse.pde.ds.annotations.prefs
 .externalToolBuilders
 maven-eclipse.xml
 *.swp
