@@ -171,7 +171,7 @@ public class HttpOsgiClient implements OsgiClient, AutoCloseable {
 				@Override
 				public Version handleEntity(HttpEntity entity) throws IOException {
 					try (InputStream input = entity.getContent();
-							Reader reader = new InputStreamReader(input, ContentType.get(entity).getCharset())) {
+							Reader reader = new InputStreamReader(input, ContentType.getOrDefault(entity).getCharset())) {
 						return getBundleVersionFromReader(bundleSymbolicName, reader);
 					}
 				}
@@ -265,7 +265,7 @@ public class HttpOsgiClient implements OsgiClient, AutoCloseable {
 
 				@Override
 				public Long handleEntity(HttpEntity entity) throws IOException {
-					try (Reader reader = new InputStreamReader(entity.getContent(), ContentType.get(entity).getCharset())) {
+					try (Reader reader = new InputStreamReader(entity.getContent(), ContentType.getOrDefault(entity).getCharset())) {
 						return getBundleIdFromReader(bundleSymbolicName, reader);
 					}
 				}
@@ -471,7 +471,7 @@ public class HttpOsgiClient implements OsgiClient, AutoCloseable {
 
 				@Override
 				public T handleEntity(HttpEntity entity) throws IOException {
-					return parseJson(jsonObjectClass, entity.getContent(), ContentType.get(entity).getCharset());
+					return parseJson(jsonObjectClass, entity.getContent(), ContentType.getOrDefault(entity).getCharset());
 				}
 				
 			}, createContextForPreemptiveBasicAuth());
