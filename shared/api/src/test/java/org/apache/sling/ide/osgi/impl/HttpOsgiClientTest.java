@@ -76,7 +76,7 @@ public class HttpOsgiClientTest {
     @Test
     public void testComponentsInfoJson() throws IOException {
     	try (InputStream input = Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream("components.json"))) {
-    		ComponentsInfo componentsInfo = HttpOsgiClient.parseJson(ComponentsInfo.class, input);
+    		ComponentsInfo componentsInfo = HttpOsgiClient.parseJson(ComponentsInfo.class, input, StandardCharsets.UTF_8);
     		assertEquals(1, componentsInfo.components.length);
     		assertEquals(ComponentInfo.Status.ACTIVE, componentsInfo.components[0].status);
     		assertEquals("org.apache.sling.tooling.support.install.impl.InstallServlet", componentsInfo.components[0].pid);
