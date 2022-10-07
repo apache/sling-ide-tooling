@@ -21,7 +21,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
-import java.nio.charset.StandardCharsets;
+import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -30,11 +30,15 @@ import java.util.concurrent.TimeoutException;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
+import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
+import org.apache.http.StatusLine;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.AuthCache;
 import org.apache.http.client.CredentialsProvider;
+import org.apache.http.client.HttpResponseException;
+import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
@@ -47,10 +51,10 @@ import org.apache.http.impl.auth.BasicScheme;
 import org.apache.http.impl.client.AbstractResponseHandler;
 import org.apache.http.impl.client.BasicAuthCache;
 import org.apache.http.impl.client.BasicCredentialsProvider;
-import org.apache.http.impl.client.BasicResponseHandler;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.util.EntityUtils;
 import org.apache.sling.ide.log.Logger;
 import org.apache.sling.ide.osgi.OsgiClient;
 import org.apache.sling.ide.osgi.OsgiClientException;
@@ -162,12 +166,12 @@ public class HttpOsgiClient implements OsgiClient, AutoCloseable {
 		HttpGet method = new HttpGet(repositoryInfo.getUrl().resolve("system/console/bundles.json"));
 
 		try {
-			return httpClient.execute(method, new AbstractResponseHandler<Version>() {
+			return httpClient.execute(method, new LoggingAbstractResponseHandler<Version>() {
 
 				@Override
 				public Version handleEntity(HttpEntity entity) throws IOException {
 					try (InputStream input = entity.getContent();
-							Reader reader = new InputStreamReader(input, StandardCharsets.US_ASCII)) {
+							Reader reader = new InputStreamReader(input, ContentType.get(entity).getCharset())) {
 						return getBundleVersionFromReader(bundleSymbolicName, reader);
 					}
 				}
@@ -245,7 +249,7 @@ public class HttpOsgiClient implements OsgiClient, AutoCloseable {
 
 			filePost.setEntity(entityBuilder.build());
 			logger.trace("Installing bundle {0} via POST to {1}", fileName, filePost.getURI());
-			httpClient.execute(filePost, new BasicResponseHandler(), createContextForPreemptiveBasicAuth());
+			httpClient.execute(filePost, new BasicLoggingResponseHandler(), createContextForPreemptiveBasicAuth());
 		} catch (IOException e) {
 			throw new OsgiClientException("Error installing bundle via " + filePost, e);
 		}
@@ -257,11 +261,11 @@ public class HttpOsgiClient implements OsgiClient, AutoCloseable {
 		Long bundleId;
 		try {
 			logger.trace("Retrieving bundle id for bsn {0} via {1}", bundleSymbolicName, method);
-			bundleId = httpClient.execute(method, new AbstractResponseHandler<Long>() {
+			bundleId = httpClient.execute(method, new LoggingAbstractResponseHandler<Long>() {
 
 				@Override
 				public Long handleEntity(HttpEntity entity) throws IOException {
-					try (Reader reader = new InputStreamReader(entity.getContent(), StandardCharsets.US_ASCII)) {
+					try (Reader reader = new InputStreamReader(entity.getContent(), ContentType.get(entity).getCharset())) {
 						return getBundleIdFromReader(bundleSymbolicName, reader);
 					}
 				}
@@ -281,7 +285,7 @@ public class HttpOsgiClient implements OsgiClient, AutoCloseable {
 					.singletonList(new BasicNameValuePair("action", "uninstall"));
 			postMethod.setEntity(new UrlEncodedFormEntity(parameters));
 			logger.trace("Uninstalling bundle via {0}", postMethod);
-			httpClient.execute(postMethod, new BasicResponseHandler(),
+			httpClient.execute(postMethod, new BasicLoggingResponseHandler(),
 					createContextForPreemptiveBasicAuth());
 
 		} catch (IOException e) {
@@ -463,11 +467,11 @@ public class HttpOsgiClient implements OsgiClient, AutoCloseable {
 	private <T> T executeJsonRequest(HttpRequestBase request, Class<T> jsonObjectClass, String requestLabel) throws OsgiClientException {
 		try {
 			logger.trace("{0} via {1}", requestLabel, request);
-			return httpClient.execute(request, new AbstractResponseHandler<T>() {
+			return httpClient.execute(request, new LoggingAbstractResponseHandler<T>() {
 
 				@Override
 				public T handleEntity(HttpEntity entity) throws IOException {
-					return parseJson(jsonObjectClass, entity.getContent());
+					return parseJson(jsonObjectClass, entity.getContent(), ContentType.get(entity).getCharset());
 				}
 				
 			}, createContextForPreemptiveBasicAuth());
@@ -478,12 +482,55 @@ public class HttpOsgiClient implements OsgiClient, AutoCloseable {
 	}
 	
 
-	static <T> T parseJson(Class<T> jsonObjectClass, InputStream input) throws IOException {
+	static <T> T parseJson(Class<T> jsonObjectClass, InputStream input, Charset charset) throws IOException {
 		try (JsonReader jsonReader = new JsonReader(
-				new InputStreamReader(input, StandardCharsets.UTF_8))) {
+				new InputStreamReader(input, charset))) {
 			return new Gson().fromJson(jsonReader, jsonObjectClass);
 		} catch (JsonParseException e) {
 			throw new IOException("Error parsing JSON response", e);
 		}
+	}
+	
+	/**
+	 * Slightly extended version of {@link org.apache.http.impl.client.AbstractResponseHandler} which logs the response body in case of status code >= 300.
+	 *
+	 * @param <T>
+	 */
+	public abstract class LoggingAbstractResponseHandler<T> implements ResponseHandler<T> {
+		/**
+		 * Slightly extended version of {@link AbstractResponseHandler#handleResponse(HttpResponse)} which logs the response body for errors
+		 * @param response
+		 * @return
+		 * @throws HttpResponseException
+		 * @throws IOException
+		 */
+	    @Override
+	    public T handleResponse(final HttpResponse response)
+	            throws HttpResponseException, IOException {
+	        final StatusLine statusLine = response.getStatusLine();
+	        final HttpEntity entity = response.getEntity();
+	        if (statusLine.getStatusCode() >= 300) {
+	        	logger.trace("Received failure response " + statusLine  + ":" + EntityUtils.toString(entity));
+	            EntityUtils.consume(entity);
+	            throw new HttpResponseException(statusLine.getStatusCode(),
+	                    statusLine.getReasonPhrase());
+	        }
+	        return entity == null ? null : handleEntity(entity);
+	    }
+	    
+	    /**
+	     * Handle the response entity and transform it into the actual response
+	     * object.
+	     */
+	    public abstract T handleEntity(HttpEntity entity) throws IOException;
+	}
+	
+	public final class BasicLoggingResponseHandler extends LoggingAbstractResponseHandler<String> {
+
+		@Override
+		public String handleEntity(HttpEntity entity) throws IOException {
+			return EntityUtils.toString(entity);
+		}
+		
 	}
 }
