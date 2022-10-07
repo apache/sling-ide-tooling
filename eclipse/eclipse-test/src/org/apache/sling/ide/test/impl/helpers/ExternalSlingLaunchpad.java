@@ -73,9 +73,9 @@ public class ExternalSlingLaunchpad extends ExternalResource {
         long cutoff = System.currentTimeMillis() + MAX_WAIT_TIME_MS;
 
         List<ServerReadyGate> gates = new ArrayList<>();
-        gates.add(new StartLevelGate(client, authorizationHeaderValue));
-        gates.add(new ActiveBundlesGate(logger, client, config.getUrl(), authorizationHeaderValue));
-        gates.add(new RepositoryAvailableGate(client, authorizationHeaderValue));
+        gates.add(new StartLevelGate(client, config.getUrl(), authorizationHeaderValue));
+        gates.add(new ActiveBundlesGate(client, config.getUrl(), authorizationHeaderValue));
+        gates.add(new RepositoryAvailableGate(client, config.getUrl(), authorizationHeaderValue));
         
         logger.debug("Starting check");
 
@@ -107,16 +107,16 @@ public class ExternalSlingLaunchpad extends ExternalResource {
         String getFailureMessage();
     }
 
-    private class StartLevelGate implements ServerReadyGate {
+    static class StartLevelGate implements ServerReadyGate {
 
         private final HttpClient client;
         private final HttpRequest request;
         private int startLevel;
 
-        public StartLevelGate(HttpClient client, String authorizationHeaderValue) {
+        public StartLevelGate(HttpClient client, URI baseUrl, String authorizationHeaderValue) {
             this.client = client;
             request = HttpRequest.newBuilder()
-            		.uri(config.getUrl().resolve("system/console/vmstat"))
+            		.uri(baseUrl.resolve("system/console/vmstat"))
             		.header("Authorization", authorizationHeaderValue)
             		.build();
         }
@@ -246,12 +246,14 @@ public class ExternalSlingLaunchpad extends ExternalResource {
 		}
     }
 
-    private class RepositoryAvailableGate implements ServerReadyGate {
+    static class RepositoryAvailableGate implements ServerReadyGate {
         private final HttpClient client;
+        private final URI baseUrl;
         private final String authorizationHeaderValue;
 
-        public RepositoryAvailableGate(HttpClient client, String authorizationHeaderValue) {
+        public RepositoryAvailableGate(HttpClient client, URI baseUrl, String authorizationHeaderValue) {
             this.client = client;
+            this.baseUrl = baseUrl;
             this.authorizationHeaderValue = authorizationHeaderValue;
         }
         
@@ -260,7 +262,7 @@ public class ExternalSlingLaunchpad extends ExternalResource {
             
             for (String prefix: new String[] { "server", "crx/server"} ) {
             	HttpRequest request = HttpRequest.newBuilder()
-                		.uri(config.getUrl().resolve(prefix+"/default/jcr:root/content"))
+                		.uri(baseUrl.resolve(prefix+"/default/jcr:root/content"))
                 		.header("Authorization", authorizationHeaderValue)
                 		.build();
                 
