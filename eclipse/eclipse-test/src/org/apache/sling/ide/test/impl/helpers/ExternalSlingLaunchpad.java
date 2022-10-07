@@ -16,9 +16,11 @@
  */
 package org.apache.sling.ide.test.impl.helpers;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Type;
+import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpClient.Version;
 import java.net.http.HttpRequest;
@@ -50,7 +52,7 @@ public class ExternalSlingLaunchpad extends ExternalResource {
     private static final Pattern STARTLEVEL_JSON_SNIPPET = Pattern.compile("\"systemStartLevel\":(\\d+)");
     private static final int EXPECTED_START_LEVEL = 30;
     private static final long MAX_WAIT_TIME_MS = TimeUnit.MINUTES.toMillis(1);
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+    private static final Logger logger = LoggerFactory.getLogger(ExternalSlingLaunchpad.class);
 
     private final LaunchpadConfig config;
 
@@ -72,7 +74,7 @@ public class ExternalSlingLaunchpad extends ExternalResource {
 
         List<ServerReadyGate> gates = new ArrayList<>();
         gates.add(new StartLevelGate(client, authorizationHeaderValue));
-        gates.add(new ActiveBundlesGate(client, authorizationHeaderValue));
+        gates.add(new ActiveBundlesGate(logger, client, config.getUrl(), authorizationHeaderValue));
         gates.add(new RepositoryAvailableGate(client, authorizationHeaderValue));
         
         logger.debug("Starting check");
@@ -148,15 +150,15 @@ public class ExternalSlingLaunchpad extends ExternalResource {
         
     }
 
-    private class ActiveBundlesGate implements ServerReadyGate {
+    static class ActiveBundlesGate implements ServerReadyGate {
         private final HttpClient client;
         private final HttpRequest request;
         private String failureMessage;
 
-        public ActiveBundlesGate(HttpClient client, String authorizationHeaderValue) {
-            this.client = client;
+        public ActiveBundlesGate(HttpClient client, URI baseUrl, String authorizationHeaderValue) {
+        	this.client = client;
             request = HttpRequest.newBuilder()
-            		.uri(config.getUrl().resolve("system/console/bundles.json"))
+            		.uri(baseUrl.resolve("system/console/bundles.json"))
             		.header("Authorization", authorizationHeaderValue)
             		.build();
         }
@@ -171,8 +173,12 @@ public class ExternalSlingLaunchpad extends ExternalResource {
                 return false;
             }
 
-            try (JsonReader jsonReader = new JsonReader(
-                    new InputStreamReader(response.body(), StandardCharsets.UTF_8))) {
+            return areAllBundlesStarted(response.body());
+        }
+
+		boolean areAllBundlesStarted(InputStream inputJson) throws IOException {
+			try (JsonReader jsonReader = new JsonReader(
+                    new InputStreamReader(inputJson, StandardCharsets.UTF_8))) {
                 jsonReader.beginObject();
                 while (jsonReader.hasNext()) {
                     String name = jsonReader.nextName();
@@ -181,11 +187,14 @@ public class ExternalSlingLaunchpad extends ExternalResource {
                         int total = jsonReader.nextInt();
                         int active = jsonReader.nextInt();
                         int fragment = jsonReader.nextInt();
+                        jsonReader.nextInt();
+                        jsonReader.nextInt();
                         logger.debug("bundle http call status: total = {}, active = {}, fragment = {}", total, active, fragment);
                         if (total == active + fragment) {
                             logger.debug("All bundles are started, we are done here");
                             return true;
                         }
+                        jsonReader.endArray();
                     } else if (name.equals("data")) {
                     	Type listType = new TypeToken<List<BundleMetadata>>() {}.getType();
                     	List<BundleMetadata> bundles = new Gson().fromJson(jsonReader, listType);
@@ -198,8 +207,8 @@ public class ExternalSlingLaunchpad extends ExternalResource {
                     }
                 }
             }
-            return false;
-        }
+			return false;
+		}
         
 
 		@Override
