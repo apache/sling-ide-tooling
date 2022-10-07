@@ -22,6 +22,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -171,7 +172,7 @@ public class HttpOsgiClient implements OsgiClient, AutoCloseable {
 				@Override
 				public Version handleEntity(HttpEntity entity) throws IOException {
 					try (InputStream input = entity.getContent();
-							Reader reader = new InputStreamReader(input, ContentType.getOrDefault(entity).getCharset())) {
+							Reader reader = new InputStreamReader(input, getCharsetOrDefault(entity))) {
 						return getBundleVersionFromReader(bundleSymbolicName, reader);
 					}
 				}
@@ -265,7 +266,7 @@ public class HttpOsgiClient implements OsgiClient, AutoCloseable {
 
 				@Override
 				public Long handleEntity(HttpEntity entity) throws IOException {
-					try (Reader reader = new InputStreamReader(entity.getContent(), ContentType.getOrDefault(entity).getCharset())) {
+					try (Reader reader = new InputStreamReader(entity.getContent(), getCharsetOrDefault(entity))) {
 						return getBundleIdFromReader(bundleSymbolicName, reader);
 					}
 				}
@@ -471,7 +472,7 @@ public class HttpOsgiClient implements OsgiClient, AutoCloseable {
 
 				@Override
 				public T handleEntity(HttpEntity entity) throws IOException {
-					return parseJson(jsonObjectClass, entity.getContent(), ContentType.getOrDefault(entity).getCharset());
+					return parseJson(jsonObjectClass, entity.getContent(), getCharsetOrDefault(entity));
 				}
 				
 			}, createContextForPreemptiveBasicAuth());
@@ -532,5 +533,13 @@ public class HttpOsgiClient implements OsgiClient, AutoCloseable {
 			return EntityUtils.toString(entity);
 		}
 		
+	}
+	
+	private static Charset getCharsetOrDefault(HttpEntity entity) {
+		Charset charset = ContentType.getOrDefault(entity).getCharset();
+		if (charset == null) {
+			charset = StandardCharsets.ISO_8859_1;
+		}
+		return charset;
 	}
 }
