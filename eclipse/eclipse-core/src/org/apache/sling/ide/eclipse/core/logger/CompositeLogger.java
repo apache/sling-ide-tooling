@@ -22,6 +22,7 @@ import org.apache.sling.ide.log.Logger;
 import org.eclipse.osgi.util.NLS;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.annotations.ReferencePolicyOption;
 
 @Component
@@ -29,7 +30,7 @@ public class CompositeLogger implements Logger {
 
 	private static final long PERF_IGNORE_THRESHOLD = 50;
 
-	@Reference(policyOption = ReferencePolicyOption.GREEDY)
+	@Reference(policyOption = ReferencePolicyOption.GREEDY, cardinality = ReferenceCardinality.AT_LEAST_ONE)
 	List<LogSubscriber> logSubscribers;
 
 	@Override

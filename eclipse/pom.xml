@@ -145,6 +145,14 @@
 						<enabled>true</enabled><!-- always generate DS component descriptors even if not enabled in PDE settings -->
 					</configuration>
 				</plugin>
+				<plugin>
+	                <groupId>org.eclipse.tycho</groupId>
+	                <artifactId>tycho-surefire-plugin</artifactId>
+	                <version>${tycho.version}</version>
+	                <configuration>
+	                	<trimStackTrace>false</trimStackTrace>
+	                </configuration>
+	            </plugin>
                 <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself. -->
                 <!--
                     We embed some bundles that are not available on p2 update sites. To make the build seamless, we copy them early in the process.

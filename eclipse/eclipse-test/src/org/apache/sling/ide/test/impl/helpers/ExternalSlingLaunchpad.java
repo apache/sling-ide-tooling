@@ -191,8 +191,8 @@ public class ExternalSlingLaunchpad extends ExternalResource {
                     	List<BundleMetadata> bundles = new Gson().fromJson(jsonReader, listType);
                     	failureMessage = "The following bundles were not started: " + bundles.stream()
                     		.filter(b -> !(b.state == BundleMetadata.State.ACTIVE ||  b.state == BundleMetadata.State.RESOLVED))
-							.map(b -> b.symbolicName)
-							.collect(Collectors.joining(","));
+							.map(b -> b.symbolicName + " (" + b.id + ")")
+							.collect(Collectors.joining(", "));
                     } else {
                     	jsonReader.skipValue();
                     }
