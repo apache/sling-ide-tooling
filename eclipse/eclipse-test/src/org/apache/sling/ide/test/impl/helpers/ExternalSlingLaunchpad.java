@@ -199,7 +199,7 @@ public class ExternalSlingLaunchpad extends ExternalResource {
                     	Type listType = new TypeToken<List<BundleMetadata>>() {}.getType();
                     	List<BundleMetadata> bundles = new Gson().fromJson(jsonReader, listType);
                     	failureMessage = "The following bundles were not started: " + bundles.stream()
-                    		.filter(b -> !(b.state == BundleMetadata.State.ACTIVE ||  b.state == BundleMetadata.State.RESOLVED))
+                    		.filter(b -> (b.state != BundleMetadata.State.ACTIVE && !b.isFragment))
 							.map(b -> b.symbolicName + " (" + b.id + ")")
 							.collect(Collectors.joining(", "));
                     } else {
@@ -219,6 +219,8 @@ public class ExternalSlingLaunchpad extends ExternalResource {
 
     protected static final class BundleMetadata {
 		private String id;
+		@SerializedName("fragment")
+		private boolean isFragment;
 		private String name;
 		private String symbolicName;
 		@SerializedName("stateRaw")
