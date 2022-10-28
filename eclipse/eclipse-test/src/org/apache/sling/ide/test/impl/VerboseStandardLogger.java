@@ -17,6 +17,7 @@
 package org.apache.sling.ide.test.impl;
 
 import java.time.Instant;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 
 import org.apache.sling.ide.eclipse.core.logger.LogSubscriber;
@@ -31,7 +32,7 @@ public class VerboseStandardLogger implements LogSubscriber {
 	@Override
 	public void log(Severity severity, String message, Throwable t) {
 		// only some severity
-		System.out.println("[" + Thread.currentThread().getName() + "] " + DateTimeFormatter.ISO_LOCAL_TIME.format(Instant.now())
+		System.out.println("[" + Thread.currentThread().getName() + "] " + DateTimeFormatter.ISO_LOCAL_TIME.format(LocalTime.now())
                 +" : " + message);
         if (t != null)
             t.printStackTrace(System.out);
