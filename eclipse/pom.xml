@@ -43,12 +43,12 @@
         <module>feature</module>
         <module>eclipse-m2e-core</module>
         <module>eclipse-m2e-ui</module>
-        <module>eclipse-m2e-test</module>
         <module>m2e-feature</module>
         <module>eclipse-sightly-core</module>
         <module>eclipse-sightly-ui</module>
         <module>sightly-feature</module>
         <module>p2update</module>
+        <!-- test modules activated per profile -->
     </modules>
 
     <build>
@@ -154,9 +154,6 @@
 	                </configuration>
 	            </plugin>
                 <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself. -->
-                <!--
-                    We embed some bundles that are not available on p2 update sites. To make the build seamless, we copy them early in the process.
-                -->
                 <plugin>
                     <groupId>org.eclipse.m2e</groupId>
                     <artifactId>lifecycle-mapping</artifactId>
@@ -262,10 +259,14 @@
         <profile>
             <id>eclipse-test</id>
             <activation>
-                <activeByDefault>true</activeByDefault>
+                <os>
+                	<!-- integration tests are unstable on Windows -->
+                	<family>!windows</family>
+                </os>
             </activation>
             <modules>
                 <module>eclipse-test</module>
+                <module>eclipse-m2e-test</module>
             </modules>
         </profile>
     </profiles>
