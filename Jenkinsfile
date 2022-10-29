@@ -51,8 +51,8 @@ def generateStages(String os, def mvnVersion, def javaVersion) {
                         runCmd 'mvn -f eclipse clean verify'
                     }
                     // workaround for https://issues.jenkins-ci.org/browse/JENKINS-55889
-                    junit 'eclipse/**/surefire-reports/*.xml' 
-                    archiveArtifacts artifacts: 'eclipse/**/logs/*.log'
+                    junit(testResults: 'eclipse/**/surefire-reports/*.xml', allowEmptyResults: true)
+                    archiveArtifacts(artifacts: 'eclipse/**/logs/*.log', allowEmptyArchive: true)
                 }
             }
         }
