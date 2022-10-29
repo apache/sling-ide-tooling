@@ -252,7 +252,7 @@ public class HttpOsgiClient implements OsgiClient, AutoCloseable {
 			logger.trace("Installing bundle {0} via POST to {1}", fileName, filePost.getURI());
 			httpClient.execute(filePost, new BasicLoggingResponseHandler(), createContextForPreemptiveBasicAuth());
 		} catch (IOException e) {
-			throw new OsgiClientException("Error installing bundle via " + filePost, e);
+			throw new OsgiClientException("Error installing bundle " + fileName + " via " + filePost, e);
 		}
 	}
 
@@ -305,7 +305,7 @@ public class HttpOsgiClient implements OsgiClient, AutoCloseable {
 		List<? extends NameValuePair> parameters = Collections
 				.singletonList(new BasicNameValuePair("dir", explodedBundleLocation.toString()));
 		try {
-			installLocalBundle(new UrlEncodedFormEntity(parameters));
+			installLocalBundle(new UrlEncodedFormEntity(parameters), explodedBundleLocation.toString());
 		} catch (UnsupportedEncodingException e) {
 			throw new OsgiClientException("Cannot install local bundle due to unsupported encoding", e);
 		}
@@ -320,7 +320,7 @@ public class HttpOsgiClient implements OsgiClient, AutoCloseable {
 
 		MultipartEntityBuilder entityBuilder = MultipartEntityBuilder.create();
 		entityBuilder.addBinaryBody("bundle", jarredBundle, ContentType.DEFAULT_BINARY, "bundle.jar");
-		installLocalBundle(entityBuilder.build());
+		installLocalBundle(entityBuilder.build(), sourceLocation);
 	}
 
 	@Override
@@ -449,10 +449,10 @@ public class HttpOsgiClient implements OsgiClient, AutoCloseable {
 
 	}
 
-	void installLocalBundle(HttpEntity httpEntity) throws OsgiClientException {
+	void installLocalBundle(HttpEntity httpEntity, String bundleSource) throws OsgiClientException {
 		HttpPost request = new HttpPost(repositoryInfo.getUrl().resolve("system/sling/tooling/install"));
 		request.setEntity(httpEntity);
-		BundleInstallerResult result = executeJsonRequest(request, BundleInstallerResult.class, "install local bundle");
+		BundleInstallerResult result = executeJsonRequest(request, BundleInstallerResult.class, "install local bundle from " + bundleSource);
 		if (!result.isSuccessful()) {
 			String errorMessage = !result.hasMessage() ? "Bundle deployment failed, please check the Sling logs"
 					: result.getMessage();
