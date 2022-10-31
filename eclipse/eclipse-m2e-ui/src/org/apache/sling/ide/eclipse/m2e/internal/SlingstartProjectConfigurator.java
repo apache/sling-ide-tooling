@@ -32,8 +32,8 @@ public class SlingstartProjectConfigurator extends AbstractProjectConfigurator {
 	@Override
 	public void configure(ProjectConfigurationRequest request, IProgressMonitor monitor) throws CoreException {
 		
-		IProject project = request.getProject();
-		Set<String> candidates = MavenProjectUtils.getModelDirectoryCandidateLocations(request.getMavenProject());
+		IProject project = request.mavenProjectFacade().getProject();
+		Set<String> candidates = MavenProjectUtils.getModelDirectoryCandidateLocations(request.mavenProject());
 		IPath modelsPath = null; 
 		
 		for ( String candidate : candidates ) {
@@ -46,7 +46,6 @@ public class SlingstartProjectConfigurator extends AbstractProjectConfigurator {
 		}
 		
 		trace("Configuring project {0} with models path {1}", project.getName(), modelsPath);
-		
-		ConfigurationHelper.convertToLaunchpadProject(request.getProject(), modelsPath);
+		ConfigurationHelper.convertToLaunchpadProject(project, modelsPath);
 	}
 }

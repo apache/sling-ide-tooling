@@ -16,12 +16,9 @@
  */
 package org.apache.sling.ide.eclipse.ui.actions;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 import org.apache.jackrabbit.vault.fs.io.DocViewFormat;
-import org.apache.jackrabbit.vault.util.xml.serialize.XMLSerializer;
 import org.apache.sling.ide.eclipse.ui.internal.Activator;
 import org.apache.sling.ide.eclipse.ui.internal.SelectionUtils;
 import org.apache.sling.ide.eclipse.ui.nav.model.JcrNode;
@@ -38,10 +35,6 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
-import org.xml.sax.helpers.XMLReaderFactory;
 
 public class JcrNodeFormatHandler extends AbstractHandler {
     
@@ -66,15 +59,11 @@ public class JcrNodeFormatHandler extends AbstractHandler {
             @Override
             protected IStatus run(IProgressMonitor monitor) {
                 try {
-                    ByteArrayOutputStream out = new ByteArrayOutputStream();
-                    XMLSerializer serializer = new XMLSerializer(out, new DocViewFormat().getXmlOutputFormat());
-                    XMLReader reader = XMLReaderFactory.createXMLReader();
-                    reader.setContentHandler(serializer);
-                    reader.setDTDHandler(serializer);
-                    reader.parse(new InputSource(resource.getContents()));
-                    
-                    resource.setContents(new ByteArrayInputStream(out.toByteArray()), false, true, monitor);
-                } catch (SAXException | IOException | CoreException e) {
+                	DocViewFormat docViewFormat = new DocViewFormat();
+                	if (docViewFormat.format(resource.getFullPath().toFile(), true)) {
+                		resource.refreshLocal(0, monitor);
+                	}
+                } catch (IOException | CoreException e) {
                     return new Status(IStatus.ERROR, Activator.PLUGIN_ID, NLS.bind("Failed formatting {0}", resourcePath), e);
                 }
                 

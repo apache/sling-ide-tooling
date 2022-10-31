@@ -18,120 +18,53 @@ package org.apache.sling.ide.eclipse.core.debug.impl;
 
 import java.util.Date;
 
-import org.apache.sling.ide.log.Logger;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Platform;
-import org.eclipse.core.runtime.Status;
+import org.apache.sling.ide.eclipse.core.logger.LogSubscriber;
 import org.eclipse.osgi.service.debug.DebugOptions;
 import org.eclipse.osgi.service.debug.DebugOptionsListener;
 import org.eclipse.osgi.service.debug.DebugTrace;
-import org.eclipse.osgi.util.NLS;
-import org.osgi.framework.Bundle;
-import org.osgi.service.component.ComponentContext;
+import org.osgi.service.component.annotations.Component;
 
 /**
- * The <tt>Tracer</tt> is the default implementation of the <tt>Logger</tt>
+ * The <tt>Tracer</tt> is the default implementation of the <tt>Logger</tt>.
+ * 
  */
-public class Tracer implements DebugOptionsListener, Logger {
+@Component(property = DebugOptions.LISTENER_SYMBOLICNAME + "="
+		+ Tracer.BUNDLE_SYMBOLIC_NAME)
+public class Tracer implements DebugOptionsListener, LogSubscriber {
 
-    private static final long PERF_IGNORE_THRESHOLD = 50;
-
-    private Bundle bundle;
+	protected static final String BUNDLE_SYMBOLIC_NAME = "org.apache.sling.ide.eclipse-core";
     private boolean debugEnabled;
     private boolean consoleEnabled;
     private boolean performanceEnabled;
     private DebugTrace trace;
-    
-    protected void activate(ComponentContext ctx) {
-        bundle = ctx.getUsingBundle();
-    }
 
     @Override
     public void optionsChanged(DebugOptions options) {
-    	
-        String pluginId = bundle.getSymbolicName();
-
-        debugEnabled = options.getBooleanOption(pluginId + "/debug", false);
-        consoleEnabled = options.getBooleanOption(pluginId + "/debug/console", false) && debugEnabled;
-        performanceEnabled = options.getBooleanOption(pluginId + "/debug/performance", false) && debugEnabled;
-        trace = options.newDebugTrace(pluginId, getClass());
+        debugEnabled = options.getBooleanOption(BUNDLE_SYMBOLIC_NAME + "/debug", false);
+        consoleEnabled = options.getBooleanOption(BUNDLE_SYMBOLIC_NAME + "/debug/console", false) && debugEnabled;
+        performanceEnabled = options.getBooleanOption(BUNDLE_SYMBOLIC_NAME + "/debug/performance", false) && debugEnabled;
+        trace = options.newDebugTrace(BUNDLE_SYMBOLIC_NAME, getClass());
     }
     
-    @Override
-    public void trace(String message, Object... arguments) {
-
-        if (!debugEnabled)
-            return;
-
-    	if ( arguments.length > 0 )
-    		message = NLS.bind(message, arguments);
-    	
-    	trace.trace("/debug", message);
-
-        if (consoleEnabled)
-            writeToConsole(message, null);
-    }
-
-    private void writeToConsole(String message, Throwable t) {
-
+    private void writeToStdOut(String message, Throwable t) {
         System.out.println("[" + Thread.currentThread().getName() + "] " + new Date() + " "
-                + bundle.getSymbolicName() + " : " + message);
+                + " : " + message);
         if (t != null)
             t.printStackTrace(System.out);
     }
 
-    @Override
-    public void trace(String message, Throwable error) {
-        if (!debugEnabled)
-            return;
+	@Override
+	public void log(Severity severity, String message, Throwable t) {
+		if (!debugEnabled) {
+			return;
+		}
+		if (consoleEnabled && severity == Severity.TRACE) {
+			trace.trace("/debug", message);
+			writeToStdOut(message, t);
+		} else if (performanceEnabled && severity == Severity.TRACE) {
+			trace.trace("/debug/performance", message);
+			writeToStdOut(message, t);
+		}
+	}
 
-        trace.trace("/debug", message, error);
-
-        if (consoleEnabled)
-            writeToConsole(message, error);
-    }
-
-    @Override
-    public void warn(String message) {
-        logInternal(IStatus.WARNING, message, null);
-    }
-
-    @Override
-    public void warn(String message, Throwable cause) {
-        logInternal(IStatus.WARNING, message, cause);
-    }
-
-    @Override
-    public void error(String message) {
-        logInternal(IStatus.ERROR, message, null);
-    }
-
-    @Override
-    public void error(String message, Throwable cause) {
-        logInternal(IStatus.ERROR, message, cause);
-    }
-
-    @Override
-    public void tracePerformance(String message, long duration, Object... arguments) {
-        if (!performanceEnabled)
-            return;
-
-        if (duration < PERF_IGNORE_THRESHOLD) {
-            return;
-        }
-
-        if (arguments.length > 0)
-            message = NLS.bind(message, arguments);
-
-        String fullMessage = message + " took " + duration + " ms";
-
-        trace.trace("/debug/performance", fullMessage);
-
-        if (consoleEnabled)
-            writeToConsole(fullMessage, null);
-    }
-
-    private void logInternal(int statusCode, String message, Throwable cause) {
-        Platform.getLog(bundle).log(new Status(statusCode, bundle.getSymbolicName(), message, cause));
-    }
 }

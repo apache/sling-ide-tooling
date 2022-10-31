@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.Callable;
 
-import org.apache.commons.httpclient.HttpException;
 import org.apache.sling.ide.eclipse.core.ISlingLaunchpadServer;
 import org.apache.sling.ide.test.impl.helpers.DefaultJavaVMInstall;
 import org.apache.sling.ide.test.impl.helpers.DisableDebugStatusHandlers;
@@ -99,13 +98,13 @@ public class BundleDeploymentTest {
         project.configureAsJavaProject(slingApiDep, servletApiDep);
 
         // create DS component class
-        InputStream simpleServlet = getClass().getResourceAsStream("SimpleServlet.java.v1.txt");
-        project.createOrUpdateFile(Path.fromPortableString("src/example/SimpleServlet.java"), simpleServlet);
-        
+        try (InputStream simpleServlet = getClass().getResourceAsStream("SimpleServlet.java.v1.txt")) {
+        	project.createOrUpdateFile(Path.fromPortableString("src/example/SimpleServlet.java"), simpleServlet);
+        }
         // create DS component descriptor
-        InputStream servletDescriptor = getClass().getResourceAsStream("SimpleServlet.xml");
-        project.createOrUpdateFile(Path.fromPortableString("src/OSGI-INF/SimpleServlet.xml"), servletDescriptor);
-
+        try (InputStream servletDescriptor = getClass().getResourceAsStream("SimpleServlet.xml")) {
+        	project.createOrUpdateFile(Path.fromPortableString("src/OSGI-INF/SimpleServlet.xml"), servletDescriptor);
+        }
         // create manifest
         OsgiBundleManifest manifest = OsgiBundleManifest.symbolicName("test.bundle001").version("1.0.0.SNAPSHOT")
                 .name("Test bundle").serviceComponent("OSGI-INF/SimpleServlet.xml")
@@ -132,7 +131,7 @@ public class BundleDeploymentTest {
         Poller poller = new Poller();
         poller.pollUntil(new Callable<Void>() {
             @Override
-            public Void call() throws HttpException, IOException {
+            public Void call() throws IOException, InterruptedException {
                 repo.assertGetIsSuccessful("simple-servlet", "Version 1");
                 return null;
             }
@@ -144,12 +143,12 @@ public class BundleDeploymentTest {
         });
 
         // update DS component class
-        InputStream simpleServlet2 = getClass().getResourceAsStream("SimpleServlet.java.v2.txt");
-        project.createOrUpdateFile(Path.fromPortableString("src/example/SimpleServlet.java"), simpleServlet2);
-
+        try (InputStream simpleServlet2 = getClass().getResourceAsStream("SimpleServlet.java.v2.txt")) {
+        	project.createOrUpdateFile(Path.fromPortableString("src/example/SimpleServlet.java"), simpleServlet2);
+        }
         poller.pollUntil(new Callable<Void>() {
             @Override
-            public Void call() throws HttpException, IOException {
+            public Void call() throws InterruptedException, IOException {
                 repo.assertGetIsSuccessful("simple-servlet", "Version 2");
                 return null;
             }

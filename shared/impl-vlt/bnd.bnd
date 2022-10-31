@@ -1,0 +1,47 @@
+Bundle-SymbolicName: org.apache.sling.ide.impl-vlt;singleton:=true
+SlingIDE-PluginLoggerEnabled: true
+Bundle-ActivationPolicy: lazy
+
+Export-Package: \
+javax.jcr; \
+javax.jcr.lock; \
+javax.jcr.nodetype; \
+javax.jcr.observation; \
+javax.jcr.query; \
+javax.jcr.query.qom; \
+javax.jcr.retention; \
+javax.jcr.security; \
+javax.jcr.util; \
+javax.jcr.version; version=2.0
+
+# some generated import-package headers are not necessary
+# imports being generated from org.apache.commons.io.input.BufferedFileChannelInputStream
+Import-Package: \
+ !sun.*, \
+ !org.apache.sling.jcr.api, \
+ *
+
+# disable annotation processing for embedded bundles (neither declarative services nor metatypes necessary for IDE tooling)
+-dsannotations: !org.apache.jackrabbit.*,*
+-metatypeannotations: !org.apache.jackrabbit.*,*
+ 
+ # some dependencies can be kept private
+-includeresource: \
+@commons-collections-3.2.2.jar, \
+@commons-io-2.11.0.jar, \
+@jcr-2.0.jar, \
+@org.apache.jackrabbit.vault-${vault.version}.jar!/!OSGI-INF/*, \
+@vault-davex-${vault.version}.jar, \
+@oak-jackrabbit-api-${oak.version}.jar, \
+@jackrabbit-spi-${jackrabbit.version}.jar, \
+@jackrabbit-spi2dav-${jackrabbit.version}.jar, \
+@jackrabbit-jcr-client-${jackrabbit.version}.jar, \
+@jackrabbit-jcr2spi-${jackrabbit.version}.jar, \
+@jackrabbit-jcr-commons-${jackrabbit.version}.jar, \
+@jackrabbit-spi-commons-${jackrabbit.version}.jar, \
+@jackrabbit-webdav-${jackrabbit.version}.jar \
+
+# whitelist the private reference usage in Packaging.getJcrPackageRegistry(Session)
+-fixupmessages:"Export org.apache.jackrabbit.vault.packaging,  has 1,  private references [org.apache.jackrabbit.vault.packaging.registry.impl]"; \
+    restrict:=warning; \
+    is:=warn

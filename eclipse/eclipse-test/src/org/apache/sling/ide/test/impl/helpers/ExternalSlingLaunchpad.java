@@ -16,23 +16,33 @@
  */
 package org.apache.sling.ide.test.impl.helpers;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.reflect.Type;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpClient.Version;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.net.http.HttpResponse.BodyHandlers;
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
-import org.apache.commons.httpclient.Credentials;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.UsernamePasswordCredentials;
-import org.apache.commons.httpclient.auth.AuthScope;
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.io.IOUtils;
 import org.junit.rules.ExternalResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.gson.Gson;
+import com.google.gson.annotations.SerializedName;
+import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 
 import junit.framework.AssertionFailedError;
@@ -42,7 +52,7 @@ public class ExternalSlingLaunchpad extends ExternalResource {
     private static final Pattern STARTLEVEL_JSON_SNIPPET = Pattern.compile("\"systemStartLevel\":(\\d+)");
     private static final int EXPECTED_START_LEVEL = 30;
     private static final long MAX_WAIT_TIME_MS = TimeUnit.MINUTES.toMillis(1);
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+    private static final Logger logger = LoggerFactory.getLogger(ExternalSlingLaunchpad.class);
 
     private final LaunchpadConfig config;
 
@@ -53,29 +63,30 @@ public class ExternalSlingLaunchpad extends ExternalResource {
     @Override
     protected void before() throws Throwable {
 
-        Credentials creds = new UsernamePasswordCredentials(config.getUsername(), config.getPassword());
-
-        HttpClient client = new HttpClient();
-        client.getState().setCredentials(new AuthScope(config.getHostname(), config.getPort()), creds);
-        client.getParams().setAuthenticationPreemptive(true);
+    	String authorizationHeaderValue = "Basic " + Base64.getEncoder()
+                .encodeToString((config.getUsername() + ":" + config.getPassword()).getBytes(StandardCharsets.UTF_8));
+        HttpClient client = HttpClient.newBuilder()
+                .version(Version.HTTP_1_1)
+                .connectTimeout(Duration.ofSeconds(10))
+                .build();
 
         long cutoff = System.currentTimeMillis() + MAX_WAIT_TIME_MS;
 
-        List<SlingReadyRule> rules = new ArrayList<>();
-        rules.add(new StartLevelSlingReadyRule(client));
-        rules.add(new ActiveBundlesSlingReadyRule(client));
-        rules.add(new RepositoryAvailableReadyRule(client));
+        List<ServerReadyGate> gates = new ArrayList<>();
+        gates.add(new StartLevelGate(client, config.getUrl(), authorizationHeaderValue));
+        gates.add(new ActiveBundlesGate(client, config.getUrl(), authorizationHeaderValue));
+        gates.add(new RepositoryAvailableGate(client, config.getUrl(), authorizationHeaderValue));
         
         logger.debug("Starting check");
 
-        for (SlingReadyRule rule : rules) {
-            logger.debug("Checking {}", rule);
+        for (ServerReadyGate gate : gates) {
+            logger.debug("Checking {}", gate);
             while (true) {
-                if (rule.evaluate()) {
-                    logger.debug("Rule {} succeeded.", rule);
+                if (gate.evaluate()) {
+                    logger.debug("Gate {} passed.", gate);
                     break;
                 }
-                assertTimeout(cutoff);
+                assertTimeout(cutoff, gate);
                 Thread.sleep(100);
             }
         }
@@ -83,42 +94,44 @@ public class ExternalSlingLaunchpad extends ExternalResource {
         logger.debug("Checks complete");
     }
 
-    private void assertTimeout(long cutoff) throws AssertionFailedError {
-        logger.debug("Checking for timeout, current {}, cutoff {}", System.currentTimeMillis(), cutoff);
+    private void assertTimeout(long cutoff, ServerReadyGate gate) throws AssertionFailedError {
+        logger.debug("Checking for timeout of gate {}, current {}, cutoff {}", gate, System.currentTimeMillis(), cutoff);
         if (System.currentTimeMillis() > cutoff) {
-            throw new AssertionFailedError("Sling launchpad did not start within " + MAX_WAIT_TIME_MS + " milliseconds");
+            throw new AssertionFailedError("Sling server did not pass " + gate.getClass().getName() + " within " + MAX_WAIT_TIME_MS + " milliseconds. It was failing with " + gate.getFailureMessage() );
         }
     }
 
-    private interface SlingReadyRule {
+    private interface ServerReadyGate {
 
         boolean evaluate() throws Exception;
+        String getFailureMessage();
     }
 
-    private class StartLevelSlingReadyRule implements SlingReadyRule {
+    static class StartLevelGate implements ServerReadyGate {
 
         private final HttpClient client;
-        private final GetMethod httpMethod;
+        private final HttpRequest request;
+        private int startLevel;
 
-        public StartLevelSlingReadyRule(HttpClient client) {
+        public StartLevelGate(HttpClient client, URI baseUrl, String authorizationHeaderValue) {
             this.client = client;
-            httpMethod = new GetMethod(config.getUrl() + "system/console/vmstat");
+            request = HttpRequest.newBuilder()
+            		.uri(baseUrl.resolve("system/console/vmstat"))
+            		.header("Authorization", authorizationHeaderValue)
+            		.build();
         }
 
         @Override
         public boolean evaluate() throws Exception {
 
-            int status = client.executeMethod(httpMethod);
-            logger.debug("vmstat http call got return code {}", status);
+            HttpResponse<String> response = client.send(request, BodyHandlers.ofString());
+            logger.debug("vmstat http call got return code {}", response.statusCode());
 
-            if (status == 200) {
+            if (response.statusCode() == 200) {
 
-                String responseBody = IOUtils.toString(httpMethod.getResponseBodyAsStream(),
-                        httpMethod.getResponseCharSet());
-
-                Matcher m = STARTLEVEL_JSON_SNIPPET.matcher(responseBody);
+                Matcher m = STARTLEVEL_JSON_SNIPPET.matcher(response.body());
                 if (m.find()) {
-                    int startLevel = Integer.parseInt(m.group(1));
+                    startLevel = Integer.parseInt(m.group(1));
                     logger.debug("vmstat http call got startLevel {}", startLevel);
                     if (startLevel >= EXPECTED_START_LEVEL) {
                         logger.debug("current startLevel {}  >= {}, we are done here", startLevel, EXPECTED_START_LEVEL);
@@ -129,28 +142,43 @@ public class ExternalSlingLaunchpad extends ExternalResource {
             }
             return false;
         }
+
+		@Override
+		public String getFailureMessage() {
+			return "Start Level " + startLevel + " was below expected level " + EXPECTED_START_LEVEL;
+		}
+        
     }
 
-    private class ActiveBundlesSlingReadyRule implements SlingReadyRule {
+    static class ActiveBundlesGate implements ServerReadyGate {
         private final HttpClient client;
-        private final GetMethod httpMethod;
+        private final HttpRequest request;
+        private String failureMessage;
 
-        public ActiveBundlesSlingReadyRule(HttpClient client) {
-            this.client = client;
-            httpMethod = new GetMethod(config.getUrl() + "system/console/bundles.json");
+        public ActiveBundlesGate(HttpClient client, URI baseUrl, String authorizationHeaderValue) {
+        	this.client = client;
+            request = HttpRequest.newBuilder()
+            		.uri(baseUrl.resolve("system/console/bundles.json"))
+            		.header("Authorization", authorizationHeaderValue)
+            		.build();
         }
 
         @Override
         public boolean evaluate() throws Exception {
-            int status = client.executeMethod(httpMethod);
-            logger.debug("bundles http call got return code {}", status);
+        	HttpResponse<InputStream> response = client.send(request, BodyHandlers.ofInputStream());
+            logger.debug("bundles http call got return code {}", response.statusCode());
             
-            if ( status != 200) {
+            if (response.statusCode() != 200) {
+            	failureMessage = request.toString() + " returned " + response.statusCode();
                 return false;
             }
 
-            try (JsonReader jsonReader = new JsonReader(
-                    new InputStreamReader(httpMethod.getResponseBodyAsStream(), httpMethod.getResponseCharSet()))) {
+            return areAllBundlesStarted(response.body());
+        }
+
+		boolean areAllBundlesStarted(InputStream inputJson) throws IOException {
+			try (JsonReader jsonReader = new JsonReader(
+                    new InputStreamReader(inputJson, StandardCharsets.UTF_8))) {
                 jsonReader.beginObject();
                 while (jsonReader.hasNext()) {
                     String name = jsonReader.nextName();
@@ -159,43 +187,99 @@ public class ExternalSlingLaunchpad extends ExternalResource {
                         int total = jsonReader.nextInt();
                         int active = jsonReader.nextInt();
                         int fragment = jsonReader.nextInt();
+                        jsonReader.nextInt();
+                        jsonReader.nextInt();
                         logger.debug("bundle http call status: total = {}, active = {}, fragment = {}", total, active, fragment);
-
                         if (total == active + fragment) {
                             logger.debug("All bundles are started, we are done here");
                             return true;
-                        } else {
-                            return false;
                         }
+                        jsonReader.endArray();
+                    } else if (name.equals("data")) {
+                    	Type listType = new TypeToken<List<BundleMetadata>>() {}.getType();
+                    	List<BundleMetadata> bundles = new Gson().fromJson(jsonReader, listType);
+                    	failureMessage = "The following bundles were not started: " + bundles.stream()
+                    		.filter(b -> (b.state != BundleMetadata.State.ACTIVE && !b.isFragment))
+							.map(b -> b.symbolicName + " (" + b.id + ")")
+							.collect(Collectors.joining(", "));
                     } else {
-                        jsonReader.skipValue();
+                    	jsonReader.skipValue();
                     }
                 }
             }
-            return false;
-        }
-    }
-    
-    private class RepositoryAvailableReadyRule implements SlingReadyRule {
-        private final HttpClient client;
+			return false;
+		}
+        
 
-        public RepositoryAvailableReadyRule(HttpClient client) {
+		@Override
+		public String getFailureMessage() {
+			return failureMessage;
+		}
+    }
+
+    protected static final class BundleMetadata {
+		private String id;
+		@SerializedName("fragment")
+		private boolean isFragment;
+		private String name;
+		private String symbolicName;
+		@SerializedName("stateRaw")
+		private State state; // https://github.com/apache/felix-dev/blob/de64445723e33c400d4e851f2c2a874beb923119/webconsole/src/main/java/org/apache/felix/webconsole/internal/core/BundlesServlet.java#L438
+		
+		// https://docs.osgi.org/javadoc/osgi.core/8.0.0/org/osgi/framework/Bundle.html#getState--
+		// https://docs.osgi.org/javadoc/osgi.core/8.0.0/constant-values.html#org.osgi.framework.Bundle.ACTIVE
+		enum State {
+			@SerializedName("1")
+			UNINSTALLED,
+	
+			@SerializedName("2")
+			INSTALLED,
+	
+	        @SerializedName("4")
+			RESOLVED,
+	
+	        @SerializedName("8")
+			STARTING,
+	
+	        @SerializedName("16")
+			STOPPING,
+			@SerializedName("32")
+			ACTIVE;
+		}
+    }
+
+    static class RepositoryAvailableGate implements ServerReadyGate {
+        private final HttpClient client;
+        private final URI baseUrl;
+        private final String authorizationHeaderValue;
+
+        public RepositoryAvailableGate(HttpClient client, URI baseUrl, String authorizationHeaderValue) {
             this.client = client;
+            this.baseUrl = baseUrl;
+            this.authorizationHeaderValue = authorizationHeaderValue;
         }
         
         @Override
         public boolean evaluate() throws Exception {
             
-            for ( String prefix: new String[] { "server", "crx/server"} ) {
-                GetMethod get = new GetMethod(config.getUrl() + prefix + "/default/jcr:root/content");
+            for (String prefix: new String[] { "server", "crx/server"} ) {
+            	HttpRequest request = HttpRequest.newBuilder()
+                		.uri(baseUrl.resolve(prefix+"/default/jcr:root/content"))
+                		.header("Authorization", authorizationHeaderValue)
+                		.build();
                 
-                int status = client.executeMethod(get);
-                logger.debug("repository check call at entry point {}  got status {}", prefix, status);
-                if ( status == 200 ) 
-                    return true;
+                HttpResponse<Void> response = client.send(request, BodyHandlers.discarding());
+                logger.debug("repository check call at entry point {}  got status {}", prefix, response.statusCode());
+                if (response.statusCode() == 200 ) {
+                	return true;
+                }
             }
-            
             return false;
         }
+
+		@Override
+		public String getFailureMessage() {
+			return "WebDAV endpoint never returned a 200 status for repository root";
+		}
     }
 }

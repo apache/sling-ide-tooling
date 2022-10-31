@@ -20,6 +20,7 @@ import static org.osgi.service.component.annotations.ConfigurationPolicy.REQUIRE
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.StandardWatchEventKinds;
 
@@ -73,7 +74,7 @@ public class ContentSync {
         
         logger.trace("Working on project {0} at {1}", prj.getName(), prj.getOSPath());
         
-        Repository repo = repoFactory.connectRepository(new RepositoryInfo(cfg.username(), cfg.password(), cfg.repositoryUrl()));
+        Repository repo = repoFactory.connectRepository(new RepositoryInfo(cfg.username(), cfg.password(), URI.create(cfg.repositoryUrl())));
         
         repo.newListChildrenNodeCommand("/").execute();
         

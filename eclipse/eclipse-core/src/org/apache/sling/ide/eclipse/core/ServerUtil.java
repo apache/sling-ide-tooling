@@ -171,7 +171,7 @@ public abstract class ServerUtil {
         URI uri = new URI("http", null, server.getHost(), configuration.getPort(), configuration.getContextPath(),
                 null, null);
         return new RepositoryInfo(configuration.getUsername(),
-                configuration.getPassword(), uri.toString());
+                configuration.getPassword(), uri);
     }
 
     private ServerUtil() {

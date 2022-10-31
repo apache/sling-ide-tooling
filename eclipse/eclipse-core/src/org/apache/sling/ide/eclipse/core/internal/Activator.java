@@ -16,12 +16,11 @@
  */
 package org.apache.sling.ide.eclipse.core.internal;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Optional;
 
 import org.apache.sling.ide.artifacts.EmbeddedArtifactLocator;
+import org.apache.sling.ide.eclipse.core.ExtendedServiceTracker;
 import org.apache.sling.ide.eclipse.core.Preferences;
-import org.apache.sling.ide.eclipse.core.ServiceUtil;
 import org.apache.sling.ide.eclipse.core.launch.SourceReferenceResolver;
 import org.apache.sling.ide.filter.FilterLocator;
 import org.apache.sling.ide.log.Logger;
@@ -29,13 +28,10 @@ import org.apache.sling.ide.osgi.OsgiClientFactory;
 import org.apache.sling.ide.serialization.SerializationManager;
 import org.apache.sling.ide.sync.content.SyncCommandFactory;
 import org.apache.sling.ide.transport.BatcherFactory;
-import org.apache.sling.ide.transport.CommandExecutionProperties;
 import org.apache.sling.ide.transport.RepositoryFactory;
 import org.eclipse.core.runtime.Plugin;
+import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
-import org.osgi.service.event.Event;
-import org.osgi.service.event.EventAdmin;
-import org.osgi.util.tracker.ServiceTracker;
 
 /**
  * The activator class controls the plug-in life cycle
@@ -53,54 +49,52 @@ public class Activator extends Plugin {
 	// The shared instance
 	private static Activator plugin;
 
-    private ServiceTracker<EventAdmin, EventAdmin> eventAdmin;
-    private ServiceTracker<RepositoryFactory, RepositoryFactory> repositoryFactory;
-    private ServiceTracker<SerializationManager, SerializationManager> serializationManager;
-    private ServiceTracker<FilterLocator, FilterLocator> filterLocator;
-    private ServiceTracker<OsgiClientFactory, OsgiClientFactory> osgiClientFactory;
-    private ServiceTracker<EmbeddedArtifactLocator, EmbeddedArtifactLocator> artifactLocator;
-    private ServiceTracker<Logger, Logger> tracer;
-    private ServiceTracker<BatcherFactory, BatcherFactory> batcherFactoryLocator;
-    private ServiceTracker<SourceReferenceResolver, Object> sourceReferenceLocator;
-    private ServiceTracker<SyncCommandFactory, SyncCommandFactory> commandFactory;
+    private ExtendedServiceTracker<RepositoryFactory> repositoryFactory;
+    private ExtendedServiceTracker<SerializationManager> serializationManager;
+    private ExtendedServiceTracker<FilterLocator> filterLocator;
+    private ExtendedServiceTracker<OsgiClientFactory> osgiClientFactory;
+    private ExtendedServiceTracker<EmbeddedArtifactLocator> artifactLocator;
+    private ExtendedServiceTracker<Logger> tracer;
+    private ExtendedServiceTracker<BatcherFactory> batcherFactoryLocator;
+    private ExtendedServiceTracker<SourceReferenceResolver> sourceReferenceLocator;
+    private ExtendedServiceTracker<SyncCommandFactory> commandFactory;
     
     private Preferences preferences;
+    
+    public static final String BSN_VAULT_IMPL = "org.apache.sling.ide.impl-vlt";
+    public static final String BSN_API = "org.apache.sling.ide.api";
+    public static final String BSN_ARTIFACTS = "org.apache.sling.ide.artifacts";
 
 	public void start(BundleContext context) throws Exception {
 		super.start(context);
 		plugin = this;
 		
-        eventAdmin = new ServiceTracker<>(context, EventAdmin.class, null);
-        eventAdmin.open();
+		// the following bundles need to be explicitly started as no class is directly referenced
+		// and everything works via declarative services
+		// compare with https://github.com/eclipse-m2e/m2e-core/issues/945
+		getFirstBundle(context, BSN_API).start();
+		getFirstBundle(context, BSN_VAULT_IMPL).start();
+		getFirstBundle(context, BSN_ARTIFACTS).start();
+		
+        repositoryFactory = new ExtendedServiceTracker<>(context, RepositoryFactory.class);
+        serializationManager = new ExtendedServiceTracker<>(context, SerializationManager.class);
+        filterLocator = new ExtendedServiceTracker<>(context, FilterLocator.class);
+        osgiClientFactory = new ExtendedServiceTracker<>(context, OsgiClientFactory.class);
+        artifactLocator = new ExtendedServiceTracker<>(context, EmbeddedArtifactLocator.class);
+        tracer = new ExtendedServiceTracker<>(context, Logger.class);
+        batcherFactoryLocator = new ExtendedServiceTracker<>(context, BatcherFactory.class);
+        sourceReferenceLocator = new ExtendedServiceTracker<>(context, SourceReferenceResolver.class);
+        commandFactory = new ExtendedServiceTracker<>(context, SyncCommandFactory.class);
+	}
 
-        repositoryFactory = new ServiceTracker<>(context, RepositoryFactory.class,
-                null);
-        repositoryFactory.open();
-
-        serializationManager = new ServiceTracker<>(context, SerializationManager.class, null);
-        serializationManager.open();
-
-        filterLocator = new ServiceTracker<>(context, FilterLocator.class, null);
-        filterLocator.open();
-
-        osgiClientFactory = new ServiceTracker<>(context, OsgiClientFactory.class,
-                null);
-        osgiClientFactory.open();
-
-        artifactLocator = new ServiceTracker<>(context, EmbeddedArtifactLocator.class, null);
-        artifactLocator.open();
-
-        tracer = new ServiceTracker<>(context, Logger.class, null);
-        tracer.open();
-        
-        batcherFactoryLocator = new ServiceTracker<>(context, BatcherFactory.class, null);
-        batcherFactoryLocator.open();
-        
-        sourceReferenceLocator = new ServiceTracker<>(context, SourceReferenceResolver.class, null);
-        sourceReferenceLocator.open();
-        
-        commandFactory = new ServiceTracker<>(context, SyncCommandFactory.class, null);
-        commandFactory.open();
+	static Bundle getFirstBundle(BundleContext bundleContext, String bundleSymbolicName)
+	{
+		for (Bundle bundle : bundleContext.getBundles()) {
+			if (bundleSymbolicName.equals(bundle.getSymbolicName())) {
+				return bundle;
+			}
+		}
+		throw new IllegalStateException("Bundle with Bundle-SymbolicName '" + bundleSymbolicName + "' could not be found. Something went wrong during installation");
 	}
 
 	/*
@@ -133,63 +127,42 @@ public class Activator extends Plugin {
 	}
 
     public RepositoryFactory getRepositoryFactory() {
-
-        return ServiceUtil.getNotNull(repositoryFactory);
+        return repositoryFactory.getNotNull();
 	}
 
     public SerializationManager getSerializationManager() {
-        return ServiceUtil.getNotNull(serializationManager);
+        return serializationManager.getNotNull();
     }
 
     public FilterLocator getFilterLocator() {
-        return ServiceUtil.getNotNull(filterLocator);
+        return filterLocator.getNotNull();
     }
 
     public OsgiClientFactory getOsgiClientFactory() {
-        return ServiceUtil.getNotNull(osgiClientFactory);
+        return osgiClientFactory.getNotNull();
     }
 
     public EmbeddedArtifactLocator getArtifactLocator() {
-
-        return ServiceUtil.getNotNull(artifactLocator);
+        return artifactLocator.getNotNull();
     }
 
     public Logger getPluginLogger() {
-        return (Logger) ServiceUtil.getNotNull(tracer);
+        return tracer.getNotNull();
     }
     
     public BatcherFactory getBatcherFactory() {
-        return (BatcherFactory) ServiceUtil.getNotNull(batcherFactoryLocator);
+        return batcherFactoryLocator.getNotNull();
     }
     
     public SyncCommandFactory getCommandFactory() {
-        return ServiceUtil.getNotNull(commandFactory);
-    }
-    
-    /**
-     * @deprecated This should not be used directly to communicate with the client . There is no direct replacement
-     */
-    @Deprecated
-    public void issueConsoleLog(String actionType, String path, String message) {
-        Map<String, Object> props = new HashMap<>();
-        props.put(CommandExecutionProperties.RESULT_TEXT, message);
-        props.put(CommandExecutionProperties.ACTION_TYPE, actionType);
-        props.put(CommandExecutionProperties.ACTION_TARGET, path);
-        props.put(CommandExecutionProperties.TIMESTAMP_START, System.currentTimeMillis());
-        props.put(CommandExecutionProperties.TIMESTAMP_END, System.currentTimeMillis());
-        Event event = new Event(CommandExecutionProperties.REPOSITORY_TOPIC, props);
-        getEventAdmin().postEvent(event);
-    }
-    
-    public EventAdmin getEventAdmin() {
-        return (EventAdmin) ServiceUtil.getNotNull(eventAdmin);
+        return commandFactory.getNotNull();
     }
     
     /**
      * @return the source reference resolver, possibly null
      */
-    public SourceReferenceResolver getSourceReferenceResolver() {
-        return (SourceReferenceResolver) sourceReferenceLocator.getService();
+    public Optional<SourceReferenceResolver> getSourceReferenceResolver() {
+        return sourceReferenceLocator.getOptional();
     }
     
     public Preferences getPreferences() {

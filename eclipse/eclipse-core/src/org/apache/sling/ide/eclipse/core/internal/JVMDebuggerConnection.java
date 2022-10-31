@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.apache.sling.ide.eclipse.core.ISlingLaunchpadConfiguration;
 import org.apache.sling.ide.eclipse.core.ISlingLaunchpadServer;
@@ -114,15 +115,15 @@ public class JVMDebuggerConnection {
         
         int workTicksForReferences = 24; // 30 - 5 - 1
         
-        SourceReferenceResolver resolver = Activator.getDefault().getSourceReferenceResolver();
-        if ( resolver != null  && configuration.resolveSourcesInDebugMode()) {
+        Optional<SourceReferenceResolver> resolver = Activator.getDefault().getSourceReferenceResolver();
+        if ( resolver.isPresent()  && configuration.resolveSourcesInDebugMode()) {
             try {
                 List<SourceReference> references = osgiClient.findSourceReferences();
                 SubMonitor subMonitor = SubMonitor.convert(monitor, "Resolving source references", workTicksForReferences).setWorkRemaining(references.size());
                 for ( SourceReference reference :  references ) {
                     try {
                         subMonitor.setTaskName("Resolving source reference: " + reference);
-                        IRuntimeClasspathEntry classpathEntry = resolver.resolve(reference);
+                        IRuntimeClasspathEntry classpathEntry = resolver.get().resolve(reference);
                         if ( classpathEntry != null ) {
                             classpathEntries.add(classpathEntry);
                         }

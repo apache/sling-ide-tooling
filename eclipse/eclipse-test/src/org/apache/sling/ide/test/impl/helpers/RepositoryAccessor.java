@@ -20,7 +20,14 @@ import static org.junit.Assert.assertThat;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
+import java.net.http.HttpClient;
+import java.net.http.HttpClient.Version;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.net.http.HttpResponse.BodyHandlers;
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.util.Base64;
 
 import javax.jcr.Credentials;
 import javax.jcr.Node;
@@ -28,12 +35,6 @@ import javax.jcr.Repository;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpException;
-import org.apache.commons.httpclient.UsernamePasswordCredentials;
-import org.apache.commons.httpclient.auth.AuthScope;
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.util.Text;
 import org.apache.sling.ide.jcr.RepositoryUtils;
 import org.apache.sling.ide.transport.RepositoryInfo;
@@ -48,47 +49,43 @@ public class RepositoryAccessor {
 
     private final LaunchpadConfig config;
     private final HttpClient client;
+    private final String encodedAuth;
     private Repository repository;
     private Credentials credentials;
 
     public RepositoryAccessor(LaunchpadConfig config) {
         this.config = config;
-
-        client = new HttpClient();
-        client.getParams().setAuthenticationPreemptive(true);
-        client.getState().setCredentials(new AuthScope(config.getHostname(), config.getPort()),
-                new UsernamePasswordCredentials(config.getUsername(), config.getPassword()));
+        encodedAuth = Base64.getEncoder()
+                .encodeToString((config.getUsername() + ":" + config.getPassword()).getBytes(StandardCharsets.UTF_8));
+        client = HttpClient.newBuilder()
+                .version(Version.HTTP_1_1)
+                .connectTimeout(Duration.ofSeconds(10))
+                .build();
     }
 
-    public void assertGetIsSuccessful(String path, String expectedResult) throws HttpException, IOException {
+    HttpRequest.Builder customizeRequest(HttpRequest.Builder builder) {
+    	return builder.header("Authorization", "Basic " + encodedAuth);
+    }
 
-        GetMethod m = new GetMethod(config.getUrl() + path);
-        try {
-            int result = client.executeMethod(m);
-
-            assertThat("Unexpected status call for " + m.getURI(), result, CoreMatchers.equalTo(200));
-
-            try ( InputStream input = m.getResponseBodyAsStream() ) {
-                String responseBody = IOUtils.toString(input, m.getRequestCharSet());
+    public void assertGetIsSuccessful(String path, String expectedResult) throws IOException, InterruptedException {
+    	HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
+    	         .uri(config.getUrl().resolve(path));
+    	HttpRequest request = customizeRequest(requestBuilder).build();
+        HttpResponse<String> response = client.send(request, BodyHandlers.ofString());
+        assertThat("Unexpected status call for " + request, response.statusCode(), CoreMatchers.equalTo(200));
     
-                assertThat("Unexpected response for " + m.getURI(), responseBody,
-                        CoreMatchers.equalTo(expectedResult));
-            }
-        } finally {
-            m.releaseConnection();
-        }
+        assertThat("Unexpected response for " + request, response.body(),
+                    CoreMatchers.equalTo(expectedResult));
+        
     }
 
-    public void assertGetReturns404(String path) throws HttpException, IOException {
+    public void assertGetReturns404(String path) throws IOException, InterruptedException {
 
-        GetMethod m = new GetMethod(config.getUrl() + path);
-        try {
-            int result = client.executeMethod(m);
-
-            assertThat("Unexpected status call for " + m.getURI(), result, CoreMatchers.equalTo(404));
-        } finally {
-            m.releaseConnection();
-        }
+    	HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
+   	         .uri(config.getUrl().resolve(path));
+    	HttpRequest request = customizeRequest(requestBuilder).build();
+        HttpResponse<Void> response = client.send(request, BodyHandlers.discarding());
+        assertThat("Unexpected status call for " + request, response.statusCode(), CoreMatchers.equalTo(404));
     }
 
     public void tryDeleteResource(String path) throws RepositoryException {

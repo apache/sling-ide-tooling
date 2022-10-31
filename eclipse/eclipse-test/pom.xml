@@ -36,22 +36,16 @@
 
     <build>
         <plugins>
+        	<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>tycho-ds-plugin</artifactId>
+			</plugin>
             <plugin>
                 <groupId>org.eclipse.tycho</groupId>
                 <artifactId>target-platform-configuration</artifactId>
                 <configuration>
                     <dependency-resolution>
                         <extraRequirements>
-                            <requirement>
-                                <type>eclipse-plugin</type>
-                                <id>org.eclipse.equinox.event</id>
-                                <versionRange>0.0.0</versionRange>
-                            </requirement>
-                            <requirement>
-                                <type>eclipse-plugin</type>
-                                <id>org.eclipse.equinox.ds</id>
-                                <versionRange>0.0.0</versionRange>
-                            </requirement>
                             <requirement>
                                 <type>eclipse-feature</type>
                                 <id>org.apache.sling.ide.feature</id>
@@ -60,16 +54,6 @@
                             <requirement>
                                 <type>eclipse-feature</type>
                                 <id>org.apache.sling.ide.sightly-feature</id>
-                                <versionRange>0.0.0</versionRange>
-                            </requirement>
-                            <requirement>
-                                <type>eclipse-plugin</type>
-                                <id>org.slf4j.binding.simple</id>
-                                <versionRange>0.0.0</versionRange>
-                            </requirement>
-                            <requirement>
-                                <type>eclipse-plugin</type>
-                                <id>org.slf4j.apis.log4j</id>
                                 <versionRange>0.0.0</versionRange>
                             </requirement>
                         </extraRequirements>
@@ -83,7 +67,7 @@
                 <configuration>
                     <useUIHarness>true</useUIHarness>
                     <useUIThread>false</useUIThread>
-                    <argLine>-XX:MaxPermSize=512m ${ui.test.args}</argLine>
+                    <argLine>${ui.test.args}</argLine>
                     <systemProperties>
                         <launchpad.http.port>${http.port}</launchpad.http.port>
                         <org.slf4j.simpleLogger.showDateTime>true</org.slf4j.simpleLogger.showDateTime>
@@ -98,7 +82,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
-                <version>1.7</version>
+                <version>3.3.0</version>
                 <executions>
                     <execution>
                         <id>reserve-network-port</id>
@@ -114,37 +98,42 @@
                     </execution>
                 </executions>
             </plugin>
+            <!-- launch the Sling instances to test; only oak-tar -->
             <plugin>
                 <groupId>org.apache.sling</groupId>
-                <artifactId>slingstart-maven-plugin</artifactId>
-                <version>1.8.2</version>
-                <extensions>true</extensions>
+                <artifactId>feature-launcher-maven-plugin</artifactId>
+                <version>0.1.2</version>
+                <configuration>
+                    <!-- newer versions don't work due to https://issues.apache.org/jira/browse/SLING-11158 -->
+                    <featureLauncherVersion>1.1.26</featureLauncherVersion>
+                    <launches>
+                        <launch>
+                            <id>sling-starter-oak-tar</id>
+                            <!-- launch the regular Starter distribution (based on Oak with Segment Node Store) -->
+                            <feature>
+                                <groupId>org.apache.sling</groupId>
+                                <artifactId>org.apache.sling.starter</artifactId>
+                                <version>12</version>
+                                <classifier>oak_tar</classifier>
+                                <type>slingosgifeature</type>
+                            </feature>
+                            <launcherArguments>
+                                <frameworkProperties>
+                                    <org.osgi.service.http.port>${http.port}</org.osgi.service.http.port>
+                                </frameworkProperties>
+                            </launcherArguments>
+                            <startTimeoutSeconds>${startTimeoutSeconds}</startTimeoutSeconds>
+                        </launch>
+                    </launches>
+                </configuration>
                 <executions>
                     <execution>
-                        <id>start-container</id>
                         <goals>
                             <goal>start</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>stop-container</id>
-                        <goals>
                             <goal>stop</goal>
                         </goals>
                     </execution>
                 </executions>
-                <configuration>
-                    <servers>
-                        <server>
-                            <port>${http.port}</port>
-                        </server>
-                    </servers>
-                    <launchpadDependency>
-                        <groupId>org.apache.sling</groupId>
-                        <artifactId>org.apache.sling.starter</artifactId>
-                        <version>11</version>
-                    </launchpadDependency>
-                </configuration>
             </plugin>
         </plugins>
     </build>
@@ -152,6 +141,7 @@
     <properties>
         <ui.test.args></ui.test.args>
         <defaultLogLevel>INFO</defaultLogLevel>
+        <startTimeoutSeconds>120</startTimeoutSeconds>
     </properties>
 
     <profiles>

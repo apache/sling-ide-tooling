@@ -27,13 +27,12 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.Callable;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 
-import org.apache.commons.httpclient.HttpException;
-import org.apache.commons.httpclient.URIException;
 import org.apache.sling.ide.test.impl.helpers.DisableDebugStatusHandlers;
 import org.apache.sling.ide.test.impl.helpers.ExternalSlingLaunchpad;
 import org.apache.sling.ide.test.impl.helpers.FailOnUnsuccessfulEventsRule;
@@ -79,7 +78,7 @@ public class ContentDeploymentTest {
     public DisableDebugStatusHandlers disableDebugHandlers = new DisableDebugStatusHandlers();
 
     @Test
-    public void deployFile() throws CoreException, InterruptedException, URIException, HttpException, IOException {
+    public void deployFile() throws CoreException, InterruptedException, IOException {
 
         wstServer.waitForServerToStart();
 
@@ -105,7 +104,7 @@ public class ContentDeploymentTest {
         Poller poller = new Poller();
         poller.pollUntil(new Callable<Void>() {
             @Override
-            public Void call() throws HttpException, IOException {
+            public Void call() throws InterruptedException, IOException {
                 repo.assertGetIsSuccessful("test/hello.txt", "hello, world");
                 return null;
             }
@@ -117,7 +116,7 @@ public class ContentDeploymentTest {
         // verify that file is updated
         poller.pollUntil(new Callable<Void>() {
             @Override
-            public Void call() throws HttpException, IOException {
+            public Void call() throws InterruptedException, IOException {
                 repo.assertGetIsSuccessful("test/hello.txt", "goodbye, world");
                 return null;
             }
@@ -129,7 +128,7 @@ public class ContentDeploymentTest {
         // verify that file is deleted
         poller.pollUntil(new Callable<Void>() {
             @Override
-            public Void call() throws HttpException, IOException {
+            public Void call() throws InterruptedException, IOException {
                 repo.assertGetReturns404("test/hello.txt");
                 return null;
             }
@@ -157,7 +156,7 @@ public class ContentDeploymentTest {
         // create filter.xml
         project.createVltFilterWithRoots("/test");
         project.createOrUpdateFile(Path.fromPortableString("jcr_root/test/hello.txt"), new ByteArrayInputStream(
-                "hello, world".getBytes()));
+                "hello, world".getBytes(StandardCharsets.US_ASCII)));
 
         // verifications
         final RepositoryAccessor repo = new RepositoryAccessor(config);
@@ -167,7 +166,7 @@ public class ContentDeploymentTest {
         // change node type to sling:Folder
         InputStream contentXml = getClass().getResourceAsStream("sling-folder-nodetype.xml");
         project.createOrUpdateFile(Path.fromPortableString("jcr_root/test/.content.xml"), contentXml);
-
+     
         // verifications (2)
         assertThatNode(repo, poller, "/test",
                 allOf(hasPath("/test"), hasPrimaryType("sling:Folder"), hasChildrenCount(1)));

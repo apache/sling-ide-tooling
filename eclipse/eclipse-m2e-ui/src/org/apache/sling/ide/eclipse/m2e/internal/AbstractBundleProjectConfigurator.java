@@ -20,6 +20,7 @@ import org.apache.maven.model.Plugin;
 import org.apache.maven.project.MavenProject;
 import org.apache.sling.ide.eclipse.core.ConfigurationHelper;
 import org.apache.sling.ide.log.Logger;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
@@ -45,12 +46,13 @@ public abstract class AbstractBundleProjectConfigurator extends AbstractProjectC
         
         // at this point the JDT project is already created by the tycho plugin
         // we just need to setup the appropriate facets
-        IProject project = configRequest.getProject();
+        IProject project = configRequest.mavenProjectFacade().getProject();
+        IFile pomFile = configRequest.mavenProjectFacade().getPom();
         trace("AbstractBundleProjectConfigurator called for POM {0} and project {1}",
-                configRequest.getPom().getFullPath(),
+        		pomFile.getFullPath(),
                 project.getName());
         // delete all previous markers on this pom.xml set by any project configurator
-        deleteMarkers(configRequest.getPom());
+        deleteMarkers(pomFile);
         
         if (!getPreferences().isBundleProjectConfiguratorEnabled()) {
             trace("m2e project configurator for bundles was disabled through preference.");
@@ -58,7 +60,7 @@ public abstract class AbstractBundleProjectConfigurator extends AbstractProjectC
         }
 
         // check for maven-sling-plugin as well (to make sure this is a Sling project)
-        MavenProject mavenProject = configRequest.getMavenProject();
+        MavenProject mavenProject = configRequest.mavenProject();
         if (mavenProject.getPlugin(MAVEN_SLING_PLUGIN_KEY) != null) {
             trace("Found maven-sling-plugin in build plugins for project {0}, therefore adding sling bundle facets!", project.getName());
             ConfigurationHelper.convertToBundleProject(project);
@@ -66,7 +68,7 @@ public abstract class AbstractBundleProjectConfigurator extends AbstractProjectC
             trace("Couldn't find maven-sling-plugin in build plugins for project {0}, therefore not adding the sling bundle facets!", project.getName());
         }
         if (!isSupportingM2eIncrementalBuild(mavenProject, getLogger())) {
-            markerManager.addMarker(configRequest.getPom(), MARKER_TYPE_BUNDLE_NOT_SUPPORTING_M2E,
+            markerManager.addMarker(pomFile, MARKER_TYPE_BUNDLE_NOT_SUPPORTING_M2E,
                     "Missing m2e incremental build support for generating the bundle manifest, component descriptions and metatype resources. Please use the provided Quick Fixes on this issue to resolve this.",
                     -1,
                     IMarker.SEVERITY_ERROR);

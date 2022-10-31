@@ -30,7 +30,9 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.launching.IRuntimeClasspathEntry;
 import org.eclipse.jdt.launching.JavaRuntime;
 import org.eclipse.m2e.core.MavenPlugin;
+import org.osgi.service.component.annotations.Component;
 
+@Component
 public class MavenSourceReferenceResolver implements SourceReferenceResolver {
     @Override
     public IRuntimeClasspathEntry resolve(SourceReference reference) throws CoreException {

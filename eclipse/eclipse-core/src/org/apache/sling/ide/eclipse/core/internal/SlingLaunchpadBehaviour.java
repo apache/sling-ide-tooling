@@ -92,11 +92,10 @@ public class SlingLaunchpadBehaviour extends ServerBehaviourDelegateWithModulePu
         
         Repository repository;
         RepositoryInfo repositoryInfo;
-        OsgiClient client;
         try {
             repository = ServerUtil.connectRepository(getServer(), monitor);
             repositoryInfo = ServerUtil.getRepositoryInfo(getServer(), monitor);
-            client = Activator.getDefault().getOsgiClientFactory().createOsgiClient(repositoryInfo);
+            
         } catch (CoreException e) {
             setServerState(IServer.STATE_STOPPED);
             throw e;
@@ -104,52 +103,55 @@ public class SlingLaunchpadBehaviour extends ServerBehaviourDelegateWithModulePu
             setServerState(IServer.STATE_STOPPED);
             throw new CoreException(new Status(IStatus.ERROR, Activator.PLUGIN_ID, e.getMessage(), e));
         }
-
         monitor.worked(10); // 10/50 done
+        try (OsgiClient client = Activator.getDefault().getOsgiClientFactory().createOsgiClient(repositoryInfo)) {
         
-        try {
-            EmbeddedArtifactLocator artifactLocator = Activator.getDefault().getArtifactLocator();
-
-            installBundle(monitor,client, artifactLocator.loadSourceSupportBundle(), SUPPORT_SOURCE_BUNDLE_SYMBOLIC_NAME); // 15/50 done
-            installBundle(monitor,client, artifactLocator.loadToolingSupportBundle(), SUPPORT_BUNDLE_SYMBOLIC_NAME); // 20/50 done
-            
-        } catch ( IOException | OsgiClientException e) {
-            Activator.getDefault().getPluginLogger()
-                .warn("Failed reading the installation support bundle", e);
-        }
-        
-        try {
-            if (getServer().getMode().equals(ILaunchManager.DEBUG_MODE)) {
-                debuggerConnection = new JVMDebuggerConnection(client);
-                
-                success = debuggerConnection.connectInDebugMode(launch, getServer(), SubMonitor.convert(monitor, 30));
-
-                // 50/50 done
-
-            } else {
-                
-                Command<ResourceProxy> command = repository.newListChildrenNodeCommand("/");
-                result = command.execute();
-                success = result.isSuccess();
-                
-                monitor.worked(30); // 50/50 done
-                
-            }
-
-            if (success) {
-                setServerState(IServer.STATE_STARTED);
-            } else {
-                setServerState(IServer.STATE_STOPPED);
-                String message = "Unable to connect to the Server. Please make sure a server instance is running ";
-                if (result != null) {
-                    message += " (" + result.toString() + ")";
-                }
-                throw new CoreException(new Status(IStatus.ERROR, Activator.PLUGIN_ID, message));
-            }
-        } catch ( CoreException | RuntimeException e ) {
-            setServerState(IServer.STATE_STOPPED);
-            throw e;
-        } finally {
+	        try {
+	            EmbeddedArtifactLocator artifactLocator = Activator.getDefault().getArtifactLocator();
+	
+	            installBundle(monitor,client, artifactLocator.loadSourceSupportBundle(), SUPPORT_SOURCE_BUNDLE_SYMBOLIC_NAME); // 15/50 done
+	            installBundle(monitor,client, artifactLocator.loadToolingSupportBundle(), SUPPORT_BUNDLE_SYMBOLIC_NAME); // 20/50 done
+	            
+	        } catch ( IOException | OsgiClientException e) {
+	            Activator.getDefault().getPluginLogger()
+	                .warn("Failed reading the installation support bundle", e);
+	        }
+	        
+	        try {
+	            if (getServer().getMode().equals(ILaunchManager.DEBUG_MODE)) {
+	                debuggerConnection = new JVMDebuggerConnection(client);
+	                
+	                success = debuggerConnection.connectInDebugMode(launch, getServer(), SubMonitor.convert(monitor, 30));
+	
+	                // 50/50 done
+	
+	            } else {
+	                
+	                Command<ResourceProxy> command = repository.newListChildrenNodeCommand("/");
+	                result = command.execute();
+	                success = result.isSuccess();
+	                
+	                monitor.worked(30); // 50/50 done
+	                
+	            }
+	
+	            if (success) {
+	                setServerState(IServer.STATE_STARTED);
+	            } else {
+	                setServerState(IServer.STATE_STOPPED);
+	                String message = "Unable to connect to the Server. Please make sure a server instance is running ";
+	                if (result != null) {
+	                    message += " (" + result.toString() + ")";
+	                }
+	                throw new CoreException(new Status(IStatus.ERROR, Activator.PLUGIN_ID, message));
+	            }
+	        } catch ( CoreException | RuntimeException e ) {
+	            setServerState(IServer.STATE_STOPPED);
+	            throw e;
+	        }
+        } catch (IOException e1) {
+        	throw new CoreException(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Error closing OSGi client", e1));
+		} finally {
             monitor.done();
         }
     }
@@ -325,9 +327,8 @@ public class SlingLaunchpadBehaviour extends ServerBehaviourDelegateWithModulePu
         boolean installLocally = getServer().getAttribute(ISlingLaunchpadServer.PROP_INSTALL_LOCALLY, true);
 		monitor.beginTask("deploying via local install", 5);
 
-        try {
-            OsgiClient osgiClient = Activator.getDefault().getOsgiClientFactory()
-                    .createOsgiClient(ServerUtil.getRepositoryInfo(getServer(), monitor));
+        try (OsgiClient osgiClient = Activator.getDefault().getOsgiClientFactory()
+                .createOsgiClient(ServerUtil.getRepositoryInfo(getServer(), monitor))) {
 
             Version supportBundleVersion = osgiClient
                     .getBundleVersion(EmbeddedArtifactLocator.SUPPORT_BUNDLE_SYMBOLIC_NAME);
@@ -345,7 +346,6 @@ public class SlingLaunchpadBehaviour extends ServerBehaviourDelegateWithModulePu
             IResource manifest = outputFolder.findMember("META-INF/MANIFEST.MF");
             if (manifest==null) {
                 Activator.getDefault().getPluginLogger().warn("Project "+project+" does not have a META-INF/MANIFEST.MF (yet) - not publishing this time");
-                Activator.getDefault().issueConsoleLog("InstallBundle", outputFolder.getLocation().toOSString(), "Project "+project+" does not have a META-INF/MANIFEST.MF (yet) - not publishing this time");
                 monitor.done();
                 setModulePublishState(module, IServer.PUBLISH_STATE_FULL);
                 return;
@@ -356,7 +356,7 @@ public class SlingLaunchpadBehaviour extends ServerBehaviourDelegateWithModulePu
             //TODO SLING-3767:
             //osgiClient must have a timeout!!!
             if ( installLocally ) {
-                osgiClient.installLocalBundle(outputLocation.toOSString());
+                osgiClient.installLocalBundle(outputLocation.toFile().toPath());
                 monitor.worked(3);
             } else {
 
@@ -370,12 +370,12 @@ public class SlingLaunchpadBehaviour extends ServerBehaviourDelegateWithModulePu
 
             setModulePublishState(module, IServer.PUBLISH_STATE_NONE);
 
-        } catch (URISyntaxException e1) {
+        } catch (IOException|URISyntaxException e1) {
             throw new CoreException(new Status(IStatus.ERROR, Activator.PLUGIN_ID, e1.getMessage(), e1));
         } catch (OsgiClientException e1) {
             throw new CoreException(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Failed installing bundle : "
                     + e1.getMessage(), e1));
-        } finally {
+		} finally {
             monitor.done();
         }
 	}
