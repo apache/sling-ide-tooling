@@ -47,7 +47,6 @@
         <module>eclipse-sightly-core</module>
         <module>eclipse-sightly-ui</module>
         <module>sightly-feature</module>
-        <module>p2update</module>
         <!-- test modules activated per profile -->
     </modules>
 

@@ -60,66 +60,31 @@
             <build>
                 <plugins>
                 	<plugin>
-          <groupId>net.jsign</groupId>
-          <artifactId>jsign-maven-plugin</artifactId>
-          <version>4.2</version>
-          <executions>
-            <execution>
-              <goals>
-                <goal>sign</goal>
-              </goals>
-              <configuration>
-                <fileSet>
-                  <directory>target/repository</directory>
-                  <includes>
-                  	<include>**/org.apache.sling.*.jar</include>
-                  </includes>
-                </fileSet>
-                <name>Apache Sling IDE Tooling for Eclipse</name>
-                <url>https://sling.apache.org/documentation/development/ide-tooling.html</url>
-                <alias>Sling-PMC-cert-2022-09_4f01e1ed-9fde-4f84-a5ac-adf82e114a3b</alias>
-                <storepass>${settings.server.digicertoneasf.passphrase}|path</storepass>
-                <storetype>DIGICERTONE</storetype>
-              </configuration>
-            </execution>
-          </executions>
-        </plugin>
-        
-                    <!-- 
-                    This plugin is not yet released. To use this code signing, install the 
-                    pluging locally and then run with the 'codesign' profile. See the Sling IDE
-                    tooling docs for more instructions 
-                    <plugin>
-                        <groupId>org.apache.sling</groupId>
-                        <artifactId>codesign-maven-plugin</artifactId>
-                        <version>1.0.0-SNAPSHOT</version>
-                        <executions>
-                            <execution>
-                                <id>codesign</id>
-                                <phase>package</phase>
-                                <goals>
-                                    <goal>sign</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                        <configuration>
-                            <applicationName>Apache Sling IDE Tooling for Eclipse</applicationName>
-                            <applicationVersion>${qualifiedVersion}</applicationVersion>
-                            <includeProjectArtifact>false</includeProjectArtifact>
-                            <artifactSets>
-                                <artifactSet>
-                                    <directory>target/repository/features</directory>
-                                    <include>org.apache.sling.*.jar</include>
-                                </artifactSet>
-                                <artifactSet>
-                                    <directory>target/repository/plugins</directory>
-                                    <include>org.apache.sling.*.jar</include>
-                                </artifactSet>
-                            </artifactSets>
-                            <signingService>Java TEST Signing Sha256</signingService>
-                        </configuration>
-                    </plugin>
-                     -->
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-jarsigner-plugin</artifactId>
+						<version>3.0.0</version>
+						<executions>
+							<execution>
+								<id>sign</id>
+								<goals>
+								<goal>sign</goal>
+								</goals>
+							</execution>
+						</executions>
+						<configuration>
+							<keystore>NONE</keystore>
+							<alias>Sling-PMC-cert-2022-09_4f01e1ed-9fde-4f84-a5ac-adf82e114a3b</alias>
+							<storepass>none</storepass>
+							<providerClass>sun.security.pkcs11.SunPKCS11</providerClass>
+							<storetype>PKCS11</storetype>
+							<providerArg>${env.PKCS11_CONFIG}</providerArg>
+							<tsa>http://timestamp.digicert.com</tsa>
+							<verbose>true</verbose>
+							<processMainArtifact>false</processMainArtifact>
+							<archiveDirectory>${project.build.directory}/repository</archiveDirectory>
+						</configuration>
+					</plugin>
+				
                     <plugin>
                         <groupId>org.eclipse.tycho.extras</groupId>
                         <artifactId>tycho-p2-extras-plugin</artifactId>

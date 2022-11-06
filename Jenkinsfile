@@ -20,6 +20,7 @@ def jobConfig = [
 helper.runWithErrorHandling(jobConfig, {
     parallel 'linux': generateStages('linux', mvnVersion, javaVersion),
         'windows': generateStages('windows', mvnVersion, javaVersion)
+    buildSignedP2Repository( mvnVersion, javaVersion )
 })
 
 // generates os-specific stages
@@ -48,7 +49,7 @@ def generateStages(String os, def mvnVersion, def javaVersion) {
                 timeout(20) {
                     // workaround for https://issues.jenkins-ci.org/browse/JENKINS-39415
                     wrap([$class: 'Xvfb', autoDisplayName: true]) {
-                        runCmd 'mvn -f eclipse clean verify'
+                        runCmd 'mvn -f eclipse clean install'
                     }
                     // workaround for https://issues.jenkins-ci.org/browse/JENKINS-55889
                     junit(testResults: 'eclipse/**/surefire-reports/*.xml', allowEmptyResults: true)
@@ -70,6 +71,18 @@ def generateStages(String os, def mvnVersion, def javaVersion) {
     }
 }
 
+def buildSignedP2Repository( def mvnVersion, def javaVersion ) {
+	node('pkcs11') {
+		stage(' Build Signed P2 Repository') {
+			checkout scm
+			withMaven(maven: mvnVersion, jdk: javaVersion, mavenLocalRepo: '.repository', options: [artifactsPublisher(disabled: true)]) {
+                timeout(20) {
+                    runCmd 'mvn -f eclipse/p2update clean verify'
+                }
+			}
+		}
+	}
+}
 def runCmd(def cmd) {
     if (isUnix() ) {
         sh cmd
