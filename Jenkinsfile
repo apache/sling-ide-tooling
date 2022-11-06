@@ -18,9 +18,11 @@ def jobConfig = [
     sonarQubeAdditionalParams: ''
 ]
 helper.runWithErrorHandling(jobConfig, {
-    parallel 'linux': generateStages('linux', mvnVersion, javaVersion),
+    parallel([
+    	'linux': generateStages('linux', mvnVersion, javaVersion),
         'windows': generateStages('windows', mvnVersion, javaVersion)
-    buildSignedP2Repository( mvnVersion, javaVersion )
+        ])
+    buildSignedP2Repository(mvnVersion, javaVersion)
 })
 
 // generates os-specific stages
@@ -77,7 +79,7 @@ def buildSignedP2Repository( def mvnVersion, def javaVersion ) {
 			checkout scm
 			withMaven(maven: mvnVersion, jdk: javaVersion, mavenLocalRepo: '.repository', options: [artifactsPublisher(disabled: true)]) {
                 timeout(20) {
-                    runCmd 'mvn -f eclipse/p2update clean verify'
+                    runCmd 'mvn -f eclipse/p2update clean verify -Pcodesign'
                 }
 			}
 		}
