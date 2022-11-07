@@ -19,8 +19,8 @@ def jobConfig = [
 ]
 helper.runWithErrorHandling(jobConfig, {
     parallel([
-    	'linux': generateStages('linux', mvnVersion, javaVersion),
-        'windows': generateStages('windows', mvnVersion, javaVersion)
+    	'linux': generateStages('linux', mvnVersion, javaVersion)
+        //'windows': generateStages('windows', mvnVersion, javaVersion)
         ])
     buildSignedP2Repository(mvnVersion, javaVersion)
 })
@@ -75,7 +75,7 @@ def generateStages(String os, def mvnVersion, def javaVersion) {
 
 def buildSignedP2Repository( def mvnVersion, def javaVersion ) {
 	node('pkcs11') {
-		stage(' Build Signed P2 Repository') {
+		stage('Build Signed P2 Repository') {
 			checkout scm
 			withMaven(maven: mvnVersion, jdk: javaVersion, mavenLocalRepo: '.repository', options: [artifactsPublisher(disabled: true)]) {
                 timeout(20) {
