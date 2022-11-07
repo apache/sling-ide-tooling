@@ -23,7 +23,7 @@ helper.runWithErrorHandling(jobConfig, {
     	'linux': generateStages('linux', mvnVersion, javaVersion)
         //'windows': generateStages('windows', mvnVersion, javaVersion)
         ])
-    if (env.BRANCH_NAME == 'master') {
+    if (shouldDeploy()) {
     	buildSignedP2Repository(mvnVersion, javaVersion)
     }
 })
@@ -32,9 +32,9 @@ helper.runWithErrorHandling(jobConfig, {
 def generateStages(String os, def mvnVersion, def javaVersion) {
     def isWindows = os == "windows"
     def prefix = isWindows ? "win" : "linux"
-    def nodeName = isWindows ? "Windows" : "ubuntu"
+    def nodeLabel = isWindows ? "Windows" : "ubuntu"
     
-    String goals = (!isWindows && env.BRANCH_NAME == 'master') ? 'clean deploy' : 'clean install'
+    String goals = (!isWindows && shouldDeploy()) ? 'clean deploy' : 'clean install'
 
     def stages = [
         // use a local repository due to using version ranges in Tycho (https://github.com/eclipse-tycho/tycho/issues/1464)
@@ -56,7 +56,7 @@ def generateStages(String os, def mvnVersion, def javaVersion) {
                 timeout(20) {
                     // workaround for https://issues.jenkins-ci.org/browse/JENKINS-39415
                     wrap([$class: 'Xvfb', autoDisplayName: true]) {
-                        runCmd 'mvn -f eclipse ${goals}'
+                        runCmd "mvn -f eclipse ${goals}"
                     }
                     // workaround for https://issues.jenkins-ci.org/browse/JENKINS-55889
                     junit(testResults: 'eclipse/**/surefire-reports/*.xml', allowEmptyResults: true)
@@ -67,7 +67,8 @@ def generateStages(String os, def mvnVersion, def javaVersion) {
     ]
 
     return {
-    	node(nodeName) {
+    	node(nodeLabel) {
+    		echo "Running on node ${env.NODE_NAME}"
     		checkout scm
 	        stages.each { name, body ->
 	            stage(name) {
@@ -81,6 +82,7 @@ def generateStages(String os, def mvnVersion, def javaVersion) {
 def buildSignedP2Repository( def mvnVersion, def javaVersion ) {
 	node('pkcs11') {
 		stage('Build Signed P2 Repository') {
+			echo "Running on node ${env.NODE_NAME} with PKCS#11 config at ${env.PKCS11_CONFIG}"
 			checkout scm
 			withMaven(maven: mvnVersion, jdk: javaVersion, mavenLocalRepo: '.repository', options: [artifactsPublisher(disabled: true)]) {
                 timeout(20) {
@@ -97,4 +99,8 @@ def runCmd(def cmd) {
     } else {
         bat cmd
     }
+}
+
+boolean shouldDeploy() {
+	return env.CHANGE_BRANCH == 'feature/sign-jars'
 }
