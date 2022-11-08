@@ -19,10 +19,10 @@ def jobConfig = [
     sonarQubeAdditionalParams: ''
 ]
 helper.runWithErrorHandling(jobConfig, {
-    //parallel([
-    	//'linux': generateStages('linux', mvnVersion, javaVersion)
+    parallel([
+    	'linux': generateStages('linux', mvnVersion, javaVersion)
         //'windows': generateStages('windows', mvnVersion, javaVersion)
-    //    ])
+        ])
     if (shouldDeploy()) {
     	buildSignedP2Repository(mvnVersion, javaVersion)
     }
