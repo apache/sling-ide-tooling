@@ -19,10 +19,10 @@ def jobConfig = [
     sonarQubeAdditionalParams: ''
 ]
 helper.runWithErrorHandling(jobConfig, {
-    parallel([
-    	'linux': generateStages('linux', mvnVersion, javaVersion)
+    //parallel([
+    	//'linux': generateStages('linux', mvnVersion, javaVersion)
         //'windows': generateStages('windows', mvnVersion, javaVersion)
-        ])
+    //    ])
     if (shouldDeploy()) {
     	buildSignedP2Repository(mvnVersion, javaVersion)
     }
@@ -84,10 +84,17 @@ def buildSignedP2Repository( def mvnVersion, def javaVersion ) {
 		stage('Build Signed P2 Repository') {
 			echo "Running on node ${env.NODE_NAME} with PKCS#11 config at ${env.PKCS11_CONFIG}"
 			checkout scm
-			withMaven(maven: mvnVersion, jdk: javaVersion, mavenLocalRepo: '.repository', options: [artifactsPublisher(disabled: true)]) {
-                timeout(20) {
-                    runCmd 'mvn -f eclipse/p2update clean verify -Pcodesign'
-                }
+			// set up environment variables according to https://docs.digicert.com/de/digicert-one/secure-software-manager/ci-cd-integrations/maven-integration-with-pkcs11.html
+			withCredentials([string(credentialsId: 'sling-digicertone-api-key', variable: 'SM_API_KEY')]) {
+				withCredentials([file(credentialsId: 'sling-digicertone-cert', variable: 'SM_CLIENT_CERT_FILE')]) {
+					withCredentials([string(credentialsId: 'sling-digicertone-cert-password', variable: 'SM_CLIENT_CERT_PASSWORD')]) {
+						withMaven(maven: mvnVersion, jdk: javaVersion, mavenLocalRepo: '.repository', options: [artifactsPublisher(disabled: true)]) {
+			                timeout(20) {
+			                    runCmd 'mvn -f eclipse/p2update clean verify -Pcodesign -e'
+			                }
+			            }
+			        }
+				}
 			}
 		}
 	}
