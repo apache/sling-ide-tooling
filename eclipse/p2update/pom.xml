@@ -63,6 +63,20 @@
           </configuration>
       </plugin>
     </plugins>
+    <pluginManagement>
+    	<plugins>
+    		<plugin>
+		        <groupId>com.github.marschall</groupId>
+		        <artifactId>truststore-maven-plugin</artifactId>
+		        <version>0.6.0</version>
+		        <configuration>
+		        	<password>changeme</password>
+		        	<finalName>digicert-truststore</finalName>
+		        	<outputDirectory>${basedir}/generated-truststore</outputDirectory>
+		        </configuration>
+		    </plugin>
+	    </plugins>
+    </pluginManagement>
   </build>
     <profiles>
         <profile>
@@ -92,6 +106,11 @@
 							<verbose>true</verbose>
 							<processMainArtifact>false</processMainArtifact>
 							<archiveDirectory>${project.build.directory}/repository</archiveDirectory>
+							<!-- use custom truststore containinig both root and intermediate CA of Digicert -->
+							<arguments>
+								<argument>-J-Djavax.net.ssl.trustStore=${basedir}/generated-truststore/digicert-truststore.p12</argument>
+								<argument>-J-Djavax.net.ssl.trustStorePassword=changeme</argument>
+							</arguments>
 						</configuration>
 					</plugin>
 				

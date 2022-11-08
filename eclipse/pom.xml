@@ -100,7 +100,7 @@
                     <excludes>
                         <exclude>derby.log</exclude>
                         <exclude>.gitignore</exclude>
-                        <exclude>README.md</exclude>
+                        <exclude>**/README.md</exclude>
 
                         <!-- Eclipse build related files -->
                         <exclude>*.launch</exclude>
