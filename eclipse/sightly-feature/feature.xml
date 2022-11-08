@@ -16,7 +16,7 @@
     and limitations under the License.
 -->
 <feature
-      id="org.apache.sling.ide.sightly-feature"
+      id="org.apache.sling.ide.sightly.feature"
       label="Sling IDE Tools - Sightly Integration (Optional)"
       version="1.2.3.qualifier"
       provider-name="The Apache Software Foundation">

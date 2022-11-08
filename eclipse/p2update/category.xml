@@ -19,10 +19,10 @@
    <feature id="org.apache.sling.ide.feature">
       <category name="sling"/>
    </feature>
-   <feature id="org.apache.sling.ide.m2e-feature">
+   <feature id="org.apache.sling.ide.m2e.feature">
       <category name="sling"/>
-   </feature>
-   <feature id="org.apache.sling.ide.sightly-feature">
+   </feature>-
+   <feature id="org.apache.sling.ide.sightly.feature">
       <category name="sling"/>
    </feature>
    <category-def name="sling" label="Sling"/>
