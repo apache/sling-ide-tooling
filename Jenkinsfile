@@ -90,7 +90,7 @@ def buildSignedP2Repository( def mvnVersion, def javaVersion ) {
 				string(credentialsId: 'sling-digicertone-api-key', variable: 'SM_API_KEY'),
 				string(credentialsId: 'sling-digicertone-cert-password', variable: 'SM_CLIENT_CERT_PASSWORD')]) {
 				// https://docs.digicert.com/de/digicert-one/secure-software-manager/client-tools/configure-environment-variables.html
-				withEnv(['SM_LOG_LEVEL=DEBUG']) {
+				withEnv(['SM_LOG_LEVEL=DEBUG',"SM_LOG_DIR=${WORKSPACE}/.signingmanager/logs",'SM_LOG_FILE_NAME=smpkcs11']) {
 					echo 'Signing with client certificate from $SM_CLIENT_CERT_FILE ...'
 					try {
 						withMaven(maven: mvnVersion, jdk: javaVersion, mavenLocalRepo: '.repository', options: [artifactsPublisher(disabled: true)]) {
@@ -99,7 +99,7 @@ def buildSignedP2Repository( def mvnVersion, def javaVersion ) {
 			                }
 			            }
 			        } catch (e) {
-			        	echo('smpkcs11.log: ' + readFile(file: "${env.HOME}/.signingmanager/logs/smpkcs11.log"))
+			        	echo('smpkcs11.log: ' + readFile(file: ".signingmanager/logs/smpkcs11.log"))
 			        	throw e
 			        }
 			    }
