@@ -128,7 +128,7 @@
     
     <properties>
 		<sling.java.version>11</sling.java.version>
-		<minimalJavaBuildVersion>11</minimalJavaBuildVersion>
+		<minimalJavaBuildVersion>17</minimalJavaBuildVersion><!-- Tycho requires Java 17 -->
 		<!-- must match the version being referenced in the pom.xml of filevault -->
 		<jackrabbit.version>2.20.6</jackrabbit.version>
         <oak.version>1.44.0</oak.version>

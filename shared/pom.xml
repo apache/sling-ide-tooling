@@ -15,16 +15,15 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.apache</groupId>
-        <artifactId>apache</artifactId>
-        <version>27</version>
+        <groupId>org.apache.sling</groupId>
+    	<artifactId>sling</artifactId>
+    	<version>49</version>
     </parent>
     <groupId>org.apache.sling.ide</groupId>
     <artifactId>sling-ide-tooling-shared</artifactId>
     <version>1.2.3-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Apache Sling IDE Tools - Shared Modules</name>
-    <url>http://sling.apache.org</url>
 
     <scm>
         <connection>scm:git:https://gitbox.apache.org/repos/asf/sling-ide-tooling.git</connection>
@@ -40,9 +39,4 @@
         <module>artifacts</module>
         <module>sync-fs</module>
     </modules>
-    
-    <properties>
-        <maven.compiler.target>11</maven.compiler.target>
-        <minimalJavaBuildVersion>11</minimalJavaBuildVersion>
-    </properties>
 </project>

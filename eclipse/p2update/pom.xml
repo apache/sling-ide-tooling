@@ -1,118 +1,136 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-    Licensed to the Apache Software Foundation (ASF) under one or
-    more contributor license agreements. See the NOTICE file
-    distributed with this work for additional information regarding
-    copyright ownership. The ASF licenses this file to you under the
-    Apache License, Version 2.0 (the "License"); you may not use
-    this file except in compliance with the License. You may obtain
-    a copy of the License at
+<!-- Licensed to the Apache Software Foundation (ASF) under one or more contributor 
+	license agreements. See the NOTICE file distributed with this work for additional 
+	information regarding copyright ownership. The ASF licenses this file to 
+	you under the Apache License, Version 2.0 (the "License"); you may not use 
+	this file except in compliance with the License. You may obtain a copy of 
+	the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required 
+	by applicable law or agreed to in writing, software distributed under the 
+	License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS 
+	OF ANY KIND, either express or implied. See the License for the specific 
+	language governing permissions and limitations under the License. -->
+<project
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+	xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.apache.sling.ide</groupId>
+		<artifactId>sling-ide-tooling</artifactId>
+		<version>1.2.3-SNAPSHOT</version>
+	</parent>
+	<artifactId>org.apache.sling.ide.p2update</artifactId>
+	<packaging>eclipse-repository</packaging>
+	<name>Apache Sling IDE Tools Update Site</name>
 
-    http://www.apache.org/licenses/LICENSE-2.0 Unless required by
-    applicable law or agreed to in writing, software distributed
-    under the License is distributed on an "AS IS" BASIS, WITHOUT
-    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions
-    and limitations under the License.
--->
-<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <modelVersion>4.0.0</modelVersion>
-  <parent>
-    <groupId>org.apache.sling.ide</groupId>
-    <artifactId>sling-ide-tooling</artifactId>
-    <version>1.2.3-SNAPSHOT</version>
-  </parent>
-  <artifactId>org.apache.sling.ide.p2update</artifactId>
-  <packaging>eclipse-repository</packaging>
-  <name>Apache Sling IDE Tools Update Site</name>
+	<scm>
+		<connection>scm:git:https://gitbox.apache.org/repos/asf/sling-ide-tooling.git</connection>
+		<developerConnection>scm:git:https://gitbox.apache.org/repos/asf/sling-ide-tooling.git</developerConnection>
+		<url>https://gitbox.apache.org/repos/asf?p=sling-ide-tooling.git</url>
+	</scm>
 
-  <scm>
-    <connection>scm:git:https://gitbox.apache.org/repos/asf/sling-ide-tooling.git</connection>
-    <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/sling-ide-tooling.git</developerConnection>
-    <url>https://gitbox.apache.org/repos/asf?p=sling-ide-tooling.git</url>
-  </scm>
-
-  <build>
-    <!-- ensure that extra files are picked up by the maven-source-plugin -->
-    <resources>
-        <resource>
-            <directory>.</directory>
-            <includes>
-                <include>category.xml</include>
-            </includes>
-        </resource>
-    </resources>
-    <plugins>
-      <!-- the update site is not expected to contain legal artifacts -->
-      <plugin>
-          <groupId>org.apache.geronimo.genesis.plugins</groupId>
-          <artifactId>tools-maven-plugin</artifactId>
-          <configuration>
-            <skip>true</skip>
-          </configuration>
-      </plugin>
-      <plugin>
-          <groupId>org.eclipse.tycho</groupId>
-          <artifactId>target-platform-configuration</artifactId>
-          <version>${tycho.version}</version>
-          <configuration>
-              <target>
-                  <file>${basedir}/org.apache.sling.ide.target-definition.target</file>
-              </target>
-          </configuration>
-      </plugin>
-    </plugins>
-    <pluginManagement>
-    	<plugins>
-    		<plugin>
-		        <groupId>com.github.marschall</groupId>
-		        <artifactId>truststore-maven-plugin</artifactId>
-		        <version>0.6.0</version>
-		        <configuration>
-		        	<password>changeme</password>
-		        	<finalName>digicert-truststore</finalName>
-		        	<outputDirectory>${basedir}/generated-truststore</outputDirectory>
-		        </configuration>
-		    </plugin>
-	    </plugins>
-    </pluginManagement>
-  </build>
-    <profiles>
-        <profile>
-            <id>codesign</id>
-            <build>
-                <plugins>
-                	<plugin>
-                		<groupId>org.apache.maven.plugins</groupId>
-                		<artifactId>maven-enforcer-plugin</artifactId>
-                		<executions>
-                			<execution>
-                				<id>enforce-digicert-one-env-variables</id>
-                				<goals>
-                					<goal>enforce</goal>
-                				</goals>
-                				<configuration>
-			                		<rules>
-						                <requireProperty>
-						                  <property>env.PKCS11_CONFIG</property>
-						                </requireProperty>
-						                <!-- the ones listed at https://docs.digicert.com/de/digicert-one/secure-software-manager/ci-cd-integrations/maven-integration-with-pkcs11.html -->
-						                <requireProperty>
-						                  <property>env.SM_CLIENT_CERT_PASSWORD</property>
-						                </requireProperty>
-						                <requireProperty>
-						                  <property>env.SM_CLIENT_CERT_FILE</property>
-						                </requireProperty>
-						                <requireProperty>
-						                  <property>env.SM_API_KEY</property>
-						                </requireProperty>
-						            </rules>
-					            </configuration>
-                			</execution>
-                		</executions>
-                	</plugin>
-                	<plugin>
+	<build>
+		<!-- ensure that extra files are picked up by the maven-source-plugin -->
+		<resources>
+			<resource>
+				<directory>.</directory>
+				<includes>
+					<include>category.xml</include>
+				</includes>
+			</resource>
+		</resources>
+		<plugins>
+			<!-- the update site is not expected to contain legal artifacts -->
+			<plugin>
+				<groupId>org.apache.geronimo.genesis.plugins</groupId>
+				<artifactId>tools-maven-plugin</artifactId>
+				<configuration>
+					<skip>true</skip>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>target-platform-configuration</artifactId>
+				<version>${tycho.version}</version>
+				<configuration>
+					<target>
+						<file>${basedir}/org.apache.sling.ide.target-definition.target</file>
+					</target>
+				</configuration>
+			</plugin>
+		</plugins>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.apache.geronimo.genesis.plugins</groupId>
+					<artifactId>tools-maven-plugin</artifactId>
+					<executions>
+						<execution>
+							<!-- this goal does not work for eclipse repositories, therefore bind 
+								to invalid phase id -->
+							<id>verify-legal-files</id>
+							<phase>invalid</phase>
+						</execution>
+					</executions>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-source-plugin</artifactId>
+					<executions>
+						<execution>
+							<!-- this goal does not work for eclipse repositories, therefore bind 
+								to invalid phase id -->
+							<id>attach-sources</id>
+							<phase>invalid</phase>
+						</execution>
+					</executions>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-release-plugin</artifactId>
+					<configuration>
+						<releaseProfiles>apache-release,codesign</releaseProfiles>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+	</build>
+	<profiles>
+		<profile>
+			<!-- this profile is automatically active during release:perform -->
+			<id>codesign</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-enforcer-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>enforce-digicert-one-env-variables</id>
+								<goals>
+									<goal>enforce</goal>
+								</goals>
+								<configuration>
+									<rules>
+										<requireProperty>
+											<property>env.PKCS11_CONFIG</property>
+										</requireProperty>
+										<!-- the ones listed at https://docs.digicert.com/de/digicert-one/secure-software-manager/ci-cd-integrations/maven-integration-with-pkcs11.html -->
+										<requireProperty>
+											<property>env.SM_CLIENT_CERT_PASSWORD</property>
+										</requireProperty>
+										<requireProperty>
+											<property>env.SM_CLIENT_CERT_FILE</property>
+										</requireProperty>
+										<requireProperty>
+											<property>env.SM_API_KEY</property>
+										</requireProperty>
+									</rules>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-jarsigner-plugin</artifactId>
 						<version>3.0.0</version>
@@ -124,7 +142,7 @@
 								</goals>
 								<configuration>
 									<keystore>NONE</keystore>
-									<alias>Sling-PMC-cert-2022-09_4f01e1ed-9fde-4f84-a5ac-adf82e114a3b</alias>
+									<alias>Sling-PMC-2022-09</alias>
 									<storepass>none</storepass>
 									<providerClass>sun.security.pkcs11.SunPKCS11</providerClass>
 									<storetype>PKCS11</storetype>
@@ -133,39 +151,34 @@
 									<verbose>true</verbose>
 									<processMainArtifact>false</processMainArtifact>
 									<archiveDirectory>${project.build.directory}/repository</archiveDirectory>
-									<!-- use custom truststore containinig both root and intermediate CA of Digicert -->
-									<arguments>
-										<argument>-J-Djavax.net.ssl.trustStore=${basedir}/generated-truststore/digicert-truststore.p12</argument>
-										<argument>-J-Djavax.net.ssl.trustStorePassword=changeme</argument>
-									</arguments>
 								</configuration>
 							</execution>
 						</executions>
 					</plugin>
-                    <plugin>
-                        <groupId>org.eclipse.tycho.extras</groupId>
-                        <artifactId>tycho-p2-extras-plugin</artifactId>
-                        <version>${tycho.version}</version>
-                        <configuration>
-                            <source>
-                                <repository>
-                                    <url>${project.build.directory}/repository</url>
-                                </repository>
-                            </source>
-                            <destination>${project.build.directory}/repository-signed</destination>
-                        </configuration>
-                        <executions>
-                            <execution>
-                                <id>create-signed-repository</id>
-                                <phase>package</phase>
-                                <goals>
-                                    <goal>mirror</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
+					<plugin>
+						<groupId>org.eclipse.tycho.extras</groupId>
+						<artifactId>tycho-p2-extras-plugin</artifactId>
+						<version>${tycho.version}</version>
+						<configuration>
+							<source>
+								<repository>
+									<url>${project.build.directory}/repository</url>
+								</repository>
+							</source>
+							<destination>${project.build.directory}/repository-signed</destination>
+						</configuration>
+						<executions>
+							<execution>
+								<id>create-signed-repository</id>
+								<phase>package</phase>
+								<goals>
+									<goal>mirror</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 </project>
