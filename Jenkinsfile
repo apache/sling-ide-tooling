@@ -85,16 +85,23 @@ def buildSignedP2Repository( def mvnVersion, def javaVersion ) {
 			echo "Running on node ${env.NODE_NAME} with PKCS#11 config at ${env.PKCS11_CONFIG}"
 			checkout scm
 			// set up environment variables according to https://docs.digicert.com/de/digicert-one/secure-software-manager/ci-cd-integrations/maven-integration-with-pkcs11.html
-			withCredentials([string(credentialsId: 'sling-digicertone-api-key', variable: 'SM_API_KEY')]) {
-				withCredentials([file(credentialsId: 'sling-digicertone-cert', variable: 'SM_CLIENT_CERT_FILE')]) {
-					withCredentials([string(credentialsId: 'sling-digicertone-cert-password', variable: 'SM_CLIENT_CERT_PASSWORD')]) {
+			withCredentials([
+				string(credentialsId: 'sling-digicertone-api-key', variable: 'SM_API_KEY'),
+				file(credentialsId: 'sling-digicertone-cert', variable: 'SM_CLIENT_CERT_FILE'), 
+				string(credentialsId: 'sling-digicertone-cert-password', variable: 'SM_CLIENT_CERT_PASSWORD')]) {
+				// https://docs.digicert.com/de/digicert-one/secure-software-manager/client-tools/configure-environment-variables.html
+				withEnv(['SM_LOG_LEVEL=WARN',"SM_LOG_DIR=${WORKSPACE}/.signingmanager/logs"]) {
+					try {
 						withMaven(maven: mvnVersion, jdk: javaVersion, mavenLocalRepo: '.repository', options: [artifactsPublisher(disabled: true)]) {
 			                timeout(20) {
 			                    runCmd 'mvn -f eclipse/p2update clean verify -Pcodesign -e'
 			                }
 			            }
+			        } catch (e) {
+			        	echo('smpkcs11.log: ' + readFile(file: '.signingmanager/logs/smpkcs11.log'))
+			        	throw e
 			        }
-				}
+			    }
 			}
 		}
 	}
