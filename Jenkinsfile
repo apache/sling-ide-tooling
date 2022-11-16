@@ -86,9 +86,9 @@ def buildSignedP2Repository( def mvnVersion, def javaVersion ) {
 			checkout scm
 			// set up environment variables according to https://docs.digicert.com/de/digicert-one/secure-software-manager/ci-cd-integrations/maven-integration-with-pkcs11.html
 			withCredentials([
-				file(credentialsId: 'sling-digicertone-cert', variable: 'SM_CLIENT_CERT_FILE'), 
-				string(credentialsId: 'sling-digicertone-api-key', variable: 'SM_API_KEY'),
-				string(credentialsId: 'sling-digicertone-cert-password', variable: 'SM_CLIENT_CERT_PASSWORD')]) {
+				file(credentialsId: 'sling-digicert-pkcs-certificate', variable: 'SM_CLIENT_CERT_FILE'), 
+				string(credentialsId: 'sling-digicert-pkcs-cert-pw', variable: 'SM_CLIENT_CERT_PASSWORD'),
+				string(credentialsId: 'sling-digicert-pkcs-api-key', variable: 'SM_API_KEY')]) {
 				// https://docs.digicert.com/de/digicert-one/secure-software-manager/client-tools/configure-environment-variables.html
 				// redirecting log to another file does not work for some reason
 				withEnv(['SM_LOG_LEVEL=DEBUG']) {
