@@ -91,7 +91,7 @@ def buildSignedP2Repository( def mvnVersion, def javaVersion ) {
 				string(credentialsId: 'sling-digicert-pkcs-api-key', variable: 'SM_API_KEY')]) {
 				// https://docs.digicert.com/de/digicert-one/secure-software-manager/client-tools/configure-environment-variables.html
 				// redirecting log to another file does not work for some reason
-				withEnv(['SM_LOG_LEVEL=DEBUG','SM_HOST=https://clientauth.one.digicert.com']) {
+				withEnv(['SM_LOG_LEVEL=ERROR','SM_HOST=https://clientauth.one.digicert.com']) {
 					try {
 						withMaven(maven: mvnVersion, jdk: javaVersion, mavenLocalRepo: '.repository', options: [artifactsPublisher(disabled: true)]) {
 			                timeout(20) {
@@ -99,7 +99,8 @@ def buildSignedP2Repository( def mvnVersion, def javaVersion ) {
 			                }
 			            }
 			        } catch (e) {
-			        	echo('smpkcs11.log: ' + readFile(file: "${env.HOME}/.signingmanager/logs/smpkcs11.log"))
+			        	// reenable next line to expose further infos about signature errors
+			        	//echo('smpkcs11.log: ' + readFile(file: "${env.HOME}/.signingmanager/logs/smpkcs11.log"))
 			        	throw e
 			        }
 			    }
