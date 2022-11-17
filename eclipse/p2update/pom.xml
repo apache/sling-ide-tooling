@@ -140,6 +140,7 @@
 								<goals>
 									<goal>sign</goal>
 								</goals>
+								<phase>prepare-package</phase> <!-- must happen after "assemble-repository" but before "fix-artifacts-metadata" -->
 								<configuration>
 									<keystore>NONE</keystore>
 									<alias>Sling-PMC-2022-09</alias>
@@ -150,29 +151,32 @@
 									<tsa>http://timestamp.digicert.com</tsa>
 									<verbose>true</verbose>
 									<processMainArtifact>false</processMainArtifact>
-									<archiveDirectory>${project.build.directory}/repository</archiveDirectory>
+									<archiveDirectory>${project.build.directory}/repository/plugins</archiveDirectory>
+									<includes>
+										<!-- only sign our own artifacts -->
+										<include>org.apache.sling.*.jar</include>
+									</includes>
 								</configuration>
 							</execution>
 						</executions>
 					</plugin>
+					<!-- fix metadata of repository after signing -->
 					<plugin>
-						<groupId>org.eclipse.tycho.extras</groupId>
-						<artifactId>tycho-p2-extras-plugin</artifactId>
-						<version>${tycho.version}</version>
-						<configuration>
-							<source>
-								<repository>
-									<url>${project.build.directory}/repository</url>
-								</repository>
-							</source>
-							<destination>${project.build.directory}/repository-signed</destination>
-						</configuration>
+						<groupId>org.eclipse.tycho</groupId>
+						<artifactId>tycho-p2-repository-plugin</artifactId>
+						<version>${tycho-version}</version>
 						<executions>
 							<execution>
-								<id>create-signed-repository</id>
-								<phase>package</phase>
+								<id>update-metadata-after-signing</id>
 								<goals>
-									<goal>mirror</goal>
+									<goal>fix-artifacts-metadata</goal>
+								</goals>
+								<phase>prepare-package</phase><!-- must happen after "sign" but before "archive-repository" -->
+							</execution>
+							<execution>
+								<id>verify</id>
+								<goals>
+									<goal>verify-repository</goal>
 								</goals>
 							</execution>
 						</executions>
