@@ -24,7 +24,7 @@ helper.runWithErrorHandling(jobConfig, {
         //'windows': generateStages('windows', mvnVersion, javaVersion)
     //    ])
     if (shouldDeploy()) {
-    	buildSignedP2Repository(mvnVersion, javaVersion)
+    	buildAndDeploySignedP2Repository(mvnVersion, javaVersion)
     }
 })
 
@@ -79,7 +79,7 @@ def generateStages(String os, def mvnVersion, def javaVersion) {
     }
 }
 
-def buildSignedP2Repository( def mvnVersion, def javaVersion ) {
+def buildAndDeploySignedP2Repository( def mvnVersion, def javaVersion ) {
 	node('pkcs11') {
 		stage('Build Signed P2 Repository') {
 			echo "Running on node ${env.NODE_NAME} with PKCS#11 config at ${env.PKCS11_CONFIG}"
@@ -95,7 +95,8 @@ def buildSignedP2Repository( def mvnVersion, def javaVersion ) {
 					try {
 						withMaven(maven: mvnVersion, jdk: javaVersion, mavenLocalRepo: '.repository', options: [artifactsPublisher(disabled: true)]) {
 			                timeout(20) {
-			                    runCmd 'mvn -f eclipse/p2update clean verify -Pcodesign -e'
+			                	// build with profile "codesign" for signing
+			                    runCmd 'mvn -f eclipse/p2update clean verify -e'
 			                }
 			            }
 			        } catch (e) {
