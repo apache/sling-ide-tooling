@@ -122,12 +122,12 @@ def buildAndDeploySignedP2Repository( def mvnVersion, def javaVersion ) {
 							patternSeparator: '[, ]+',
 							remoteDirectory: '/sling/eclipse',
 							remoteDirectorySDF: false,
-							removePrefix: 'target/repository',
-							sourceFiles: 'target/repository')
+							removePrefix: 'eclipse/p2update/target/repository',
+							sourceFiles: 'eclipse/p2update/target/repository')
 					], 
 					usePromotionTimestamp: false,
 					useWorkspaceInPromotion: false,
-					verbose: false)
+					verbose: true)
 				])
 		}
 	}
