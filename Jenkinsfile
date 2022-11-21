@@ -95,7 +95,7 @@ def buildAndDeploySignedP2Repository( def mvnVersion, def javaVersion ) {
 					try {
 						withMaven(maven: mvnVersion, jdk: javaVersion, mavenLocalRepo: '.repository', options: [artifactsPublisher(disabled: true)]) {
 			                timeout(20) {
-			                	// build with profile "codesign" for signing
+			                	// build with profile "sign-with-jarsigner" for signing
 			                    runCmd 'mvn -f eclipse/p2update clean verify -e'
 			                }
 			            }
@@ -106,6 +106,29 @@ def buildAndDeploySignedP2Repository( def mvnVersion, def javaVersion ) {
 			        }
 			    }
 			}
+		}
+		stage('Deploy to ASF Nightlies') {
+			sshPublisher(publishers: [
+				sshPublisherDesc(configName: 'Nightlies', 
+					transfers: [
+						sshTransfer(
+							cleanRemote: false,
+							excludes: '',
+							execCommand: '',
+							execTimeout: 120000,
+							flatten: false,
+							makeEmptyDirs: false,
+							noDefaultExcludes: false,
+							patternSeparator: '[, ]+',
+							remoteDirectory: '/sling/eclipse',
+							remoteDirectorySDF: false,
+							removePrefix: 'target/repository',
+							sourceFiles: 'target/repository')
+					], 
+					usePromotionTimestamp: false,
+					useWorkspaceInPromotion: false,
+					verbose: false)
+				])
 		}
 	}
 }
