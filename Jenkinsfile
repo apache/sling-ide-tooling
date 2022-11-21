@@ -19,10 +19,10 @@ def jobConfig = [
     sonarQubeAdditionalParams: ''
 ]
 helper.runWithErrorHandling(jobConfig, {
-    //parallel([
-    	//'linux': generateStages('linux', mvnVersion, javaVersion)
-        //'windows': generateStages('windows', mvnVersion, javaVersion)
-    //    ])
+    parallel([
+    	'linux': generateStages('linux', mvnVersion, javaVersion),
+        'windows': generateStages('windows', mvnVersion, javaVersion)
+        ])
     if (shouldDeploy()) {
     	buildAndDeploySignedP2Repository(mvnVersion, javaVersion)
     }
@@ -142,5 +142,5 @@ def runCmd(def cmd) {
 }
 
 boolean shouldDeploy() {
-	return env.CHANGE_BRANCH == 'feature/sign-jars'
+	return env.CHANGE_BRANCH == 'master'
 }
