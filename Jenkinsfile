@@ -24,7 +24,7 @@ helper.runWithErrorHandling(jobConfig, {
         'windows': generateStages('windows', mvnVersion, javaVersion)
         ])
     if (shouldDeploy()) {
-    	buildAndDeploySignedP2Repository(mvnVersion, javaVersion)
+    	buildAndDeployP2Repository(mvnVersion, javaVersion)
     }
 })
 
@@ -79,9 +79,10 @@ def generateStages(String os, def mvnVersion, def javaVersion) {
     }
 }
 
-def buildAndDeploySignedP2Repository( def mvnVersion, def javaVersion ) {
+def buildAndDeployP2Repository( def mvnVersion, def javaVersion ) {
+	// for optional signing a dedicated node needs to be leveraged
 	node('pkcs11') {
-		stage('Build Signed P2 Repository') {
+		stage('Build P2 Repository') {
 			echo "Running on node ${env.NODE_NAME} with PKCS#11 config at ${env.PKCS11_CONFIG}"
 			checkout scm
 			// set up environment variables according to https://docs.digicert.com/de/digicert-one/secure-software-manager/ci-cd-integrations/maven-integration-with-pkcs11.html
