@@ -16,13 +16,13 @@
     and limitations under the License.
 -->
 <site>
-   <feature url="features/org.apache.sling.ide.feature_0.0.0.qualifier.jar" id="org.apache.sling.ide.feature" version="0.0.0">
+   <feature id="org.apache.sling.ide.feature">
       <category name="sling"/>
    </feature>
-   <feature url="features/org.apache.sling.ide.m2e-feature_0.0.0.qualifier.jar" id="org.apache.sling.ide.m2e-feature" version="0.0.0">
+   <feature id="org.apache.sling.ide.m2e.feature">
       <category name="sling"/>
-   </feature>
-   <feature url="features/org.apache.sling.ide.sightly-feature_1.0.9.qualifier.jar" id="org.apache.sling.ide.sightly-feature" version="0.0.0">
+   </feature>-
+   <feature id="org.apache.sling.ide.sightly.feature">
       <category name="sling"/>
    </feature>
    <category-def name="sling" label="Sling"/>

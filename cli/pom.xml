@@ -15,16 +15,15 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.apache</groupId>
-        <artifactId>apache</artifactId>
-        <version>27</version>
+        <groupId>org.apache.sling</groupId>
+    	<artifactId>sling</artifactId>
+    	<version>49</version>
     </parent>
     <groupId>org.apache.sling.ide</groupId>
     <artifactId>sling-ide-tooling-cli</artifactId>
     <version>1.2.3-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Apache Sling IDE Tools - CLI</name>
-    <url>http://sling.apache.org</url>
 
     <scm>
         <connection>scm:git:https://gitbox.apache.org/repos/asf/sling-ide-tooling.git</connection>
@@ -38,4 +37,18 @@
         <module>dist</module>
         -->
     </modules>
+    
+    <build>
+    	<plugins>
+			<plugin>
+                <groupId>org.apache.rat</groupId>
+                <artifactId>apache-rat-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <exclude>dist/**</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+    	</plugins>
+    </build>
 </project>
