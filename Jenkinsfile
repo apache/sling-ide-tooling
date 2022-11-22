@@ -68,8 +68,10 @@ def generateStages(String os, def mvnVersion, def javaVersion) {
 
     return {
     	node(nodeLabel) {
-    		echo "Running on node ${env.NODE_NAME}"
-    		checkout scm
+    		stage("Clone") {
+	    		echo "Running on node ${env.NODE_NAME}"
+	    		checkout scm
+	    	}
 	        stages.each { name, body ->
 	            stage(name) {
 	                body.call()
