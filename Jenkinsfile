@@ -68,7 +68,7 @@ def generateStages(String os, def mvnVersion, def javaVersion) {
 
     return {
     	node(nodeLabel) {
-    		stage("Clone") {
+    		stage("[$prefix] Clone") {
 	    		echo "Running on node ${env.NODE_NAME}"
 	    		checkout scm
 	    	}
