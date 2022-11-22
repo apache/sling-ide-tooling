@@ -16,52 +16,47 @@
  */
 package org.apache.sling.ide.artifacts.impl;
 
+import java.io.IOException;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 
-import org.apache.sling.ide.artifacts.EmbeddedArtifact;
-import org.apache.sling.ide.artifacts.EmbeddedArtifactLocator;
+import org.apache.sling.ide.artifacts.EmbeddedBundle;
+import org.apache.sling.ide.artifacts.EmbeddedBundleLocator;
 import org.osgi.service.component.annotations.Component;
 
-@Component(service = EmbeddedArtifactLocator.class)
-public class ArtifactsLocatorImpl implements EmbeddedArtifactLocator {
+@Component(service = EmbeddedBundleLocator.class)
+public class EmbeddedBundleLocatorImpl implements EmbeddedBundleLocator {
 
-	public ArtifactsLocatorImpl() {
-		
+	private final Map<String, EmbeddedBundle> bundles;
+	public EmbeddedBundleLocatorImpl() throws IOException {
+		bundles = new HashMap<>();
+		bundles.put(SUPPORT_INSTALL_BUNDLE_SYMBOLIC_NAME, getArtifactFromResource("org.apache.sling.tooling.support.install"));
+		bundles.put(SUPPORT_SOURCE_BUNDLE_SYMBOLIC_NAME, getArtifactFromResource("org.apache.sling.tooling.support.source"));
 	}
 
-    @Override
-    public EmbeddedArtifact loadToolingSupportBundle() {
 
-        String version = "1.0.6"; // TODO - remove version hardcoding
-        String artifactId = "org.apache.sling.tooling.support.install";
-        String extension = "jar";
-
-        URL jarUrl = loadResource(artifactId + "-" + version
-                + "." + extension);
-
-        return new EmbeddedArtifact(artifactId + "-" + version + "." + extension, version, jarUrl);
-    }
-
-    @Override
-    public EmbeddedArtifact loadSourceSupportBundle() {
-        
-        String version = "1.0.4"; // TODO - remove version hardcoding
-        String artifactId = "org.apache.sling.tooling.support.source";
-        String extension = "jar";
-        
-        URL jarUrl = loadResource(artifactId + "-" + version
-                + "." + extension);
-        
-        return new EmbeddedArtifact(artifactId + "-" + version + "." + extension, version, jarUrl);
+	private EmbeddedBundle getArtifactFromResource(String artifactId) throws IOException {
+    	URL jarUrl = loadResource(artifactId + ".jar");
+        return new EmbeddedBundle(jarUrl);
     }
 
     private URL loadResource(String resourceLocation) {
-
         URL resourceUrl = this.getClass().getClassLoader().getResource(resourceLocation);
         if (resourceUrl == null) {
             throw new RuntimeException("Unable to locate bundle resource " + resourceLocation);
         }
         return resourceUrl;
     }
+
+    
+	@Override
+	public EmbeddedBundle getBundle(String bundleSymbolicName) throws IOException {
+		EmbeddedBundle bundle = bundles.get(bundleSymbolicName);
+		if (bundle == null) {
+			throw new IllegalArgumentException("The bundle with bsn " + bundleSymbolicName + " is not provided by this locator");
+		}
+		return bundle;
+	}
 
 }

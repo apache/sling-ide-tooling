@@ -27,11 +27,13 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 
 import org.apache.sling.ide.osgi.MavenSourceReference;
 import org.apache.sling.ide.osgi.SourceReference;
+import org.apache.sling.ide.osgi.impl.HttpOsgiClient.BundlesInfo;
 import org.apache.sling.ide.osgi.impl.HttpOsgiClient.ComponentInfo;
 import org.apache.sling.ide.osgi.impl.HttpOsgiClient.ComponentsInfo;
 import org.junit.Assert;
@@ -40,38 +42,7 @@ import org.osgi.framework.Version;
 
 public class HttpOsgiClientTest {
 
-    @Test
-    public void testGetBundleVersionFromReader_notFound() throws IOException {
-        try (InputStream input = getClass().getClassLoader().getResourceAsStream("bundles.json");
-             Reader reader = new InputStreamReader(input, StandardCharsets.UTF_8)) {
-            assertThat(HttpOsgiClient.getBundleVersionFromReader("org.apache.commons.lang4", reader), nullValue());
-        }
-    }
-
-    @Test
-    public void testGetBundleVersionFromReader() throws IOException {
-        try (InputStream input = getClass().getClassLoader().getResourceAsStream("bundles.json");
-                Reader reader = new InputStreamReader(input, StandardCharsets.UTF_8)) {
-            Assert.assertEquals(new Version("3.4.0"), HttpOsgiClient.getBundleVersionFromReader("org.apache.commons.lang3", reader));
-        }
-    }
-    
-    
-    @Test
-    public void testGetBundleIdFromReader() throws IOException {
-        try (InputStream input = getClass().getClassLoader().getResourceAsStream("bundles.json");
-             Reader reader = new InputStreamReader(input, StandardCharsets.UTF_8)) {
-            Assert.assertEquals(Long.valueOf(84), HttpOsgiClient.getBundleIdFromReader("org.apache.commons.lang3", reader));
-        }
-    }
-
-    @Test
-    public void testGetBundleIdFromReader_notFound() throws IOException {
-        try (InputStream input = getClass().getClassLoader().getResourceAsStream("bundles.json");
-            Reader reader = new InputStreamReader(input, StandardCharsets.UTF_8)) {
-            assertThat(HttpOsgiClient.getBundleIdFromReader("org.apache.commons.lang4", reader), nullValue());
-        }
-    }
+   
     
     @Test
     public void testComponentsInfoJson() throws IOException {
@@ -80,6 +51,15 @@ public class HttpOsgiClientTest {
     		assertEquals(1, componentsInfo.components.length);
     		assertEquals(ComponentInfo.Status.ACTIVE, componentsInfo.components[0].status);
     		assertEquals("org.apache.sling.tooling.support.install.impl.InstallServlet", componentsInfo.components[0].pid);
+    	}
+    }
+    
+    @Test
+    public void testBundlesInfoJson() throws IOException {
+    	try (InputStream input = Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream("bundleDetails.json"))) {
+    		BundlesInfo info = HttpOsgiClient.parseJson(BundlesInfo.class, input, StandardCharsets.UTF_8);
+    		assertEquals(1, info.bundles.length);
+    		assertEquals(Instant.parse("2022-11-11T11:12:07Z"), info.bundles[0].getLastModification());
     	}
     }
 }

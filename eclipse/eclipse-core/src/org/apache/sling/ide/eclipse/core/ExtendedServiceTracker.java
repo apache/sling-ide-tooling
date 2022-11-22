@@ -97,7 +97,7 @@ public class ExtendedServiceTracker<T> implements AutoCloseable {
     		state = "Unsatisfied configuration";
     		break;
     	case ComponentConfigurationDTO.UNSATISFIED_REFERENCE:
-    		state = "Unsatisfied reference(s): " + String.join(", ", Arrays.asList(componentConfiguration.unsatisfiedReferences.toString()));
+    		state = "Unsatisfied reference(s): " + Arrays.toString(componentConfiguration.unsatisfiedReferences);
     		break;
     	case ComponentConfigurationDTO.SATISFIED:
     		state = "Satisfied";

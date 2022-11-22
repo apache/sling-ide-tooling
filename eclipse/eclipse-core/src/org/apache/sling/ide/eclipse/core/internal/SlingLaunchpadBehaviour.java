@@ -16,8 +16,8 @@
  */
 package org.apache.sling.ide.eclipse.core.internal;
 
-import static org.apache.sling.ide.artifacts.EmbeddedArtifactLocator.SUPPORT_BUNDLE_SYMBOLIC_NAME;
-import static org.apache.sling.ide.artifacts.EmbeddedArtifactLocator.SUPPORT_SOURCE_BUNDLE_SYMBOLIC_NAME;
+import static org.apache.sling.ide.artifacts.EmbeddedBundleLocator.SUPPORT_INSTALL_BUNDLE_SYMBOLIC_NAME;
+import static org.apache.sling.ide.artifacts.EmbeddedBundleLocator.SUPPORT_SOURCE_BUNDLE_SYMBOLIC_NAME;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,8 +28,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.sling.ide.artifacts.EmbeddedArtifact;
-import org.apache.sling.ide.artifacts.EmbeddedArtifactLocator;
+import org.apache.sling.ide.artifacts.EmbeddedBundle;
+import org.apache.sling.ide.artifacts.EmbeddedBundleLocator;
 import org.apache.sling.ide.eclipse.core.EclipseResources;
 import org.apache.sling.ide.eclipse.core.ISlingLaunchpadServer;
 import org.apache.sling.ide.eclipse.core.ServerUtil;
@@ -63,6 +63,7 @@ import org.eclipse.wst.server.core.IServer;
 import org.eclipse.wst.server.core.model.IModuleResource;
 import org.eclipse.wst.server.core.model.IModuleResourceDelta;
 import org.eclipse.wst.server.core.model.ServerBehaviourDelegate;
+import org.osgi.framework.Constants;
 import org.osgi.framework.Version;
 
 public class SlingLaunchpadBehaviour extends ServerBehaviourDelegateWithModulePublishSupport {
@@ -107,10 +108,10 @@ public class SlingLaunchpadBehaviour extends ServerBehaviourDelegateWithModulePu
         try (OsgiClient client = Activator.getDefault().getOsgiClientFactory().createOsgiClient(repositoryInfo)) {
         
 	        try {
-	            EmbeddedArtifactLocator artifactLocator = Activator.getDefault().getArtifactLocator();
+	            EmbeddedBundleLocator bundleLocator = Activator.getDefault().getEmbeddedBundleLocator();
 	
-	            installBundle(monitor,client, artifactLocator.loadSourceSupportBundle(), SUPPORT_SOURCE_BUNDLE_SYMBOLIC_NAME); // 15/50 done
-	            installBundle(monitor,client, artifactLocator.loadToolingSupportBundle(), SUPPORT_BUNDLE_SYMBOLIC_NAME); // 20/50 done
+	            installBundle(monitor,client, bundleLocator.getBundle(SUPPORT_SOURCE_BUNDLE_SYMBOLIC_NAME)); // 15/50 done
+	            installBundle(monitor,client, bundleLocator.getBundle(SUPPORT_INSTALL_BUNDLE_SYMBOLIC_NAME)); // 20/50 done
 	            
 	        } catch ( IOException | OsgiClientException e) {
 	            Activator.getDefault().getPluginLogger()
@@ -156,29 +157,35 @@ public class SlingLaunchpadBehaviour extends ServerBehaviourDelegateWithModulePu
         }
     }
 
-    private void installBundle(IProgressMonitor monitor, OsgiClient client, final EmbeddedArtifact bundle,
-            String bundleSymbolicName) throws OsgiClientException, IOException {
+    /** Installs a bundle conditionally, i.e. only when it is not installed in the same version
+     *
+     * @param monitor
+     * @param client
+     * @param bundle
+     * @param bundleSymbolicName
+     * @throws OsgiClientException
+     * @throws IOException
+     */
+    private void installBundle(IProgressMonitor monitor, OsgiClient client, final EmbeddedBundle bundle) throws OsgiClientException, IOException {
 
-        Version embeddedVersion = new Version(bundle.getOsgiFriendlyVersion());
         
-        monitor.setTaskName("Installing " + bundleSymbolicName + " " + embeddedVersion);
+        monitor.setTaskName("Installing " + bundle.getBundleSymbolicName() + " " + bundle.getVersion());
 
-        Version remoteVersion = client.getBundleVersion(bundleSymbolicName);
+        Version remoteVersion = client.getBundleVersion(bundle.getBundleSymbolicName());
         
         monitor.worked(2);
         
         ISlingLaunchpadServer launchpadServer = (ISlingLaunchpadServer) getServer().loadAdapter(SlingLaunchpadServer.class,
                 monitor);
-        if (remoteVersion == null || remoteVersion.compareTo(embeddedVersion) < 0 
-                || ( remoteVersion.equals(embeddedVersion) && "SNAPSHOT".equals(embeddedVersion.getQualifier()))) {
+        if (remoteVersion == null || remoteVersion.compareTo(bundle.getVersion()) < 0 
+                || ( remoteVersion.equals(bundle.getVersion()) && "SNAPSHOT".equals(bundle.getVersion().getQualifier()) ) ) {
             try ( InputStream contents = bundle.openInputStream() ){
-                client.installBundle(contents, bundle.getName());
+                client.installBundle(contents, bundle.getBundleSymbolicName());
             }
-            remoteVersion = embeddedVersion;
+            remoteVersion = bundle.getVersion();
 
         }
-        launchpadServer.setBundleVersion(bundleSymbolicName, remoteVersion,
-                monitor);
+        launchpadServer.setBundleVersion(bundle.getBundleSymbolicName(), remoteVersion, monitor);
         
         monitor.worked(3);
     }
@@ -331,7 +338,7 @@ public class SlingLaunchpadBehaviour extends ServerBehaviourDelegateWithModulePu
                 .createOsgiClient(ServerUtil.getRepositoryInfo(getServer(), monitor))) {
 
             Version supportBundleVersion = osgiClient
-                    .getBundleVersion(EmbeddedArtifactLocator.SUPPORT_BUNDLE_SYMBOLIC_NAME);
+                    .getBundleVersion(SUPPORT_INSTALL_BUNDLE_SYMBOLIC_NAME);
             monitor.worked(1);
             if (supportBundleVersion == null) {
                 throw new CoreException(new Status(Status.ERROR, Activator.PLUGIN_ID,
@@ -355,16 +362,16 @@ public class SlingLaunchpadBehaviour extends ServerBehaviourDelegateWithModulePu
 
             //TODO SLING-3767:
             //osgiClient must have a timeout!!!
-            if ( installLocally ) {
-                osgiClient.installLocalBundle(outputLocation.toFile().toPath());
+            if (installLocally) {
+                osgiClient.installBundle(outputLocation.toFile().toPath());
                 monitor.worked(3);
             } else {
 
-                JarBuilder builder = new JarBuilder();
-                InputStream bundle = builder.buildJar(outputFolder);
+                JarBuilder builder = new JarBuilder(outputFolder);
                 monitor.worked(1);
-                
-                osgiClient.installLocalBundle(bundle, outputFolder.getLocation().toOSString());
+                try (InputStream bundleInput = builder.buildJar()) {
+                	osgiClient.installBundle(bundleInput, builder.getBundleSymbolicName());
+                }
                 monitor.worked(2);
             }
 

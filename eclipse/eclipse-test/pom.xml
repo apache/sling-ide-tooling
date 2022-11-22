@@ -95,9 +95,9 @@
 				<groupId>org.eclipse.tycho</groupId>
 				<artifactId>tycho-surefire-plugin</artifactId>
 				<configuration>
+					<trimStackTrace>false</trimStackTrace>
 					<useUIHarness>true</useUIHarness>
 					<useUIThread>false</useUIThread>
-					<argLine>${ui.test.args}</argLine>
 					<systemProperties>
 						<launchpad.http.port>${http.port}</launchpad.http.port>
 						<org.slf4j.simpleLogger.showDateTime>true</org.slf4j.simpleLogger.showDateTime>
@@ -112,7 +112,6 @@
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>build-helper-maven-plugin</artifactId>
-				<version>3.3.0</version>
 				<executions>
 					<execution>
 						<id>reserve-network-port</id>
@@ -169,24 +168,11 @@
 	</build>
 
 	<properties>
-		<ui.test.args></ui.test.args>
 		<defaultLogLevel>INFO</defaultLogLevel>
 		<startTimeoutSeconds>120</startTimeoutSeconds>
 	</properties>
 
 	<profiles>
-		<profile>
-			<id>macosx</id>
-			<activation>
-				<os>
-					<family>mac</family>
-					<name>mac os x</name>
-				</os>
-			</activation>
-			<properties>
-				<ui.test.args>-XstartOnFirstThread</ui.test.args>
-			</properties>
-		</profile>
 		<profile>
 			<id>debug</id>
 			<activation>

@@ -3,8 +3,7 @@
 build_all()  {
     mvn -e -f shared clean install
     mvn -e -f cli clean install
-    mvn -e -f eclipse clean verify
-
+    mvn -e -f eclipse clean verify -Dtycho.localArtifacts=ignore
 }
 
 if [ $# -eq 1 ]; then

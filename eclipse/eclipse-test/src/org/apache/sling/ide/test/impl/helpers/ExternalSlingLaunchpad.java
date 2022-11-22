@@ -97,7 +97,7 @@ public class ExternalSlingLaunchpad extends ExternalResource {
     private void assertTimeout(long cutoff, ServerReadyGate gate) throws AssertionFailedError {
         logger.debug("Checking for timeout of gate {}, current {}, cutoff {}", gate, System.currentTimeMillis(), cutoff);
         if (System.currentTimeMillis() > cutoff) {
-            throw new AssertionFailedError("Sling server did not pass " + gate.getClass().getName() + " within " + MAX_WAIT_TIME_MS + " milliseconds. It was failing with " + gate.getFailureMessage() );
+            throw new AssertionFailedError("Sling server did not pass " + gate.getClass().getName() + " within " + MAX_WAIT_TIME_MS + " milliseconds: " + gate.getFailureMessage() );
         }
     }
 
@@ -200,7 +200,7 @@ public class ExternalSlingLaunchpad extends ExternalResource {
                     	List<BundleMetadata> bundles = new Gson().fromJson(jsonReader, listType);
                     	failureMessage = "The following bundles were not started: " + bundles.stream()
                     		.filter(b -> (b.state != BundleMetadata.State.ACTIVE && !b.isFragment))
-							.map(b -> b.symbolicName + " (" + b.id + ")")
+							.map(b -> b.symbolicName + " (" + b.id + ", " + b.state + ")")
 							.collect(Collectors.joining(", "));
                     } else {
                     	jsonReader.skipValue();

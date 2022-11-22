@@ -16,7 +16,6 @@
  */
 package org.apache.sling.ide.test.impl;
 
-import org.apache.sling.ide.artifacts.EmbeddedArtifactLocator;
 import org.apache.sling.ide.osgi.OsgiClientFactory;
 import org.apache.sling.ide.serialization.SerializationManager;
 import org.apache.sling.ide.sync.content.SyncCommandFactory;
@@ -49,10 +48,6 @@ public class Activator extends Plugin {
 
     public SerializationManager getSerializationManager() {
         return org.apache.sling.ide.eclipse.core.internal.Activator.getDefault().getSerializationManager();
-    }
-
-    public EmbeddedArtifactLocator getArtifactLocator() {
-        return org.apache.sling.ide.eclipse.core.internal.Activator.getDefault().getArtifactLocator();
     }
 
     public OsgiClientFactory getOsgiClientFactory() {

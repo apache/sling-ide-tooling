@@ -16,13 +16,20 @@
  */
 package org.apache.sling.ide.artifacts;
 
-public interface EmbeddedArtifactLocator {
+import java.io.IOException;
 
-    public static final String SUPPORT_BUNDLE_SYMBOLIC_NAME = "org.apache.sling.tooling.support.install";
+public interface EmbeddedBundleLocator {
+
+    public static final String SUPPORT_INSTALL_BUNDLE_SYMBOLIC_NAME = "org.apache.sling.tooling.support.install";
     
     public static final String SUPPORT_SOURCE_BUNDLE_SYMBOLIC_NAME = "org.apache.sling.tooling.support.source";
 
-    EmbeddedArtifact loadToolingSupportBundle();
-    
-    EmbeddedArtifact loadSourceSupportBundle();
+    /**
+     * 
+     * @param bundleSymbolicName
+     * @return the embedded bundle (never {@code null}).
+     * @throws IOException in case the embedded bundle could not be read
+     * @throws IllegalArgumentException in case the bundle with the given bundleSymbolicName is not provided by this locator
+     */
+    EmbeddedBundle getBundle(String bundleSymbolicName) throws IOException;
 }
