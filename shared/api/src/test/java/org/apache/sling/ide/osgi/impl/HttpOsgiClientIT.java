@@ -17,6 +17,9 @@
 package org.apache.sling.ide.osgi.impl;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
@@ -70,6 +73,7 @@ public class HttpOsgiClientIT {
     @Test
     public void testGetBundleVersion() throws IOException, URISyntaxException, OsgiClientException {
         assertEquals(new Version("2.24.0"), osgiClient.getBundleVersion("org.apache.sling.api"));
+        assertNull(osgiClient.getBundleVersion("invalid-bsn"));
     }
 
     @Test
@@ -85,22 +89,31 @@ public class HttpOsgiClientIT {
         }
     	// first install the necessary tooling
     	try (InputStream input = Objects.requireNonNull(this.getClass().getResourceAsStream("/org.apache.sling.tooling.support.install.jar"))) {
-    		osgiClient.installBundle(input, "org.apache.sling.api");
+    		osgiClient.installBundle(input, "org.apache.sling.tooling.support.install");
     	}
     	osgiClient.waitForComponentRegistered("org.apache.sling.tooling.support.install.impl.InstallServlet", 20000, 500);
-    	try (InputStream input = Objects.requireNonNull(this.getClass().getResourceAsStream("/org.apache.sling.commons.messaging.jar"))) {
-    		osgiClient.installLocalBundle(input, "commons-messaging.jar");
+    	// install another bundle from JAR
+    	try (InputStream input = Objects.requireNonNull(this.getClass().getResourceAsStream("/org.apache.sling.tooling.support.source.jar"))) {
+    		osgiClient.installBundle(input, "org.apache.sling.tooling.support.source");
     	}
+    	// check that both are installed
+    	assertNotNull(osgiClient.getBundleVersion("org.apache.sling.tooling.support.install"));
+    	assertNotNull(osgiClient.getBundleVersion("org.apache.sling.tooling.support.source"));
     	
-    	osgiClient.installLocalBundle(explodedJarFolder);
-        osgiClient.uninstallBundle("org.apache.sling.tooling.support.install");
+    	osgiClient.installBundle(explodedJarFolder);
+    	assertNotNull(osgiClient.getBundleVersion("org.apache.sling.commons.messaging"));
+    	assertNotNull(osgiClient.getBundleVersion("org.apache.sling.tooling.support.install"));
+    	assertNotNull(osgiClient.getBundleVersion("org.apache.sling.tooling.support.source"));
+    	
+        assertTrue(osgiClient.uninstallBundle("org.apache.sling.tooling.support.install"));
+        assertTrue(osgiClient.uninstallBundle("org.apache.sling.tooling.support.source"));
     }
     
     @Test
     public void testFindSourceReferences() throws IOException, URISyntaxException, OsgiClientException, InterruptedException, TimeoutException {
     	// first install the necessary tooling
     	try (InputStream input = Objects.requireNonNull(this.getClass().getResourceAsStream("/org.apache.sling.tooling.support.source.jar"))) {
-    		osgiClient.installBundle(input, "org.apache.sling.api");
+    		osgiClient.installBundle(input, "org.apache.sling.tooling.support.source");
     	}
     	osgiClient.waitForComponentRegistered("org.apache.sling.tooling.support.source.impl.SourceReferencesServlet", 20000, 500);
     	List<SourceReference> sourceReferences = osgiClient.findSourceReferences();
@@ -108,6 +121,12 @@ public class HttpOsgiClientIT {
     	assertTrue(source.isPresent());
     }
     
+    @Test
+    public void testWaitForComponentRegistered() throws TimeoutException, InterruptedException {
+    	assertThrows(TimeoutException.class, () -> osgiClient.waitForComponentRegistered("invalidComponentName", 1000, 100));
+    	osgiClient.waitForComponentRegistered("1", 1000, 100);
+    }
+
     private static final class MavenSourceRefenceMatchingPredicate implements Predicate<SourceReference> {
     	private final String groupId;
     	private final String artifactId;

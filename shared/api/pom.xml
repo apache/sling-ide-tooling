@@ -46,12 +46,12 @@
 								<artifactItem>
 									<groupId>org.apache.sling</groupId>
 									<artifactId>org.apache.sling.tooling.support.install</artifactId>
-									<version>1.0.6</version>
+									<version>${toolingInstallVersion}</version>
 								</artifactItem>
 								<artifactItem>
 									<groupId>org.apache.sling</groupId>
 									<artifactId>org.apache.sling.tooling.support.source</artifactId>
-									<version>1.0.4</version>
+									<version>${toolingSourceVersion}</version>
 								</artifactItem>
 								<artifactItem>
 									<groupId>org.apache.sling</groupId>
@@ -126,6 +126,7 @@
 							<startTimeoutSeconds>${startTimeoutSeconds}</startTimeoutSeconds>
 						</launch>
 					</launches>
+					
 				</configuration>
 				<executions>
 					<execution>

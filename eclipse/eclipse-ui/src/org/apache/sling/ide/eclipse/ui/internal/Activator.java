@@ -16,7 +16,6 @@
  */
 package org.apache.sling.ide.eclipse.ui.internal;
 
-import org.apache.sling.ide.artifacts.EmbeddedArtifactLocator;
 import org.apache.sling.ide.eclipse.core.Preferences;
 import org.apache.sling.ide.filter.FilterLocator;
 import org.apache.sling.ide.log.Logger;
@@ -63,10 +62,6 @@ public class Activator extends AbstractUIPlugin {
 
     public FilterLocator getFilterLocator() {
         return org.apache.sling.ide.eclipse.core.internal.Activator.getDefault().getFilterLocator();
-    }
-
-    public EmbeddedArtifactLocator getArtifactLocator() {
-        return org.apache.sling.ide.eclipse.core.internal.Activator.getDefault().getArtifactLocator();
     }
 
     public OsgiClientFactory getOsgiClientFactory() {

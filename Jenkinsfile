@@ -52,16 +52,19 @@ def generateStages(String os, def mvnVersion, def javaVersion) {
                 }
             }
         }, "[$prefix] Build Eclipse plug-ins": {
-            withMaven(maven: mvnVersion, jdk: javaVersion, mavenLocalRepo: '.repository', options: [artifactsPublisher(disabled: true)]) {
-                timeout(20) {
-                    // workaround for https://issues.jenkins-ci.org/browse/JENKINS-39415
-                    wrap([$class: 'Xvfb', autoDisplayName: true]) {
-                        runCmd "mvn -f eclipse ${goals}"
-                    }
-                    // workaround for https://issues.jenkins-ci.org/browse/JENKINS-55889
-                    junit(testResults: 'eclipse/**/surefire-reports/*.xml', allowEmptyResults: true)
-                    archiveArtifacts(artifacts: 'eclipse/**/logs/*.log', allowEmptyArchive: true)
-                }
+        	try {
+	            withMaven(maven: mvnVersion, jdk: javaVersion, mavenLocalRepo: '.repository', options: [artifactsPublisher(disabled: true)]) {
+	                timeout(20) {
+	                    // workaround for https://issues.jenkins-ci.org/browse/JENKINS-39415
+	                    wrap([$class: 'Xvfb', autoDisplayName: true]) {
+	                        runCmd "mvn -f eclipse ${goals}"
+	                    }
+	                }
+	            }
+	        } finally {
+                // workaround for https://issues.jenkins-ci.org/browse/JENKINS-55889
+                junit(testResults: 'eclipse/**/surefire-reports/*.xml', allowEmptyResults: true)
+                archiveArtifacts(artifacts: 'eclipse/**/logs/*.log', allowEmptyArchive: true)
             }
         }
     ]

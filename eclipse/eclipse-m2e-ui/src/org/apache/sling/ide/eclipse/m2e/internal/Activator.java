@@ -16,7 +16,6 @@
  */
 package org.apache.sling.ide.eclipse.m2e.internal;
 
-import org.apache.sling.ide.artifacts.EmbeddedArtifactLocator;
 import org.apache.sling.ide.log.Logger;
 import org.apache.sling.ide.osgi.OsgiClientFactory;
 import org.eclipse.core.runtime.Plugin;
@@ -51,10 +50,6 @@ public class Activator extends Plugin {
         INSTANCE = null;
 
         super.stop(context);
-    }
-
-    public EmbeddedArtifactLocator getArtifactLocator() {
-        return org.apache.sling.ide.eclipse.core.internal.Activator.getDefault().getArtifactLocator();
     }
 
     public OsgiClientFactory getOsgiClientFactory() {

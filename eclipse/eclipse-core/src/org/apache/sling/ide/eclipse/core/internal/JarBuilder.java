@@ -33,6 +33,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.osgi.framework.Constants;
 
 /**
  * The <tt>JarBuilder</tt> creates a Jar file from a directory structure using the Eclipse APIs
@@ -40,23 +41,42 @@ import org.eclipse.core.runtime.Status;
  */
 public class JarBuilder {
 
-    public InputStream buildJar(final IFolder sourceDir) throws CoreException {
+	private final IFolder sourceDir;
+	private final Manifest manifest;
 
-        ByteArrayOutputStream store = new ByteArrayOutputStream();
-        
-        IResource manifestResource = sourceDir.findMember(JarFile.MANIFEST_NAME);
+	public JarBuilder(final IFolder sourceDir) throws CoreException {
+		this.sourceDir = sourceDir;
+		
+		IResource manifestResource = sourceDir.findMember(JarFile.MANIFEST_NAME);
         if (manifestResource == null || manifestResource.getType() != IResource.FILE) {
             throw new CoreException(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "No file named "
                     + JarFile.MANIFEST_NAME + " found under " + sourceDir));
         }
+        try (InputStream manifestInput = ((IFile) manifestResource).getContents()) {
+        	 manifest = new Manifest(manifestInput);
+        } catch (IOException e) {
+            throw new CoreException(new Status(IStatus.ERROR, Activator.PLUGIN_ID, e.getMessage(), e));
+        }
+	}
+	
+	public String getBundleSymbolicName() throws CoreException {
+		String bsn = manifest.getMainAttributes().getValue(Constants.BUNDLE_SYMBOLICNAME);
+		if (bsn == null) {
+			throw new CoreException(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "No Bundle-SymbolicName set in"
+                    + JarFile.MANIFEST_NAME + " found under " + sourceDir));
+		}
+		return bsn;
+	}
 
-        
-        
-        try ( JarOutputStream zos = new JarOutputStream(store);
-                InputStream manifestInput = ((IFile) manifestResource).getContents() ) {
+	/**
+	 * Builds an in-memory JAR input stream from the files in the sourceDir.
+	 * @return the input stream
+	 * @throws CoreException
+	 */
+    public InputStream buildJar() throws CoreException {
 
-            Manifest manifest = new Manifest(manifestInput);
-
+        ByteArrayOutputStream store = new ByteArrayOutputStream();
+        try (JarOutputStream zos = new JarOutputStream(store)) {
             zos.setLevel(Deflater.NO_COMPRESSION);
             // manifest first
             final ZipEntry anEntry = new ZipEntry(JarFile.MANIFEST_NAME);
@@ -67,7 +87,6 @@ public class JarBuilder {
         } catch (IOException e) {
             throw new CoreException(new Status(IStatus.ERROR, Activator.PLUGIN_ID, e.getMessage(), e));
         }
-
         return new ByteArrayInputStream(store.toByteArray());
     }
 

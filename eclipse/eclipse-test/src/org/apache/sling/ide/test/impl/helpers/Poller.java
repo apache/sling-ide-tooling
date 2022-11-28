@@ -46,8 +46,9 @@ public class Poller {
 
         Throwable lastError = null;
 
+        int numAttempt = 0;
         while (true) {
-
+        	numAttempt++;
             try {
                 r.run();
                 break;
@@ -57,15 +58,13 @@ public class Poller {
             }
 
             if (System.currentTimeMillis() >= cutoff) {
-
-                if (lastError instanceof RuntimeException) {
-                    throw (RuntimeException) lastError;
-                } else if (lastError instanceof Error) {
-                    throw (Error) lastError;
+                String message = "Runnable " + r + " did not succeed in the allocated "
+                        + timeoutMillis + " ms (" + numAttempt + " attempts)";
+                if (lastError != null) {
+                	throw new AssertionError(message, lastError);
+                } else {
+                	throw new AssertionFailedError(message);
                 }
-
-                throw new AssertionFailedError("Runnable " + r + " did not succeed in the allocated "
-                        + timeoutMillis + " ms");
             }
 
             Thread.sleep(DEFAULT_DELAY_MILLIS);

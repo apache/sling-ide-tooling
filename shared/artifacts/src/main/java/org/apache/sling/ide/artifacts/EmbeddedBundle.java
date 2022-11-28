@@ -19,42 +19,34 @@ package org.apache.sling.ide.artifacts;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.jar.JarInputStream;
+import java.util.jar.Manifest;
 
-public class EmbeddedArtifact {
+import org.osgi.framework.Constants;
+import org.osgi.framework.Version;
 
-    private final String name;
-    private final String version;
+public class EmbeddedBundle {
+
+    private final String bundleSymbolicName;
+    private final Version version;
     private final URL source;
 
-    public EmbeddedArtifact(String name, String version, URL source) {
-
-        if (name == null) {
-            throw new IllegalArgumentException("The name may not be null");
+    public EmbeddedBundle(URL source) throws IOException {
+    	try (JarInputStream jarInput = new JarInputStream(source.openStream())) {
+        	Manifest manifest = jarInput.getManifest();
+        	this.version = new Version(manifest.getMainAttributes().getValue(Constants.BUNDLE_VERSION));
+        	this.bundleSymbolicName = manifest.getMainAttributes().getValue(Constants.BUNDLE_SYMBOLICNAME);
         }
-
-        if (version == null) {
-            throw new IllegalArgumentException("The version may not be null");
-        }
-
-        if (source == null) {
-            throw new IllegalArgumentException("The source may not be null");
-        }
-
-        this.version = version;
-        this.source = source;
-        this.name = name;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getVersion() {
-        return version;
+    	this.source = source;
     }
     
-    public String getOsgiFriendlyVersion() {
-        return version.replace('-', '.');
+
+    public String getBundleSymbolicName() {
+        return bundleSymbolicName;
+    }
+
+    public Version getVersion() {
+        return version;
     }
 
     /**

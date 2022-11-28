@@ -35,35 +35,44 @@ import org.osgi.framework.Version;
  */
 public interface OsgiClient extends AutoCloseable {
 
+	/**
+	 * Gets the version of an installed bundle.
+	 * 
+	 * @param bundleSymbolicName the BSN of the bundle whose version to retrieve
+	 * @return the installed version or {@code null} if not found
+	 * @throws OsgiClientException
+	 */
     Version getBundleVersion(String bundleSymbolicName) throws OsgiClientException;
 
-    void installBundle(InputStream in, String fileName) throws OsgiClientException;
-
     /**
-     * Installs a bundle from a local directory
-     * 
+     * Installs/Updates a bundle from a JAR synchronously (i.e. after the call returns the bundle has been installed/updated).
+     * It updates an existing bundle in case a bundle with the same symbolic name does already exist.
      * <p>
-     * The Sling launchpad instance must have filesystem access to the specified <tt>explodedBundleLocation</tt>
-     * </p>
+     * Leverages the <a href="https://felix.apache.org/documentation/subprojects/apache-felix-web-console/web-console-restful-api.html">Felix Web Console ReST endpoint</a>.
+     * @param in the contents of the jarred bundle
+     * @param bundleSymbolicName the bundle symbolic name
      * 
-     * @param explodedBundleLocation
      * @throws OsgiClientException
      */
-    void installLocalBundle(Path explodedBundleLocation) throws OsgiClientException;
+    void installBundle(InputStream in, String bundleSymbolicName) throws OsgiClientException;
 
     /**
-     * Installs a local bundle from an already-built jar file
+     * Installs/Updates a bundle from a local filesystem directory synchronously (i.e. after the call returns the bundle has been installed/updated)
+     * It updates an existing bundle in case a bundle with the same symbolic name does already exist.
      * 
-     * @param jarredBundle the contents of the jarred bundle
-     * @param sourceLocation the source location, for informative purposes only
+     * <strong>The Sling launchpad instance must have filesystem access to the specified <tt>explodedBundleLocation</tt></strong>
+     * <p>
+     * Leverages the <a href="https://github.com/apache/sling-org-apache-sling-tooling-support-install">Sling Tooling Support Install bundle</a>.
      * 
+     * @param explodedBundleLocation the local path of the directory containing the exploded bundle
      * @throws OsgiClientException
      */
-    void installLocalBundle(InputStream jarredBundle, String sourceLocation) throws OsgiClientException;
+    void installBundle(Path explodedBundleLocation) throws OsgiClientException;
     
     /**
      * Finds source references for all bundles deployed in the Sling instance
-     * 
+     * <p>
+     * Leverages the <a href="https://github.com/apache/sling-org-apache-sling-tooling-support-source">Sling Tooling Support Source bundle</a>.
      * @return the source references, possibly empty
      * @throws OsgiClientException
      */
@@ -71,7 +80,8 @@ public interface OsgiClient extends AutoCloseable {
     
     /**
      * Uninstalls the bundle with the specified Bundle-SymbolicName, if present
-     * 
+     * <p>
+     * Leverages the <a href="https://felix.apache.org/documentation/subprojects/apache-felix-web-console/web-console-restful-api.html">Felix Web Console ReST endpoint</a>.
      * @param bundleSymbolicName The Bundle-SymbolicName
      * @return true in case a bundle with that BSN was found and uninstalled, false in case the BSN was not found
      * @throws OsgiClientException error when trying to uninstall the bundle
@@ -81,14 +91,14 @@ public interface OsgiClient extends AutoCloseable {
 	/**
 	 * Wait until the component with the given name is registered. This means the component must be either in state "Registered" or "Active".
 	 * The state registered is called "satisfied" in the Felix DS Web Console
-	 * @param componentName the component's name (by default the 
+	 * @param componentNameOrId the component's name (by default the FQCN) or its id
 	 * @param timeout how long to wait for the component to become registered before throwing a {@code TimeoutException} in milliseconds
 	 * @param delay time to wait between checks of the state in milliseconds
 	 * @throws TimeoutException if the component did not become registered before timeout was reached
 	 * @throws InterruptedException if interrupted
 	 * @see "OSGi Comp. R6, §112.5 Component Life Cycle"
 	 */
-	void waitForComponentRegistered(final String componentName, final long timeout, final long delay)
+	void waitForComponentRegistered(final String componentNameOrId, final long timeout, final long delay)
 			throws TimeoutException, InterruptedException;
 
 	void close() throws IOException;

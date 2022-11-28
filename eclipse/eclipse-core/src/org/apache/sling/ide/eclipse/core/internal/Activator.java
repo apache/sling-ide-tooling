@@ -18,7 +18,7 @@ package org.apache.sling.ide.eclipse.core.internal;
 
 import java.util.Optional;
 
-import org.apache.sling.ide.artifacts.EmbeddedArtifactLocator;
+import org.apache.sling.ide.artifacts.EmbeddedBundleLocator;
 import org.apache.sling.ide.eclipse.core.ExtendedServiceTracker;
 import org.apache.sling.ide.eclipse.core.Preferences;
 import org.apache.sling.ide.eclipse.core.launch.SourceReferenceResolver;
@@ -53,7 +53,7 @@ public class Activator extends Plugin {
     private ExtendedServiceTracker<SerializationManager> serializationManager;
     private ExtendedServiceTracker<FilterLocator> filterLocator;
     private ExtendedServiceTracker<OsgiClientFactory> osgiClientFactory;
-    private ExtendedServiceTracker<EmbeddedArtifactLocator> artifactLocator;
+    private ExtendedServiceTracker<EmbeddedBundleLocator> bundleLocator;
     private ExtendedServiceTracker<Logger> tracer;
     private ExtendedServiceTracker<BatcherFactory> batcherFactoryLocator;
     private ExtendedServiceTracker<SourceReferenceResolver> sourceReferenceLocator;
@@ -80,7 +80,7 @@ public class Activator extends Plugin {
         serializationManager = new ExtendedServiceTracker<>(context, SerializationManager.class);
         filterLocator = new ExtendedServiceTracker<>(context, FilterLocator.class);
         osgiClientFactory = new ExtendedServiceTracker<>(context, OsgiClientFactory.class);
-        artifactLocator = new ExtendedServiceTracker<>(context, EmbeddedArtifactLocator.class);
+        bundleLocator = new ExtendedServiceTracker<>(context, EmbeddedBundleLocator.class);
         tracer = new ExtendedServiceTracker<>(context, Logger.class);
         batcherFactoryLocator = new ExtendedServiceTracker<>(context, BatcherFactory.class);
         sourceReferenceLocator = new ExtendedServiceTracker<>(context, SourceReferenceResolver.class);
@@ -107,7 +107,7 @@ public class Activator extends Plugin {
         serializationManager.close();
         filterLocator.close();
         osgiClientFactory.close();
-        artifactLocator.close();
+        bundleLocator.close();
         tracer.close();
         batcherFactoryLocator.close();
         sourceReferenceLocator.close();
@@ -142,8 +142,8 @@ public class Activator extends Plugin {
         return osgiClientFactory.getNotNull();
     }
 
-    public EmbeddedArtifactLocator getArtifactLocator() {
-        return artifactLocator.getNotNull();
+    public EmbeddedBundleLocator getEmbeddedBundleLocator() {
+        return bundleLocator.getNotNull();
     }
 
     public Logger getPluginLogger() {
