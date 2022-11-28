@@ -133,7 +133,7 @@
 		<jackrabbit.version>2.20.6</jackrabbit.version>
         <oak.version>1.44.0</oak.version>
 		<vault.version>3.6.4</vault.version>
-		<toolingInstallVersion>1.1.0-SNAPSHOT</toolingInstallVersion>
-		<toolingSourceVersion>1.1.0-SNAPSHOT</toolingSourceVersion>
+		<toolingInstallVersion>1.1.0</toolingInstallVersion>
+		<toolingSourceVersion>1.1.0</toolingSourceVersion>
     </properties>
 </project>
