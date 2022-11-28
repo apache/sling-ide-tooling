@@ -54,7 +54,7 @@ def generateStages(String os, def mvnVersion, def javaVersion) {
         }, "[$prefix] Build Eclipse plug-ins": {
         	try {
 	            withMaven(maven: mvnVersion, jdk: javaVersion, mavenLocalRepo: '.repository', options: [artifactsPublisher(disabled: true)]) {
-	                timeout(20) {
+	                timeout(60) {
 	                    // workaround for https://issues.jenkins-ci.org/browse/JENKINS-39415
 	                    wrap([$class: 'Xvfb', autoDisplayName: true]) {
 	                        runCmd "mvn -f eclipse ${goals}"
