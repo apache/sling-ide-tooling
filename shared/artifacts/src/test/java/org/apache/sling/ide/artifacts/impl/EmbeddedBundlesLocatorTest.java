@@ -26,7 +26,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.sling.ide.artifacts.EmbeddedBundle;
 import org.apache.sling.ide.artifacts.EmbeddedBundleLocator;
 import org.junit.Test;
-import org.osgi.framework.Version;
 
 public class EmbeddedBundlesLocatorTest {
 
@@ -35,7 +34,6 @@ public class EmbeddedBundlesLocatorTest {
 		EmbeddedBundleLocatorImpl locator = new EmbeddedBundleLocatorImpl();
 		EmbeddedBundle bundle = locator.getBundle(EmbeddedBundleLocator.SUPPORT_SOURCE_BUNDLE_SYMBOLIC_NAME);
 		assertEmbeddedArtifact(bundle, "org.apache.sling.tooling.support.source.jar");
-		assertEquals(new Version("1.1.0.SNAPSHOT"), bundle.getVersion());
 		assertEquals(EmbeddedBundleLocator.SUPPORT_SOURCE_BUNDLE_SYMBOLIC_NAME, bundle.getBundleSymbolicName());
 	}
 
@@ -44,7 +42,6 @@ public class EmbeddedBundlesLocatorTest {
 		EmbeddedBundleLocatorImpl locator = new EmbeddedBundleLocatorImpl();
 		EmbeddedBundle bundle = locator.getBundle(EmbeddedBundleLocator.SUPPORT_INSTALL_BUNDLE_SYMBOLIC_NAME);
 		assertEmbeddedArtifact(bundle, "org.apache.sling.tooling.support.install.jar");
-		assertEquals(new Version("1.1.0.SNAPSHOT"), bundle.getVersion());
 		assertEquals(EmbeddedBundleLocator.SUPPORT_INSTALL_BUNDLE_SYMBOLIC_NAME, bundle.getBundleSymbolicName());
 	}
 
