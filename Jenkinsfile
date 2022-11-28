@@ -148,5 +148,5 @@ def runCmd(def cmd) {
 }
 
 boolean shouldDeploy() {
-	return env.CHANGE_BRANCH == 'master'
+	return env.BRANCH_NAME == 'master'
 }
