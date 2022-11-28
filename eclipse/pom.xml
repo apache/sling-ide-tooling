@@ -216,9 +216,7 @@
         <profile>
             <id>eclipse-test</id>
             <activation>
-                <os>
-                	<family>!windows</family>
-                </os>
+                <activeByDefault>true</activeByDefault>
             </activation>
             <modules>
                 <module>eclipse-test</module>
