@@ -128,7 +128,7 @@ public class ContentPackageProjectConfigurator extends AbstractProjectConfigurat
 
         IProjectDescription description = project.getDescription();
         String[] oldNatureIds = description.getNatureIds();
-        Set<String> newNatureIdSet = new TreeSet<String>();
+        Set<String> newNatureIdSet = new TreeSet<>();
         newNatureIdSet.addAll(Arrays.asList(oldNatureIds));
         // check if there is a nature change really requested
         if (newNatureIdSet.addAll(Arrays.asList(natureIdsToAdd))) {
@@ -197,7 +197,7 @@ public class ContentPackageProjectConfigurator extends AbstractProjectConfigurat
 
             // web facets
             IFacetedProject facetedProject = ProjectFacetsManager.create(project, true, progressMonitor);
-            Set<Action> actions = new LinkedHashSet<Action>();
+            Set<Action> actions = new LinkedHashSet<>();
             installJavaFacet(actions, project, facetedProject, javaFacetVersion);
 
             IProjectFacetVersion webFv = ProjectFacetsManager.getProjectFacet(IJ2EEFacetConstants.DYNAMIC_WEB).getVersion(webFacetVersion);
