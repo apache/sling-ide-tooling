@@ -186,7 +186,7 @@ public class ContentPackageProjectConfigurator extends AbstractProjectConfigurat
            }
            
            final String webFacetVersion;
-           String webFacetVersionPropertyValue = mavenProject.getProperties().getProperty(M2E_WEB_FACET_VERSION);
+           String webFacetVersionPropertyValue = mavenProject.getProperties().getProperty(M2E_WEB_FACET_VERSION, "");
            if (!webFacetVersionPropertyValue.isBlank()) {
                webFacetVersion = webFacetVersionPropertyValue;
                trace("Configured Web facet version {0} from pom property {1}", webFacetVersion, M2E_WEB_FACET_VERSION);
