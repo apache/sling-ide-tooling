@@ -27,7 +27,7 @@
     <scm>
         <connection>scm:git:https://gitbox.apache.org/repos/asf/sling-ide-tooling.git</connection>
         <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/sling-ide-tooling.git</developerConnection>
-        <url>https://gitbox.apache.org/repos/asf?p=sling-ide-tooling.git</url>
+        <url>https://github.com/apache/sling-ide-tooling.git</url>
     </scm>
 
     <dependencies>
