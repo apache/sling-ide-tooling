@@ -187,7 +187,7 @@
     </build>
 
     <properties>
-        <tycho.version>3.0.1</tycho.version>
+        <tycho.version>4.0.3</tycho.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <minimalJavaBuildVersion>17</minimalJavaBuildVersion>
         <maven.compiler.target>17</maven.compiler.target>
