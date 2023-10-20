@@ -16,8 +16,8 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.apache.sling</groupId>
-    	<artifactId>sling</artifactId>
-    	<version>49</version>
+        <artifactId>sling</artifactId>
+        <version>52</version>
     </parent>
     <groupId>org.apache.sling.ide</groupId>
     <artifactId>sling-ide-tooling-shared</artifactId>
