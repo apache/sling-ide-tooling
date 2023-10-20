@@ -39,6 +39,20 @@
             <plugins>
                 <plugin>
                     <groupId>biz.aQute.bnd</groupId>
+                    <artifactId>bnd-maven-plugin</artifactId>
+                    <executions>
+                        <execution>
+                            <id>bnd-process</id>
+                            <configuration>
+                                <!-- due to the non-Maven standard merging this is effectively added to the config set in sling-bundle-parent -->
+                                <!-- make sure to automatically start this bundle in Equinox whenever some classes are referenced -->
+                                <bnd>Bundle-ActivationPolicy: lazy</bnd>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>biz.aQute.bnd</groupId>
                     <artifactId>bnd-baseline-maven-plugin</artifactId>
                     <configuration>
                         <failOnMissing>false</failOnMissing><!-- no release yet -->
