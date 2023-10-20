@@ -29,7 +29,6 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ProjectScope;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
@@ -211,7 +210,7 @@ public abstract class ProjectUtil {
             return null;
         }
 
-        IFile filterFile = ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(filterPath);
+        IFile filterFile = project.getWorkspace().getRoot().getFileForLocation(filterPath);
         Filter filter = null;
         if (filterFile != null && filterFile.exists()) {
             try ( InputStream contents = filterFile.getContents() ) {
