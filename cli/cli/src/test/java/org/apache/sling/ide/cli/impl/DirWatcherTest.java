@@ -16,207 +16,118 @@
  */
 package org.apache.sling.ide.cli.impl;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_DELETE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.greaterThanOrEqualTo;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assume.assumeFalse;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Consumer;
+import java.nio.file.Path;
+import java.nio.file.WatchEvent.Kind;
+import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.lang3.SystemUtils;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.api.io.TempDir;
 
+
+// due to https://bugs.openjdk.java.net/browse/JDK-7133447 we need a long timeout on Mac OS
+@Timeout(value = 30, unit=TimeUnit.SECONDS)
 public class DirWatcherTest {
 
-    @Rule
-    public TemporaryFolder folder = new TemporaryFolder();
-    
-    @Test(timeout = 3000)
-    
+    @TempDir
+    Path watchRoot;
+
+    @Test
     public void addedFileInRoot() throws IOException, InterruptedException {
-    	// TODO: does not work on Mac OS yet
-    	assumeFalse(SystemUtils.IS_OS_MAC);
-        File watchRoot = folder.newFolder();
-        
-        try ( DirWatcher w = new DirWatcher(watchRoot.toPath()) ) {
+        try ( DirWatcher w = new DirWatcher(watchRoot) ) {
+            Path newFile = Files.createFile(watchRoot.resolve("README"));
+            DirWatcher.Event event = pollTillEventKind(w, ENTRY_CREATE);
             
-            final File created = new File(watchRoot, "README");
-            created.createNewFile();
-            
-            DirWatcher.Event event = w.poll();
-            
-            assertThat("event.kind", event.getKind(), equalTo(ENTRY_CREATE));
-            assertThat("event.path", event.getPath(), equalTo(Paths.get(created.getName())));
-            
-            assertThat("queue.size", w.queueSize(), equalTo(0));
+            Assertions.assertEquals(watchRoot.relativize(newFile), event.getPath(), "event.path");
+            Assertions.assertEquals(0, w.queueSize(), "queue.size");
         }
     }
     
-    @Test(timeout = 3000)
+    @Test
     public void addedFileInSubdir() throws IOException, InterruptedException {
-    	// TODO: does not work on Mac OS yet
-    	assumeFalse(SystemUtils.IS_OS_MAC);
-        File watchRoot = folder.newFolder();
-        File subDir = new File(watchRoot, "subDir");
-        subDir.mkdir();
+        Path subDir = Files.createDirectory(watchRoot.resolve("subDir"));
         
-        try ( DirWatcher w = new DirWatcher(watchRoot.toPath()) ) {
-            
-            File created = new File(subDir, "README");
-            created.createNewFile();
+        try ( DirWatcher w = new DirWatcher(watchRoot) ) {
+            Path newFile = Files.createFile(subDir.resolve("README"));
     
-            DirWatcher.Event event = w.poll();
-            
-            assertThat("event.kind", event.getKind(), equalTo(ENTRY_CREATE));
-            assertThat("event.path", event.getPath(), equalTo(Paths.get(subDir.getName(), created.getName())));
-            
-            assertThat("queue.size", w.queueSize(), equalTo(0));
+            DirWatcher.Event event = pollTillEventKind(w, ENTRY_CREATE);
+            Assertions.assertEquals(watchRoot.relativize(newFile), event.getPath(), "event.path");
         }
 
     }
-    
-    @Test(timeout = 3000)
+
+    @Test
     public void addedFileInNewSubdir() throws IOException, InterruptedException {
-    	// TODO: does not work on Mac OS yet
-    	assumeFalse(SystemUtils.IS_OS_MAC);
-        File watchRoot = folder.newFolder();
-        
-        try ( DirWatcher w = new DirWatcher(watchRoot.toPath()) ) {
+
+        try ( DirWatcher w = new DirWatcher(watchRoot) ) {
     
-            File subDir = new File(watchRoot, "subDir");
-            subDir.mkdir();
+            Path subDir = Files.createDirectory(watchRoot.resolve("subDir"));
     
-            DirWatcher.Event event = w.poll();
+            DirWatcher.Event event = pollTillEventKind(w, ENTRY_CREATE);
+            Assertions.assertEquals(watchRoot.relativize(subDir), event.getPath(), "event.path");
             
-            assertThat("event.kind", event.getKind(), equalTo(ENTRY_CREATE));
-            assertThat("event.path", event.getPath(), equalTo(Paths.get(subDir.getName())));
+            Path newFile = Files.createFile(subDir.resolve("README"));
             
-            File created = new File(subDir, "README");
-            created.createNewFile();
-            
-            event = w.poll();
-            assertThat("event.kind", event.getKind(), equalTo(ENTRY_CREATE));
-            assertThat("event.path", event.getPath(), equalTo(Paths.get(subDir.getName(), created.getName())));
-            
-            assertThat("queue.size", w.queueSize(), equalTo(0));
+            event = pollTillEventKind(w, ENTRY_CREATE);
+            Assertions.assertEquals(watchRoot.relativize(newFile), event.getPath(), "event.path");
         }
     }
-    
-    @Test(timeout = 3000)
+
+    @Test
     public void deletedFile() throws IOException, InterruptedException {
-    	// TODO: does not work on Mac OS yet
-    	assumeFalse(SystemUtils.IS_OS_MAC);
-        assumeFalse(SystemUtils.IS_OS_WINDOWS); // TODO - SLING-7596
-        
-        File watchRoot = folder.newFolder();
-        File subDir = new File(watchRoot, "subDir");
-        subDir.mkdir();
+        Path subDir = Files.createDirectory(watchRoot.resolve("subDir"));
+        Path newFile = Files.createFile(subDir.resolve("README"));
 
-        File created = new File(subDir, "README");
-        created.createNewFile();
-
-        try ( DirWatcher w = new DirWatcher(watchRoot.toPath()) ) { 
-
-            created.delete();
+        try ( DirWatcher w = new DirWatcher(watchRoot) ) { 
+            Files.delete(newFile);
             
-            DirWatcher.Event event = w.poll();
-        
-            assertThat("event.kind", event.getKind(), equalTo(ENTRY_DELETE));
-            assertThat("event.path", event.getPath(), equalTo(Paths.get(subDir.getName(), created.getName())));
-            
-            assertThat("queue.size", w.queueSize(), equalTo(0));
+            DirWatcher.Event event = pollTillEventKind(w, ENTRY_DELETE);
+            Assertions.assertEquals(watchRoot.relativize(newFile), event.getPath(), "event.path");
         }
     }
-    
-    @Test(timeout = 300000)
+
+    @Test
     public void deleteDir() throws IOException, InterruptedException {
-    	// TODO: does not work on Mac OS yet
-    	assumeFalse(SystemUtils.IS_OS_MAC);
+        Path subDir = Files.createDirectory(watchRoot.resolve("subDir"));
 
-        File watchRoot = folder.newFolder();
-        File subDir = new File(watchRoot, "subDir");
-        subDir.mkdir();
-
-
-        try ( DirWatcher w = new DirWatcher(watchRoot.toPath()) ) { 
+        try ( DirWatcher w = new DirWatcher(watchRoot) ) { 
             
-            Files.delete(subDir.toPath());
+            Files.delete(subDir);
             
-            DirWatcher.Event event = w.poll();
+            DirWatcher.Event event = pollTillEventKind(w, ENTRY_DELETE);
         
-            assertThat("event.kind", event.getKind(), equalTo(ENTRY_DELETE));
-            assertThat("event.path", event.getPath(), equalTo(Paths.get(subDir.getName())));
-            
-            assertThat("queue.size", w.queueSize(), equalTo(0));
+            Assertions.assertEquals(watchRoot.relativize(subDir), event.getPath(), "event.path");
         }
     }
 
-    @Test(timeout = 3000)
     public void modifyFile() throws IOException, InterruptedException {
-        // TODO: does not work on Mac OS yet
-    	assumeFalse(SystemUtils.IS_OS_MAC);
-    	
-        File watchRoot = folder.newFolder();
-        final File created = new File(watchRoot, "README");
-        created.createNewFile();        
+        Path newFile = Files.createFile(watchRoot.resolve("README"));
         
-        try ( DirWatcher w = new DirWatcher(watchRoot.toPath()) ) { 
+        try ( DirWatcher w = new DirWatcher(watchRoot) ) { 
             
-            Files.write(created.toPath(), "hello, world".getBytes(UTF_8));
+            Files.write(newFile, "hello, world".getBytes(StandardCharsets.UTF_8));
+            DirWatcher.Event event = pollTillEventKind(w, ENTRY_MODIFY);
+            Assertions.assertEquals(watchRoot.relativize(newFile), event.getPath(), "event.path");
             
-            drainAndCheck(w, (events) -> {
-                assertThat("events.size", events.size(), greaterThanOrEqualTo(1));
-                for ( DirWatcher.Event event : events ) {
-                    assertThat("event.kind", event.getKind(), equalTo(ENTRY_MODIFY));
-                    assertThat("event.path", event.getPath(), equalTo(Paths.get(created.getName())));
-                }
-            });
-            
-            Files.write(created.toPath(), "hello, again".getBytes(UTF_8));
-            
-            drainAndCheck(w, (events) -> {
-                assertThat("events.size", events.size(), greaterThanOrEqualTo(1));
-                for ( DirWatcher.Event event : events ) {
-                    assertThat("event.kind", event.getKind(), equalTo(ENTRY_MODIFY));
-                    assertThat("event.path", event.getPath(), equalTo(Paths.get(created.getName())));
-                }
-            });
-            
-            List<DirWatcher.Event> unexpected = new ArrayList<>();
-            while( w.queueSize() != 0 )
-                unexpected.add(w.poll());
-            
-            // don't use size comparison to print out unexpected events in case of an assertion failure
-            assertThat("unexpected events", unexpected, equalTo(new ArrayList<>()));
+            Files.write(newFile, "hello, world".getBytes(StandardCharsets.UTF_8));
+            event = pollTillEventKind(w, ENTRY_MODIFY);
+            Assertions.assertEquals(watchRoot.relativize(newFile), event.getPath(), "event.path");
         }
     }
-    
-    private void drainAndCheck(DirWatcher w, Consumer<List<DirWatcher.Event>> check) throws InterruptedException {
-        
-        long start = System.currentTimeMillis();
-        long delay = 500l;
-        
-        List<DirWatcher.Event> events = new ArrayList<>();
-        while( System.currentTimeMillis() < start + delay) {
-            if ( w.queueSize() == 0 ) {
-                Thread.sleep(50);
-                continue;
-            }
-            events.add(w.poll());
-        }
-        
-        check.accept(events);
+
+    private DirWatcher.Event pollTillEventKind(DirWatcher watcher, Kind<?> kind) throws InterruptedException {
+        DirWatcher.Event event;
+        do {
+            event = watcher.poll();
+        } while(event.getKind() != kind);
+        return event;
     }
 }
