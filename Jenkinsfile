@@ -86,7 +86,7 @@ def generateStages(String os, def mvnVersion, def javaVersion) {
 
 def buildAndDeployP2Repository( def mvnVersion, def javaVersion ) {
 	// for optional signing a dedicated node needs to be leveraged
-	node('pkcs11') {
+	node('ubuntu') { // use label pkcs11 for signing with digicert
 		stage('Build P2 Repository') {
 			echo "Running on node ${env.NODE_NAME} with PKCS#11 config at ${env.PKCS11_CONFIG}"
 			checkout scm
