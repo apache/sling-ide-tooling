@@ -201,11 +201,6 @@
 								<goals>
 									<goal>sign-p2-artifacts</goal>
 								</goals>
-								<configuration>
-									<!-- disable exporting public keys due to https://github.com/eclipse-tycho/tycho/issues/1706 -->
-									<addPublicKeyToRepo>false</addPublicKeyToRepo>
-									<addPublicKeysToArtifacts>false</addPublicKeysToArtifacts>
-								</configuration>
 							</execution>
 						</executions>
 					</plugin>
