@@ -250,8 +250,6 @@ public class JcrPartialCoverageAggregatesDeploymentTest {
     
     @Test
     public void deployNodeWithContentXmlInParentFolder() throws Exception {
-        assumeThat(System.getProperty("os.name"), not(containsString("Windows"))); // TODO - SLING-7596
-
         wstServer.waitForServerToStart();
 
         // create faceted project
@@ -319,8 +317,6 @@ public class JcrPartialCoverageAggregatesDeploymentTest {
     
     @Test
     public void deployNodeWithContentXmlInParentFolder_reverse() throws Exception {
-
-        assumeThat(System.getProperty("os.name"), not(containsString("Windows"))); // TODO - SLING-7596
 
         wstServer.waitForServerToStart();
 
