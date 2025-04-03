@@ -97,7 +97,24 @@ public class MavenProjectUtils {
     	return new LinkedHashSet<>(candidates);
     	
     }
-    
+
+    public static Set<String> getFeatureDirectoryCandidateLocations(MavenProject mavenProject) {
+        List<String> candidates = new ArrayList<>();
+        candidates.add("src/main/features");
+        candidates.add("src/test/features");
+        
+        Plugin slingFeaturePlugin = mavenProject.getPlugin("org.apache.sling:slingfeature-maven-plugin");
+        if ( slingFeaturePlugin.getConfiguration() instanceof Xpp3Dom ) {
+            Xpp3Dom config = (Xpp3Dom) slingFeaturePlugin.getConfiguration();
+            Xpp3Dom featuresDir = config.getChild("features");
+            if ( featuresDir != null ) {
+                 candidates.add(0, featuresDir.getValue());
+            }           
+        }
+        
+        return new LinkedHashSet<>(candidates);        
+    }
+
     private MavenProjectUtils() {
         
     }

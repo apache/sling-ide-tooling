@@ -42,6 +42,7 @@ import org.xml.sax.SAXException;
 
 public class ProjectHelper {
 
+    private static final String SLING_FEATURE_FACET_ID = "sling.feature";
     private static final String[] CONTENT_PACKAGE_STRUCTURE_BASE = new String[] { "/", "/content", "/src/main/content" };
 
 	public static boolean isPotentialBundleProject(IProject project) {
@@ -142,6 +143,10 @@ public class ProjectHelper {
 
 	public static boolean isLaunchpadProject(IProject project) {
 		return FacetHelper.containsFacet(project, "sling.launchpad");
+	}
+
+	public static boolean isFeatureProject(IProject project) {
+	    return FacetHelper.containsFacet(project, SLING_FEATURE_FACET_ID);
 	}
 
 	public static IJavaProject asJavaProject(IProject project) {

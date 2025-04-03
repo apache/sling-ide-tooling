@@ -16,7 +16,9 @@
  */
 package org.apache.sling.ide.eclipse.ui.nav;
 
+import org.apache.sling.ide.eclipse.ui.nav.model.FeatureModelRootFolder;
 import org.apache.sling.ide.eclipse.ui.nav.model.ProvisioningModelRootFolder;
+import org.apache.sling.ide.eclipse.ui.nav.model.RootFolder;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.swt.graphics.Image;
@@ -26,7 +28,7 @@ import org.eclipse.ui.PlatformUI;
 /**
  * Mostly copied from org.eclipse.ui.internal.ide.dialogs.FileFolderSelectionDialog.FileLabelProvider.
  */
-public class ProvisioningModelLabelProvider implements ILabelProvider {
+public class GenericModelLabelProvider implements ILabelProvider {
 
     private static final Image IMG_FOLDER = PlatformUI.getWorkbench().getSharedImages()
             .getImage(ISharedImages.IMG_OBJ_FOLDER);
@@ -53,7 +55,7 @@ public class ProvisioningModelLabelProvider implements ILabelProvider {
 
     @Override
     public Image getImage(Object element) {
-    	if ( element instanceof ProvisioningModelRootFolder ) {
+    	if ( element instanceof ProvisioningModelRootFolder || element instanceof FeatureModelRootFolder ) {
     		return IMG_FOLDER;
     	}
     	
@@ -62,8 +64,8 @@ public class ProvisioningModelLabelProvider implements ILabelProvider {
 
     @Override
     public String getText(Object element) {
-        if (element instanceof ProvisioningModelRootFolder) {
-        	ProvisioningModelRootFolder rootFolder = (ProvisioningModelRootFolder) element;
+        if (element instanceof ProvisioningModelRootFolder || element instanceof FeatureModelRootFolder) {
+        	RootFolder rootFolder = (RootFolder) element;
             return rootFolder.getProjectRelativePath().toPortableString();
         }
         return null;

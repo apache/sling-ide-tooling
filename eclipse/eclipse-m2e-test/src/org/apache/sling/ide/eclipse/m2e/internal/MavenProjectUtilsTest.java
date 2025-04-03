@@ -79,4 +79,27 @@ public class MavenProjectUtilsTest {
         actualJcrRoot = MavenProjectUtils.guessJcrRootFolder(rootPath);
         Assert.assertFalse(actualJcrRoot.isPresent());
 	}
+	
+    @Test
+    public void inferDefaultFeatureModelDirectories() throws Exception {
+
+        IPath featuresDir = Path.fromPortableString("src/main/features");
+        
+        // create project
+        final IProject featureProject = projectRule.getProject();
+
+        MavenProjectAdapter project = new MavenProjectAdapter(featureProject);
+        project.createOrUpdateFile(Path.fromPortableString("pom.xml"), getClass().getResourceAsStream("slingfeature-simple-pom.xml"));
+        project.ensureDirectoryExists(featuresDir);
+        project.convertToMavenProject();
+
+        // conversion should enable the slingstart configurator and set the provisioning model path
+        new Poller(TimeUnit.MINUTES.toMillis(1)).pollUntil(new Callable<IPath>() {
+            @Override
+            public IPath call() throws Exception {
+                return ProjectUtil.getFeatureModelPath(featureProject);
+            }
+        }, equalTo(featuresDir));
+        
+    }	
 }

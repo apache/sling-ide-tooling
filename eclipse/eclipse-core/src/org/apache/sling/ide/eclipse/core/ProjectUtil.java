@@ -19,6 +19,7 @@ package org.apache.sling.ide.eclipse.core;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.function.Predicate;
 
 import org.apache.sling.ide.eclipse.core.internal.Activator;
 import org.apache.sling.ide.eclipse.core.internal.ProjectHelper;
@@ -43,6 +44,7 @@ public abstract class ProjectUtil {
 
     private static final String PROPERTY_SYNC_ROOT = Activator.PLUGIN_ID + ".content_sync_root";
     private static final String PROPERTY_PROVISIONING_MODEL_DIR = Activator.PLUGIN_ID + ".provisioning_model_dir";
+    private static final String PROPERTY_FEATURE_MODEL_DIR = Activator.PLUGIN_ID + ".feature_model_dir";
     
     private static final String PROPERTY_SYNC_ROOT_DEFAULT_VALUE = "jcr_root";
     
@@ -168,30 +170,47 @@ public abstract class ProjectUtil {
 	}
 
 	public static IPath getProvisioningModelPath(IProject project) {
-		
-		if ( project == null || !project.isOpen() || !ProjectHelper.isLaunchpadProject(project)) {
-			return null;
-		}
-		
+	    
+	    return getProjectPath(project, ProjectHelper::isLaunchpadProject, PROPERTY_PROVISIONING_MODEL_DIR);
+
+	}
+	
+    private static IPath getProjectPath(IProject project, Predicate<IProject> requiredTest, String key) {
+        
+        if ( project == null || !project.isOpen() || !requiredTest.test(project)) {
+            return null;
+        }
+        
         IScopeContext projectScope = new ProjectScope(project);
         IEclipsePreferences projectNode = projectScope.getNode(Activator.PLUGIN_ID);
         if ( projectNode == null ) {
-        	return null;
+            return null;
         }
         
-        String propertyValue = projectNode.get(PROPERTY_PROVISIONING_MODEL_DIR, null);
+        String propertyValue = projectNode.get(key, null);
         if ( propertyValue == null ) {
-        	return null;
+            return null;
         }
-		
-		return Path.fromPortableString(propertyValue);
-	}
+        
+        return Path.fromPortableString(propertyValue);
+    }
 	
 	public static void setProvisioningModelPath(IProject project, IPath modelPath) {
 		
 		setPathPersistentProperty(project, modelPath, PROPERTY_PROVISIONING_MODEL_DIR);
 		
 	}
+	
+    public static IPath getFeatureModelPath(IProject project) {
+        
+        return getProjectPath(project, ProjectHelper::isFeatureProject, PROPERTY_FEATURE_MODEL_DIR);
+    }
+    
+    public static void setFeatureModelPath(IProject project, IPath modelPath) {
+
+        setPathPersistentProperty(project, modelPath, PROPERTY_FEATURE_MODEL_DIR);
+
+    }
 	
     
     /**

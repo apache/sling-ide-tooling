@@ -68,4 +68,16 @@ public class ConfigurationHelper {
 		
 
 	}
+	
+    public static void convertToFeatureProject(IProject project, IPath featureDirectoryPath) throws CoreException {
+
+        IProjectFacet facet = ProjectFacetsManager.getProjectFacet("sling.feature");
+        IFacetedProject fp2 = ProjectFacetsManager.create(project, true, null);
+        fp2.installProjectFacet(facet.getLatestVersion(), null, null);
+        project.refreshLocal(IResource.DEPTH_INFINITE, new NullProgressMonitor());
+
+        if (featureDirectoryPath != null) {
+            ProjectUtil.setFeatureModelPath(project, featureDirectoryPath);
+        }
+    }
 }

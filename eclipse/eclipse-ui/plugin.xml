@@ -231,6 +231,7 @@
 				<contentExtension pattern="org.apache.sling.ide.eclipse-ui.navigatorJcrContent" />
 				<contentExtension pattern="org.apache.sling.ide.eclipse-ui.navigatorVaultMetaInf" />
 				<contentExtension pattern="org.apache.sling.ide.eclipse-ui.navigatorProvisioningModel" />
+				<contentExtension pattern="org.apache.sling.ide.eclipse-ui.navigatorFeatureModel" />
 				<contentExtension pattern="org.apache.sling.ide.eclipse-ui.linkHelper"/>	
 			</includes>
 		</viewerContentBinding>
@@ -356,7 +357,7 @@
            name="Provisioning Model"
            appearsBefore="org.eclipse.jst.jee.ui.ejb"
            contentProvider="org.apache.sling.ide.eclipse.ui.nav.ProvisioningModelContentProvider"
-           labelProvider="org.apache.sling.ide.eclipse.ui.nav.ProvisioningModelLabelProvider"
+           labelProvider="org.apache.sling.ide.eclipse.ui.nav.GenericModelLabelProvider"
            icon="icons/obj16/sling_misc.gif">
           <triggerPoints>
               <and>
@@ -382,6 +383,36 @@
              </and>
           </possibleChildren>
       </navigatorContent>
+      <navigatorContent id="org.apache.sling.ide.eclipse-ui.navigatorFeatureModel" 
+           name="Feature Model"
+           appearsBefore="org.eclipse.jst.jee.ui.ejb"
+           contentProvider="org.apache.sling.ide.eclipse.ui.nav.FeatureModelContentProvider"
+           labelProvider="org.apache.sling.ide.eclipse.ui.nav.GenericModelLabelProvider"
+           icon="icons/obj16/sling_misc.gif">
+          <triggerPoints>
+              <and>
+                  <!-- only trigger for Sling Feature Projects -->
+                  <adapt type="org.eclipse.core.resources.IResource">
+                      <test property="org.eclipse.wst.common.project.facet.core.projectFacet" value="sling.feature"/>
+                  </adapt>
+                  <or>
+                      <!-- and either IProject or ProvisioningModelRootFolder -->
+                      <instanceof value="org.eclipse.core.resources.IProject" />
+                      <instanceof value="org.apache.sling.ide.eclipse.ui.nav.model.FeatureModelRootFolder" />
+                  </or>
+              </and>
+          </triggerPoints>
+          <possibleChildren>
+              <and>
+                  <!-- only trigger for Sling Feature Projects -->
+                  <adapt type="org.eclipse.core.resources.IResource">
+                      <test property="org.eclipse.wst.common.project.facet.core.projectFacet" value="sling.feature"/>
+                  </adapt>         
+                  <instanceof 
+                         value="org.eclipse.core.resources.IResource" /> 
+             </and>
+          </possibleChildren>
+      </navigatorContent>      
    </extension>   
    <extension
          point="org.eclipse.core.runtime.adapters">
@@ -459,6 +490,9 @@
               	<test
 	    			property="org.eclipse.wst.common.project.facet.core.projectFacet" 
     				value="sling.launchpad"/>
+              	<test
+	    			property="org.eclipse.wst.common.project.facet.core.projectFacet" 
+    				value="sling.feature"/>
     		  </or>
 			</not>               
          </definition>
