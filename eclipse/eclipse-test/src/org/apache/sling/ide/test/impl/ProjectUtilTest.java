@@ -142,4 +142,32 @@ public class ProjectUtilTest {
     	
     	assertThat("provisioning model path", ProjectUtil.getProvisioningModelPath(contentProject), equalTo(modelPath));
     }
+    
+    @Test
+    public void noFeaturesDirectory() throws Exception {
+        
+        assertThat("feature model path", ProjectUtil.getFeatureModelPath(contentProject), nullValue());
+    }
+
+    @Test
+    public void existingFeaturesDirectoryWithoutLaunchpadNature() throws Exception {
+
+        IPath modelPath = Path.fromPortableString("src/main/features");
+        project.ensureDirectoryExists(modelPath);
+        ProjectUtil.setFeatureModelPath(contentProject, modelPath);
+        
+        assertThat("feature model path", ProjectUtil.getFeatureModelPath(contentProject), nullValue());
+    }
+
+    @Test
+    public void existingFeaturessDirectoryWithLaunchpadNature() throws Exception {
+        
+        project.installFacet("sling.feature", "1.0");
+        
+        IPath modelPath = Path.fromPortableString("src/main/features");
+        project.ensureDirectoryExists(modelPath);
+        ProjectUtil.setFeatureModelPath(contentProject, modelPath);
+        
+        assertThat("feature model path", ProjectUtil.getFeatureModelPath(contentProject), equalTo(modelPath));
+    }    
 }

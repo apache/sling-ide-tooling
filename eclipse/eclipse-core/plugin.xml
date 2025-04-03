@@ -102,6 +102,21 @@
   		<action facet="sling.launchpad" version="1.0" type="UNINSTALL">
   			<delegate class="org.apache.sling.ide.eclipse.core.internal.SlingLaunchpadFacetUninstallDelegate"/>
   		</action>
+
+		<project-facet id="sling.feature">
+			<label>Feature module</label>
+			<description>Packaging module which contains a feature model.</description>
+		</project-facet>
+		
+  		<project-facet-version facet="sling.feature" version="1.0"/>
+  		
+  		<action facet="sling.feature" version="1.0" type="INSTALL">
+  			<delegate class="org.apache.sling.ide.eclipse.core.internal.SlingFeatureFacetInstallDelegate"/>
+  		</action>
+
+  		<action facet="sling.feature" version="1.0" type="UNINSTALL">
+  			<delegate class="org.apache.sling.ide.eclipse.core.internal.SlingFeatureFacetUninstallDelegate"/>
+  		</action>
 	</extension>  
 
 	<!-- Define the Sling launchpad runtime type -->
