@@ -346,7 +346,7 @@ localFile);
        if (serializationFile.exists()) {
            try (InputStream contents = serializationFile.getContents() ) {
                
-               String serializationFilePath = serializationFile.getPathRelativeToSyncDir().asPortableString();
+               String serializationFilePath = WorkspacePaths.toOsPath(serializationFile.getPathRelativeToSyncDir()).toString();
                ResourceProxy resourceProxy = serializationManager.readSerializationData(serializationFilePath, contents);
                normaliseResourceChildren(serializationFile, resourceProxy, repository);
 
