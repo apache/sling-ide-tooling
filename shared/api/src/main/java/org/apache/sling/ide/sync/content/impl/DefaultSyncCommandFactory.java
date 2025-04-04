@@ -323,10 +323,10 @@ localFile);
            fallbackNodeType = Repository.NT_FOLDER;
        }
 
-       String resourceLocation = changedResource.getPathRelativeToSyncDir().asPortableString();
-       String serializationFilePath = serializationManager.getSerializationFilePath(
-               resourceLocation, serializationKind);
-       WorkspaceFile serializationResource = changedResource.getProject().getSyncDirectory().getFile(new WorkspacePath(serializationFilePath));
+       String resourceLocation = WorkspacePaths.toOsPath(changedResource.getPathRelativeToSyncDir()).toString();
+       Path serializationFilePath = Paths.get(serializationManager.getSerializationFilePath(
+               resourceLocation, serializationKind));
+       WorkspaceFile serializationResource = changedResource.getProject().getSyncDirectory().getFile(WorkspacePaths.fromOsPath(serializationFilePath));
 
        if (!serializationResource.exists() && changedResource instanceof WorkspaceDirectory) {
            ResourceProxy dataFromCoveringParent = findSerializationDataFromCoveringParent(changedResource,
