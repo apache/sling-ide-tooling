@@ -42,6 +42,10 @@ import org.apache.sling.ide.serialization.SerializationDataBuilder;
 import org.apache.sling.ide.serialization.SerializationException;
 import org.apache.sling.ide.serialization.SerializationKind;
 import org.apache.sling.ide.serialization.SerializationManager;
+import org.apache.sling.ide.sync.content.WorkspaceDirectory;
+import org.apache.sling.ide.sync.content.WorkspaceFile;
+import org.apache.sling.ide.sync.content.WorkspacePath;
+import org.apache.sling.ide.sync.content.WorkspaceResource;
 import org.apache.sling.ide.transport.Repository;
 import org.apache.sling.ide.transport.ResourceProxy;
 import org.osgi.service.component.annotations.Component;
@@ -61,13 +65,13 @@ public class SimpleXmlSerializationManager implements SerializationManager, Seri
     private static final String CONTENT_XML = ".content.xml";
 
     @Override
-    public boolean isSerializationFile(String filePath) {
-        return filePath.endsWith(CONTENT_XML);
+    public boolean isSerializationFile(WorkspaceFile file) {
+        return file.getLocalPath().getName().equals(CONTENT_XML);
     }
 
     @Override
-    public String getSerializationFilePath(String baseFilePath, SerializationKind serializationKind) {
-        return baseFilePath + File.separatorChar + CONTENT_XML;
+    public WorkspaceFile getSerializationFilePath(WorkspaceResource resource, SerializationKind serializationKind) {
+        return ( (WorkspaceDirectory) resource).getFile(new WorkspacePath(CONTENT_XML));
     }
 
     @Override
@@ -187,6 +191,7 @@ public class SimpleXmlSerializationManager implements SerializationManager, Seri
     /* (non-Javadoc)
      * @see org.apache.sling.ide.serialization.SerializationManager#destroy()
      */
+    @Override
     public void destroy() {
     }
 

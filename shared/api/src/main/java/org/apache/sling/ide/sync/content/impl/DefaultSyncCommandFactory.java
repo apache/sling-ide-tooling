@@ -19,8 +19,6 @@ package org.apache.sling.ide.sync.content.impl;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -37,7 +35,6 @@ import org.apache.sling.ide.sync.content.SyncCommandFactory;
 import org.apache.sling.ide.sync.content.WorkspaceDirectory;
 import org.apache.sling.ide.sync.content.WorkspaceFile;
 import org.apache.sling.ide.sync.content.WorkspacePath;
-import org.apache.sling.ide.sync.content.WorkspacePaths;
 import org.apache.sling.ide.sync.content.WorkspaceResource;
 import org.apache.sling.ide.transport.Command;
 import org.apache.sling.ide.transport.CommandContext;
@@ -93,12 +90,10 @@ public class DefaultSyncCommandFactory implements SyncCommandFactory {
         
         // verify whether a resource being deleted does not signal that the content structure
         // was rearranged under a covering parent aggregate
-        Path serializationFilePath = Paths.get(serializationManager.getSerializationFilePath(repositoryPath,
-                SerializationKind.FOLDER));
+        WorkspaceFile serializationFile = serializationManager.getSerializationFilePath(resource,
+                SerializationKind.FOLDER);
         
-        WorkspacePath serializationFileLocalPath = resource.getProject().getSyncDirectory().getLocalPath().append(WorkspacePaths.fromOsPath(serializationFilePath));
-
-        ResourceProxy coveringParentData = findSerializationDataFromCoveringParent(resource, repositoryPath, serializationFileLocalPath);
+        ResourceProxy coveringParentData = findSerializationDataFromCoveringParent(resource, repositoryPath, serializationFile.getLocalPath());
         if (coveringParentData != null) {
             logger.trace("Found covering resource data ( repository path = {0} ) for resource at {1},  skipping deletion and performing an update instead",
                             coveringParentData.getPath(), resource.getLocalPath());
@@ -134,13 +129,9 @@ public class DefaultSyncCommandFactory implements SyncCommandFactory {
        logger.trace("Found plain nt:folder candidate at {0}, trying to find a covering resource for it",
 localFile);
        
-       WorkspacePath orig = serializationFilePath;
 
        WorkspacePath syncDirPath = localFile.getProject().getSyncDirectory().getLocalPath();
-       serializationFilePath = localFile.getProject().getLocalPath().relativize(serializationFilePath);
-       if ( serializationFilePath == null )
-           throw new RuntimeException("Unable to get relative path from " + localFile.getProject().getLocalPath() + " to " + orig);
-       serializationFilePath = serializationFilePath.absolute();
+       WorkspacePath projectPath = localFile.getProject().getLocalPath();
        
        while (!syncDirPath.equals(serializationFilePath)) {
            serializationFilePath = serializationFilePath.getParent();
@@ -148,8 +139,9 @@ localFile);
            if ( serializationFilePath.asPortableString().lastIndexOf('/') == 0 ) {
                break;
            }
-           WorkspaceDirectory folderWithPossibleSerializationFile = localFile.getProject().getDirectory(serializationFilePath);
            
+           WorkspacePath projectRelativePath = projectPath.relativize(serializationFilePath);
+           WorkspaceDirectory folderWithPossibleSerializationFile = localFile.getProject().getDirectory(projectRelativePath);
            
            if (!folderWithPossibleSerializationFile.exists()) {
                logger.trace("No folder found at {0}, moving up to the next level", serializationFilePath);
@@ -158,20 +150,13 @@ localFile);
 
            // it's safe to use a specific SerializationKind since this scenario is only valid for METADATA_PARTIAL
            // coverage
-           String possibleSerializationFilePath = serializationManager.getSerializationFilePath(
-                   folderWithPossibleSerializationFile.getOSPath().toString(),
+           WorkspaceFile possibleSerializationFile = serializationManager.getSerializationFilePath(
+                   folderWithPossibleSerializationFile,
                    SerializationKind.METADATA_PARTIAL);
 
-           logger.trace("Looking for serialization data in {0}", possibleSerializationFilePath);
-           if (serializationManager.isSerializationFile(possibleSerializationFilePath)) {
+           logger.trace("Looking for serialization data in {0}", possibleSerializationFile);
+           if (serializationManager.isSerializationFile(possibleSerializationFile)) {
                
-               Path parentFileSerializationOSPath = localFile.getProject().getSyncDirectory().getOSPath().
-                       relativize(Paths.get(possibleSerializationFilePath));
-
-               WorkspacePath parentSerializationFilePath = new WorkspacePath(parentFileSerializationOSPath.toString())
-                       .absolute();
-               
-               WorkspaceFile possibleSerializationFile = localFile.getProject().getSyncDirectory().getFile(parentSerializationFilePath);
                if (!possibleSerializationFile.exists()) {
                    logger.trace("Potential serialization data file {0} does not exist, moving up to the next level",
                            possibleSerializationFile.getLocalPath());
@@ -180,8 +165,10 @@ localFile);
                
                ResourceProxy serializationData;
                try (InputStream contents = possibleSerializationFile.getContents()) {
+                   
+                   String serialisationFilePath = possibleSerializationFile.getPathRelativeToSyncDir().absolute().asPortableString();
                    serializationData = serializationManager.readSerializationData(
-                           parentSerializationFilePath.asPortableString(), contents);
+                           serialisationFilePath, contents);
                }
 
                String repositoryPath = serializationManager.getRepositoryPath(resourceLocation);
@@ -190,7 +177,7 @@ localFile);
 
                logger.trace(
                        "Found possible serialization data at {0}. Resource :{1} ; our resource: {2}. Covered: {3}",
-                       parentSerializationFilePath, potentialPath, repositoryPath, covered);
+                       possibleSerializationFile, potentialPath, repositoryPath, covered);
                // note what we don't need to normalize the children here since this resource's data is covered by
                // another resource
                if (covered) {
@@ -217,7 +204,8 @@ localFile);
        return info;
    }
    
-   public ResourceAndInfo buildResourceAndInfo(WorkspaceResource resource, Repository repository) throws IOException {
+   @Override
+public ResourceAndInfo buildResourceAndInfo(WorkspaceResource resource, Repository repository) throws IOException {
 
        if ( !resource.exists() ) {
            return null;
@@ -244,7 +232,7 @@ localFile);
 
        ResourceProxy resourceProxy = null;
 
-       if (serializationManager.isSerializationFile(resource.getOSPath().toString())) {
+       if (resource instanceof WorkspaceFile && serializationManager.isSerializationFile((WorkspaceFile) resource)) {
            WorkspaceFile file = (WorkspaceFile) resource;
            try (InputStream contents = file.getContents()) {
                String resourceLocation = file.getPathRelativeToSyncDir().asPortableString();
@@ -279,8 +267,8 @@ localFile);
                WorkspaceDirectory folder = (WorkspaceDirectory) resource;
                WorkspaceResource contentXml = folder.getFile(new WorkspacePath(".content.xml"));
                // .dir serialization holder ; nothing to process here, the .content.xml will trigger the actual work
-               if (contentXml.exists()
-                       && serializationManager.isSerializationFile(contentXml.getOSPath().toString())) {
+               if (contentXml.exists() && (contentXml instanceof WorkspaceFile)
+                       && serializationManager.isSerializationFile((WorkspaceFile) contentXml)) {
                    return null;
                }
            }
@@ -324,9 +312,8 @@ localFile);
        }
 
        String resourceLocation = changedResource.getPathRelativeToSyncDir().asPortableString();
-       String serializationFilePath = serializationManager.getSerializationFilePath(
-               resourceLocation, serializationKind);
-       WorkspaceFile serializationResource = changedResource.getProject().getSyncDirectory().getFile(new WorkspacePath(serializationFilePath));
+       WorkspaceFile serializationResource = serializationManager.getSerializationFilePath(
+               changedResource, serializationKind);
 
        if (!serializationResource.exists() && changedResource instanceof WorkspaceDirectory) {
            ResourceProxy dataFromCoveringParent = findSerializationDataFromCoveringParent(changedResource,

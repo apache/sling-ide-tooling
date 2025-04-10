@@ -20,6 +20,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.apache.sling.ide.sync.content.WorkspaceFile;
+import org.apache.sling.ide.sync.content.WorkspaceResource;
 import org.apache.sling.ide.transport.Repository;
 import org.apache.sling.ide.transport.ResourceProxy;
 
@@ -31,7 +33,7 @@ public interface SerializationManager {
      * @param filePath the filesystem path
      * @return
      */
-    boolean isSerializationFile(String filePath);
+    boolean isSerializationFile(WorkspaceFile file);
 
     /**
      * @param serializationFilePath the full OS path to the serialization file
@@ -40,11 +42,11 @@ public interface SerializationManager {
     String getBaseResourcePath(String serializationFilePath);
 
     /**
-     * @param baseFilePath the filesystem path of the resource
+     * @param baseResource the resource to get the serialisation path for
      * @param serializationKind
      * @return
      */
-    String getSerializationFilePath(String baseFilePath, SerializationKind serializationKind);
+    WorkspaceFile getSerializationFilePath(WorkspaceResource baseResource, SerializationKind serializationKind);
 
     String getRepositoryPath(String osPath);
 

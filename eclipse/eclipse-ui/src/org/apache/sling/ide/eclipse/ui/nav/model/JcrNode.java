@@ -36,6 +36,7 @@ import javax.jcr.nodetype.PropertyDefinition;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.jackrabbit.util.ISO9075;
+import org.apache.sling.ide.eclipse.core.EclipseResources;
 import org.apache.sling.ide.eclipse.core.ProjectUtil;
 import org.apache.sling.ide.eclipse.core.ServerUtil;
 import org.apache.sling.ide.eclipse.core.internal.Activator;
@@ -47,6 +48,7 @@ import org.apache.sling.ide.log.Logger;
 import org.apache.sling.ide.serialization.SerializationKind;
 import org.apache.sling.ide.serialization.SerializationKindManager;
 import org.apache.sling.ide.serialization.SerializationManager;
+import org.apache.sling.ide.sync.content.WorkspaceFile;
 import org.apache.sling.ide.transport.NodeTypeRegistry;
 import org.apache.sling.ide.transport.Repository;
 import org.apache.sling.ide.transport.RepositoryException;
@@ -79,7 +81,6 @@ import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.dnd.TransferData;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.IActionFilter;
 import org.eclipse.ui.IContributorResourceAdapter;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.CopyFilesAndFoldersOperation;
@@ -374,7 +375,7 @@ public class JcrNode implements IAdaptable {
 					}
 					List<JcrNode> newNodes = new LinkedList<>();
                     for (Iterator<IResource> it = membersList.iterator(); it.hasNext();) {
-						IResource iResource = (IResource) it.next();
+						IResource iResource = it.next();
 						JcrNode node;
 						if (DirNode.isDirNode(iResource)) {
 							node = new DirNode(this, (Element)null, iResource);
@@ -408,9 +409,12 @@ public class JcrNode implements IAdaptable {
     }
 
     private boolean isVaultFile(IResource iResource) {
+        if ( ! (iResource instanceof IFile) ) {
+            return false;
+        }
 
         return Activator.getDefault().getSerializationManager()
-                .isSerializationFile(iResource.getLocation().toOSString());
+                .isSerializationFile((WorkspaceFile) EclipseResources.create(iResource));
 	}
     
     protected boolean childShouldNotBeShown(IResource resource) {
@@ -579,13 +583,13 @@ public class JcrNode implements IAdaptable {
 			return null;//properties;
 		} else if (adapter == IFile.class) {
 			if (resource instanceof IFile) {
-				return (IFile)resource;
+				return resource;
 			} else {
 				return null;
 			}
 		} else if ( adapter == IFolder.class) {
 		    if ( resource instanceof IFolder ) {
-		        return (IFolder) resource;
+		        return resource;
 		    } else {
 		        return null;
 		    }
@@ -786,7 +790,7 @@ public class JcrNode implements IAdaptable {
         try {
             skm.init(repo);
             //TODO: mixins not yet supported
-            return skm.getSerializationKind(nodeType, new ArrayList<String>());
+            return skm.getSerializationKind(nodeType, new ArrayList<>());
         } catch (RepositoryException e) {
             e.printStackTrace();
             return getFallbackSerializationKind(nodeType);
@@ -836,7 +840,7 @@ public class JcrNode implements IAdaptable {
 	                // trigger a publish, as folder creation is not propagated to 
 	                // the SlingLaunchpadBehavior otherwise
 	                //TODO: make configurable? Fix in Eclipse/WST?
-	                ServerUtil.triggerIncrementalBuild((IFolder)resource, null);
+	                ServerUtil.triggerIncrementalBuild(resource, null);
 	            }
 	        } catch (CoreException e) {
 	            Activator.getDefault().getPluginLogger().error("Error creating child "+childNodeName+": "+e, e);
@@ -1378,7 +1382,7 @@ public class JcrNode implements IAdaptable {
         }
         
         IFolder contentSyncRoot = ProjectUtil.getSyncDirectory(getProject());
-        IFile file = (IFile) u.file;
+        IFile file = u.file;
         try (InputStream contents = file.getContents() ){
             String resourceLocation = file.getFullPath().makeRelativeTo(contentSyncRoot.getFullPath())
                     .toPortableString();

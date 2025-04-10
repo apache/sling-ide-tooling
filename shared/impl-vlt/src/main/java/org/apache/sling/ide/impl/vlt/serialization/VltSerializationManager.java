@@ -44,6 +44,11 @@ import org.apache.sling.ide.serialization.SerializationDataBuilder;
 import org.apache.sling.ide.serialization.SerializationException;
 import org.apache.sling.ide.serialization.SerializationKind;
 import org.apache.sling.ide.serialization.SerializationManager;
+import org.apache.sling.ide.sync.content.WorkspaceDirectory;
+import org.apache.sling.ide.sync.content.WorkspaceFile;
+import org.apache.sling.ide.sync.content.WorkspacePath;
+import org.apache.sling.ide.sync.content.WorkspaceProject;
+import org.apache.sling.ide.sync.content.WorkspaceResource;
 import org.apache.sling.ide.transport.ResourceProxy;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -103,9 +108,8 @@ public class VltSerializationManager implements SerializationManager {
     }
 
     @Override
-    public boolean isSerializationFile(String filePath) {
+    public boolean isSerializationFile(WorkspaceFile file) {
         
-        File file = new File(filePath);
         String fileName = file.getName();
         if (fileName.equals(Constants.DOT_CONTENT_XML)) {
             return true;
@@ -118,7 +122,7 @@ public class VltSerializationManager implements SerializationManager {
         // TODO - refrain from doing I/O here
         // TODO - copied from TransactionImpl
         
-        try (InputStream in = new BufferedInputStream(new FileInputStream(file))) {
+        try (InputStream in = file.getContents()) {
             return DocViewParser.isDocView(new InputSource(in));
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -163,16 +167,25 @@ public class VltSerializationManager implements SerializationManager {
     }
 
     @Override
-    public String getSerializationFilePath(String baseFilePath, SerializationKind serializationKind) {
+    public WorkspaceFile getSerializationFilePath(WorkspaceResource resource, SerializationKind serializationKind) {
 
         switch (serializationKind) {
             case FOLDER:
             case METADATA_PARTIAL:
-                return baseFilePath + File.separatorChar + Constants.DOT_CONTENT_XML;
+                // normally we would assume that the resource is a WorkspaceDirectory. However, the API contract is quite
+                // loose and we normally receive WorkspaceFile instances as well. So we rebuild an equivalent WorkspaceDirectory
+                // object to allow the logic to work in all cases.
+                WorkspacePath path = resource.getLocalPath();
+                WorkspacePath projectRelativePath = resource.getProject().getLocalPath().relativize(path);
+                return resource.getProject().getDirectory(projectRelativePath)
+                        .getFile(new WorkspacePath(Constants.DOT_CONTENT_XML));
             case METADATA_FULL:
-                return baseFilePath;
+                return (WorkspaceFile) resource;
             case FILE:
-                return baseFilePath + ".dir" + File.separatorChar + Constants.DOT_CONTENT_XML;
+                WorkspaceProject project = resource.getProject();
+                WorkspaceDirectory parentDir = project.getDirectory(resource.getLocalPath().getParent());
+                return parentDir.getDirectory(new WorkspacePath(resource.getName() + ".dir"))
+                        .getFile(new WorkspacePath(Constants.DOT_CONTENT_XML));
         }
 
         throw new IllegalArgumentException("Unsupported serialization kind " + serializationKind);
