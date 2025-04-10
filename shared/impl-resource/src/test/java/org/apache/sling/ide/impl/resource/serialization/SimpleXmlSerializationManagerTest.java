@@ -141,6 +141,28 @@ public class SimpleXmlSerializationManagerTest {
         assertThat(serializationData, is(expected));
     }
     
+    @Test
+    public void serializationFileMatches() {
+
+        assertThat(sm.isSerializationFile(newWorkspaceFile(".content.xml")), is(true));
+
+    }
+
+    @Test
+    public void serializationFileDoesNotMatch() {
+
+        assertThat(sm.isSerializationFile(newWorkspaceFile("content.json")), is(false));
+
+    }
+
+    @Test
+    public void serializationFileLocation() {
+        
+        WorkspaceFile serializationFilePath = sm.getSerializationFile(newWorkspaceDirectory("content"), SerializationKind.FOLDER);
+        
+        assertThat(serializationFilePath.getPathRelativeToSyncDir().absolute().asPortableString(), is("/content/.content.xml"));
+    }
+
     private WorkspaceFile newWorkspaceFile(InputStream contents) {
         
         Path project = Paths.get("root", "project");
@@ -156,36 +178,14 @@ public class SimpleXmlSerializationManagerTest {
             }
         };
     }
-
-    @Test
-    public void serializationFileMatches() {
-
-        assertThat(sm.isSerializationFile(fileMustExist(".content.xml")), is(true));
-
-    }
-
-    @Test
-    public void serializationFileDoesNotMatch() {
-
-        assertThat(sm.isSerializationFile(fileMustExist("content.json")), is(false));
-
-    }
-
-    @Test
-    public void serializationFileLocation() {
-        
-        WorkspaceFile serializationFilePath = sm.getSerializationFile(directoryMustExist("content"), SerializationKind.FOLDER);
-        
-        assertThat(serializationFilePath.getPathRelativeToSyncDir().absolute().asPortableString(), is("/content/.content.xml"));
-    }
-
-    private WorkspaceFile fileMustExist(String fileName) {
+    
+    private WorkspaceFile newWorkspaceFile(String fileName) {
         File ioFile = Paths.get("root", "project", "jcr_root", fileName).toFile();
         FSWorkspaceProject project = new FSWorkspaceProject(ioFile.getParentFile().getParentFile(), ioFile.getParentFile().getParentFile(), null);
         return new FSWorkspaceFile(ioFile, project);
     }
     
-    private WorkspaceDirectory directoryMustExist(String dirName) {
+    private WorkspaceDirectory newWorkspaceDirectory(String dirName) {
         File ioFile = Paths.get("root", "project", "jcr_root", dirName).toFile();
         FSWorkspaceProject project = new FSWorkspaceProject(ioFile.getParentFile().getParentFile(), ioFile.getParentFile().getParentFile(), null);
         return new FSWorkspaceDirectory(ioFile, project);
