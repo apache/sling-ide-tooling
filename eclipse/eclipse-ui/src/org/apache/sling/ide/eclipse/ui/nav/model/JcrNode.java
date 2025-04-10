@@ -851,7 +851,7 @@ public class JcrNode implements IAdaptable {
 	        }
         } else if ((parentSk == SerializationKind.FOLDER || parentSk == SerializationKind.METADATA_PARTIAL)
                 && childSk == SerializationKind.METADATA_FULL) {
-            createVaultFile((IFolder) resource, serializationManager.getOsPath(childNodeName) + ".xml", childNodeType);
+            createVaultFile((IFolder) resource, serializationManager.getLocalName(childNodeName) + ".xml", childNodeType);
 	    } else if (parentSk==SerializationKind.FOLDER && childSk==SerializationKind.METADATA_PARTIAL) {
 //	        createVaultFile((IFolder)resource, childNodeName+".xml", childNodeType);
 
@@ -861,7 +861,7 @@ public class JcrNode implements IAdaptable {
                 public void run(IProgressMonitor monitor) throws CoreException {
                     IFolder f = (IFolder)resource;
                     IFolder newFolder = null;
-                    newFolder = f.getFolder(serializationManager.getOsPath(childNodeName));
+                    newFolder = f.getFolder(serializationManager.getLocalName(childNodeName));
                     newFolder.create(true, true, new NullProgressMonitor());
                     createVaultFile(newFolder, ".content.xml", childNodeType);
                 }

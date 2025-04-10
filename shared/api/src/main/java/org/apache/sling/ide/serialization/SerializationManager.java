@@ -60,7 +60,15 @@ public interface SerializationManager {
      */
     String getRepositoryPath(WorkspacePath localPath);
 
-    String getOsPath(String repositoryPath);
+    /**
+     * Maps a repository name to a local name.
+     * 
+     * @param repositoryName the repository name, must not be a path
+     * @return the local name
+     * 
+     * @throws IllegalArgumentException if the repositoryName is null or contains slashes
+     */
+    String getLocalName(String repositoryName);
 
     SerializationDataBuilder newBuilder(Repository repository, File contentSyncRoot) throws SerializationException;
 

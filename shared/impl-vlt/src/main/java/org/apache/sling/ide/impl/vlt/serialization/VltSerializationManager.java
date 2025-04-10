@@ -225,8 +225,11 @@ public class VltSerializationManager implements SerializationManager {
     }
 
     @Override
-    public String getOsPath(String repositoryPath) {
-        return PlatformNameFormat.getPlatformPath(repositoryPath);
+    public String getLocalName(String repositoryName) {
+        if (repositoryName == null || repositoryName.contains("/"))
+            throw new IllegalArgumentException("Repository name must not be null or contain slashes : " + repositoryName);
+        
+        return PlatformNameFormat.getPlatformName(repositoryName);
     }
     
     @Override

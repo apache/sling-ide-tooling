@@ -376,7 +376,7 @@ public ResourceAndInfo buildResourceAndInfo(WorkspaceResource resource, Reposito
        while (childIterator.hasNext()) {
            ResourceProxy child = childIterator.next();
            String childName = PathUtil.getName(child.getPath());
-           String osChildName = serializationManager.getOsPath(childName);
+           String osChildName = serializationManager.getLocalName(childName);
 
            // covered children might have a FS representation, depending on their child nodes, so
            // accept a directory which maps to their name

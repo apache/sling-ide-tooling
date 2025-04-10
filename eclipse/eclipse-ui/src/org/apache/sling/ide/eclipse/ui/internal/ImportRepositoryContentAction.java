@@ -294,7 +294,7 @@ public class ImportRepositoryContentAction {
                                 if (reloadedChildResource.getChildren().size() != 0) {
 
                                     String pathName = Text.getName(reloadedChildResource.getPath());
-                                    pathName = serializationManager.getOsPath(pathName);
+                                    pathName = serializationManager.getLocalName(pathName);
                                     createFolder(project, serializationFolderPath.append(pathName));
 
                                     // 2. recursively handle all resources
@@ -377,7 +377,7 @@ public class ImportRepositoryContentAction {
 
         // TODO - can we just use the serializationFolderPath ?
 
-        String name = serializationManager.getOsPath(Text.getName(resource.getPath()));
+        String name = serializationManager.getLocalName(Text.getName(resource.getPath()));
 
         return serializationFolderPath.removeLastSegments(1).append(name);
     }

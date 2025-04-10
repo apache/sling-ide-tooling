@@ -107,13 +107,23 @@ public class VltSerializationManagerTest {
     }
 
     @Test
-    public void getOsPath_CleanName() {
-        assertThat(serializationManager.getOsPath("/content/test"), is("/content/test"));
+    public void getOsName_CleanName() {
+        assertThat(serializationManager.getLocalName("test"), is("test"));
     }
 
     @Test
-    public void getOsPath_MangledName() {
-        assertThat(serializationManager.getOsPath("/content/test/jcr:content"), is("/content/test/_jcr_content"));
+    public void getOsName_MangledName() {
+        assertThat(serializationManager.getLocalName("jcr:content"), is("_jcr_content"));
+    }
+    
+    @Test(expected =  IllegalArgumentException.class)
+    public void getOsName_Null() {
+        serializationManager.getLocalName(null);
+    }
+
+    @Test(expected =  IllegalArgumentException.class)
+    public void getOsName_Invalid() {
+        serializationManager.getLocalName("a/path");
     }
 
     @Test

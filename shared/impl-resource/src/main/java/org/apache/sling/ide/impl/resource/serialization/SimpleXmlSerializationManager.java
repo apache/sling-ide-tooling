@@ -176,8 +176,10 @@ public class SimpleXmlSerializationManager implements SerializationManager, Seri
     }
 
     @Override
-    public String getOsPath(String repositoryPath) {
-        return repositoryPath;
+    public String getLocalName(String repositoryName) {
+        if (repositoryName == null || repositoryName.contains("/"))
+            throw new IllegalArgumentException("Repository name must not be null or contain slashes : " + repositoryName);
+        return repositoryName;
     }
 
     private void startElement(TransformerHandler handler, String tagName) throws SAXException {
