@@ -25,6 +25,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
@@ -131,13 +132,29 @@ public class SimpleXmlSerializationManagerTest {
     public void readSerializedData() throws IOException, SAXException {
 
         Map<String, Object> serializationData = sm
-                .readSerializationData(null, readSerializationDataFile("stringSerializedData")).getProperties();
+                .readSerializationData(newWorkspaceFile(readSerializationDataFile("stringSerializedData"))).getProperties();
 
         Map<String, Object> expected = new HashMap<>();
         expected.put("jcr:createdBy", "admin");
         expected.put("jcr:lastModifiedBy", "author");
 
         assertThat(serializationData, is(expected));
+    }
+    
+    private WorkspaceFile newWorkspaceFile(InputStream contents) {
+        
+        Path project = Paths.get("root", "project");
+        
+        FSWorkspaceProject workspaceProject = new FSWorkspaceProject(project.toFile(), project.toFile(), null);
+        
+        Path filePath = project.resolve("jcr_root").resolve("file.xml");
+        
+        return new FSWorkspaceFile(filePath.toFile(), workspaceProject) {
+            @Override
+            public InputStream getContents() throws IOException {
+                return contents;
+            }
+        };
     }
 
     @Test
@@ -157,7 +174,7 @@ public class SimpleXmlSerializationManagerTest {
     @Test
     public void serializationFileLocation() {
         
-        WorkspaceFile serializationFilePath = sm.getSerializationFilePath(directoryMustExist("content"), SerializationKind.FOLDER);
+        WorkspaceFile serializationFilePath = sm.getSerializationFile(directoryMustExist("content"), SerializationKind.FOLDER);
         
         assertThat(serializationFilePath.getPathRelativeToSyncDir().absolute().asPortableString(), is("/content/.content.xml"));
     }

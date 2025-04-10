@@ -18,7 +18,6 @@ package org.apache.sling.ide.serialization;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 
 import org.apache.sling.ide.sync.content.WorkspaceFile;
 import org.apache.sling.ide.sync.content.WorkspaceResource;
@@ -27,11 +26,13 @@ import org.apache.sling.ide.transport.ResourceProxy;
 
 public interface SerializationManager {
 
-    void destroy();
-
     /**
-     * @param filePath the filesystem path
-     * @return
+     * Checks if the given file is a serialization file.
+     * 
+     * <p>May load the file to check its contents.</p>
+     * 
+     * @param file the workspace file
+     * @return true if the file is a serialization file
      */
     boolean isSerializationFile(WorkspaceFile file);
 
@@ -42,11 +43,13 @@ public interface SerializationManager {
     String getBaseResourcePath(String serializationFilePath);
 
     /**
-     * @param baseResource the resource to get the serialisation path for
-     * @param serializationKind
-     * @return
+     * Returns the serialization file for the given resource and serialization kind.
+     * 
+     * @param baseResource the resource to get the serialisation file for
+     * @param serializationKind the kind of serialization
+     * @return the serialization file for the given resource. Never null, may not exist.
      */
-    WorkspaceFile getSerializationFilePath(WorkspaceResource baseResource, SerializationKind serializationKind);
+    WorkspaceFile getSerializationFile(WorkspaceResource baseResource, SerializationKind serializationKind);
 
     String getRepositoryPath(String osPath);
 
@@ -55,10 +58,13 @@ public interface SerializationManager {
     SerializationDataBuilder newBuilder(Repository repository, File contentSyncRoot) throws SerializationException;
 
     /**
-     * @param filePath The filePath, in repository format
-     * @param source
-     * @return
+     * Reads the serialization data from the given file and creates a resource proxy
+     * 
+     * @param serializationFile the file to read
+     * @return the resource proxy
      * @throws IOException
      */
-    ResourceProxy readSerializationData(String filePath, InputStream source) throws IOException;
+    ResourceProxy readSerializationData(WorkspaceFile serializationFile) throws IOException;
+    
+    void destroy();
 }

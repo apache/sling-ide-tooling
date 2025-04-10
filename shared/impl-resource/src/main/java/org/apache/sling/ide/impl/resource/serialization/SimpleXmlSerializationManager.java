@@ -70,7 +70,7 @@ public class SimpleXmlSerializationManager implements SerializationManager, Seri
     }
 
     @Override
-    public WorkspaceFile getSerializationFilePath(WorkspaceResource resource, SerializationKind serializationKind) {
+    public WorkspaceFile getSerializationFile(WorkspaceResource resource, SerializationKind serializationKind) {
         return ( (WorkspaceDirectory) resource).getFile(new WorkspacePath(CONTENT_XML));
     }
 
@@ -89,7 +89,7 @@ public class SimpleXmlSerializationManager implements SerializationManager, Seri
     }
 
     @Override
-    public ResourceProxy readSerializationData(String filePath, InputStream source) throws IOException {
+    public ResourceProxy readSerializationData(WorkspaceFile file) throws IOException {
 
         try {
             SAXParserFactory factory = SAXParserFactory.newInstance();
@@ -97,9 +97,11 @@ public class SimpleXmlSerializationManager implements SerializationManager, Seri
 
             SerializationDataHandler h = new SerializationDataHandler();
 
-            saxParser.parse(new InputSource(source), h);
+            try (InputStream source = file.getContents()) {
+                saxParser.parse(new InputSource(source), h);
+            }
 
-            return new ResourceProxy(filePath, h.getResult());
+            return new ResourceProxy(file.getPathRelativeToSyncDir().asPortableString(), h.getResult());
         } catch (ParserConfigurationException | SAXException e) {
             // TODO proper exception handling
             throw new RuntimeException(e);

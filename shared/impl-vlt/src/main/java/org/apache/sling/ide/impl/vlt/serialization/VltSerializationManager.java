@@ -167,7 +167,7 @@ public class VltSerializationManager implements SerializationManager {
     }
 
     @Override
-    public WorkspaceFile getSerializationFilePath(WorkspaceResource resource, SerializationKind serializationKind) {
+    public WorkspaceFile getSerializationFile(WorkspaceResource resource, SerializationKind serializationKind) {
 
         switch (serializationKind) {
             case FOLDER:
@@ -238,13 +238,13 @@ public class VltSerializationManager implements SerializationManager {
     }
 
     @Override
-    public ResourceProxy readSerializationData(String filePath, InputStream source) throws IOException {
-        if (source == null)
+    public ResourceProxy readSerializationData(WorkspaceFile file) throws IOException {
+        if (file == null || ! file.exists() )
             return null;
 
-        String repositoryPath = getRepositoryPath(filePath);
+        String repositoryPath = getRepositoryPath(file.getPathRelativeToSyncDir().asPortableString());
 
-        try {
+        try (InputStream source = file.getContents()) {
         	DocViewParser parser = new DocViewParser();
         	ResourceProxyParserHandler handler = new ResourceProxyParserHandler();
         	parser.parse(repositoryPath, new InputSource(source), handler);

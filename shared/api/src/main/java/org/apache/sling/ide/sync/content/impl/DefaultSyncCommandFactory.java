@@ -18,7 +18,6 @@ package org.apache.sling.ide.sync.content.impl;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -90,7 +89,7 @@ public class DefaultSyncCommandFactory implements SyncCommandFactory {
         
         // verify whether a resource being deleted does not signal that the content structure
         // was rearranged under a covering parent aggregate
-        WorkspaceFile serializationFile = serializationManager.getSerializationFilePath(resource,
+        WorkspaceFile serializationFile = serializationManager.getSerializationFile(resource,
                 SerializationKind.FOLDER);
         
         ResourceProxy coveringParentData = findSerializationDataFromCoveringParent(resource, repositoryPath, serializationFile.getLocalPath());
@@ -150,7 +149,7 @@ localFile);
 
            // it's safe to use a specific SerializationKind since this scenario is only valid for METADATA_PARTIAL
            // coverage
-           WorkspaceFile possibleSerializationFile = serializationManager.getSerializationFilePath(
+           WorkspaceFile possibleSerializationFile = serializationManager.getSerializationFile(
                    folderWithPossibleSerializationFile,
                    SerializationKind.METADATA_PARTIAL);
 
@@ -163,13 +162,7 @@ localFile);
                    continue;
                }
                
-               ResourceProxy serializationData;
-               try (InputStream contents = possibleSerializationFile.getContents()) {
-                   
-                   String serialisationFilePath = possibleSerializationFile.getPathRelativeToSyncDir().absolute().asPortableString();
-                   serializationData = serializationManager.readSerializationData(
-                           serialisationFilePath, contents);
-               }
+               ResourceProxy serializationData = serializationManager.readSerializationData( possibleSerializationFile);
 
                String repositoryPath = serializationManager.getRepositoryPath(resourceLocation);
                String potentialPath = serializationData.getPath();
@@ -234,30 +227,28 @@ public ResourceAndInfo buildResourceAndInfo(WorkspaceResource resource, Reposito
 
        if (resource instanceof WorkspaceFile && serializationManager.isSerializationFile((WorkspaceFile) resource)) {
            WorkspaceFile file = (WorkspaceFile) resource;
-           try (InputStream contents = file.getContents()) {
-               String resourceLocation = file.getPathRelativeToSyncDir().asPortableString();
-               resourceProxy = serializationManager.readSerializationData(resourceLocation, contents);
-               normaliseResourceChildren(file, resourceProxy, repository);
+           WorkspacePath resourceLocation = file.getPathRelativeToSyncDir();
+           resourceProxy = serializationManager.readSerializationData(file);
+           normaliseResourceChildren(file, resourceProxy, repository);
 
 
-               // TODO - not sure if this 100% correct, but we definitely should not refer to the FileInfo as the
-               // .serialization file, since for nt:file/nt:resource nodes this will overwrite the file contents
-               String primaryType = (String) resourceProxy.getProperties().get(Repository.JCR_PRIMARY_TYPE);
-               if (Repository.NT_FILE.equals(primaryType)) {
-                   // TODO move logic to serializationManager
-                   File locationFile = new File(info.getLocation());
-                   String locationFileParent = locationFile.getParent();
-                   int endIndex = locationFileParent.length() - ".dir".length();
-                   File actualFile = new File(locationFileParent.substring(0, endIndex));
-                   String newLocation = actualFile.getAbsolutePath();
-                   String newName = actualFile.getName();
-                   String newRelativeLocation = actualFile.getAbsolutePath().substring(
-                           syncDirectoryAsFile.getAbsolutePath().length());
-                   info = new FileInfo(newLocation, newRelativeLocation, newName);
+           // TODO - not sure if this 100% correct, but we definitely should not refer to the FileInfo as the
+           // .serialization file, since for nt:file/nt:resource nodes this will overwrite the file contents
+           String primaryType = (String) resourceProxy.getProperties().get(Repository.JCR_PRIMARY_TYPE);
+           if (Repository.NT_FILE.equals(primaryType)) {
+               // TODO move logic to serializationManager
+               File locationFile = new File(info.getLocation());
+               String locationFileParent = locationFile.getParent();
+               int endIndex = locationFileParent.length() - ".dir".length();
+               File actualFile = new File(locationFileParent.substring(0, endIndex));
+               String newLocation = actualFile.getAbsolutePath();
+               String newName = actualFile.getName();
+               String newRelativeLocation = actualFile.getAbsolutePath().substring(
+                       syncDirectoryAsFile.getAbsolutePath().length());
+               info = new FileInfo(newLocation, newRelativeLocation, newName);
 
-                   logger.trace("Adjusted original location from {0} to {1}", resourceLocation, newLocation);
+               logger.trace("Adjusted original location from {0} to {1}", resourceLocation, newLocation);
 
-               }
            }
        } else {
 
@@ -312,7 +303,7 @@ public ResourceAndInfo buildResourceAndInfo(WorkspaceResource resource, Reposito
        }
 
        String resourceLocation = changedResource.getPathRelativeToSyncDir().asPortableString();
-       WorkspaceFile serializationResource = serializationManager.getSerializationFilePath(
+       WorkspaceFile serializationResource = serializationManager.getSerializationFile(
                changedResource, serializationKind);
 
        if (!serializationResource.exists() && changedResource instanceof WorkspaceDirectory) {
@@ -331,14 +322,10 @@ public ResourceAndInfo buildResourceAndInfo(WorkspaceResource resource, Reposito
    private ResourceProxy buildResourceProxy(String resourceLocation, WorkspaceFile serializationFile,
            String fallbackPrimaryType, Repository repository) throws IOException {
        if (serializationFile.exists()) {
-           try (InputStream contents = serializationFile.getContents() ) {
-               
-               String serializationFilePath = serializationFile.getPathRelativeToSyncDir().asPortableString();
-               ResourceProxy resourceProxy = serializationManager.readSerializationData(serializationFilePath, contents);
-               normaliseResourceChildren(serializationFile, resourceProxy, repository);
+           ResourceProxy resourceProxy = serializationManager.readSerializationData(serializationFile);
+           normaliseResourceChildren(serializationFile, resourceProxy, repository);
 
-               return resourceProxy;
-           }
+           return resourceProxy;
        }
 
        return new ResourceProxy(serializationManager.getRepositoryPath(resourceLocation), Collections.singletonMap(
