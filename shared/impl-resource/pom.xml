@@ -69,5 +69,11 @@
             <version>1.4</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.apache.sling.ide</groupId>
+            <artifactId>org.apache.sling.ide.sync-fs</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 </project>

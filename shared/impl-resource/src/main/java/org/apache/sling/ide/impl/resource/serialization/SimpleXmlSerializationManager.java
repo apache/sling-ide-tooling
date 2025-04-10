@@ -42,6 +42,10 @@ import org.apache.sling.ide.serialization.SerializationDataBuilder;
 import org.apache.sling.ide.serialization.SerializationException;
 import org.apache.sling.ide.serialization.SerializationKind;
 import org.apache.sling.ide.serialization.SerializationManager;
+import org.apache.sling.ide.sync.content.WorkspaceDirectory;
+import org.apache.sling.ide.sync.content.WorkspaceFile;
+import org.apache.sling.ide.sync.content.WorkspacePath;
+import org.apache.sling.ide.sync.content.WorkspaceResource;
 import org.apache.sling.ide.transport.Repository;
 import org.apache.sling.ide.transport.ResourceProxy;
 import org.osgi.service.component.annotations.Component;
@@ -61,31 +65,17 @@ public class SimpleXmlSerializationManager implements SerializationManager, Seri
     private static final String CONTENT_XML = ".content.xml";
 
     @Override
-    public boolean isSerializationFile(String filePath) {
-        return filePath.endsWith(CONTENT_XML);
+    public boolean isSerializationFile(WorkspaceFile file) {
+        return file.getLocalPath().getName().equals(CONTENT_XML);
     }
 
     @Override
-    public String getSerializationFilePath(String baseFilePath, SerializationKind serializationKind) {
-        return baseFilePath + File.separatorChar + CONTENT_XML;
+    public WorkspaceFile getSerializationFile(WorkspaceResource resource, SerializationKind serializationKind) {
+        return ( (WorkspaceDirectory) resource).getFile(new WorkspacePath(CONTENT_XML));
     }
 
     @Override
-    public String getBaseResourcePath(String serializationFilePath) {
-        if (!serializationFilePath.endsWith(CONTENT_XML)) {
-            throw new IllegalArgumentException("File path " + serializationFilePath + "does not end with '"
-                    + File.separatorChar + CONTENT_XML + "'");
-        }
-
-        if (CONTENT_XML.equals(serializationFilePath)) {
-            return "";
-        }
-
-        return serializationFilePath.substring(0, serializationFilePath.length() - (CONTENT_XML.length() + 1));
-    }
-
-    @Override
-    public ResourceProxy readSerializationData(String filePath, InputStream source) throws IOException {
+    public ResourceProxy readSerializationData(WorkspaceFile file) throws IOException {
 
         try {
             SAXParserFactory factory = SAXParserFactory.newInstance();
@@ -93,9 +83,11 @@ public class SimpleXmlSerializationManager implements SerializationManager, Seri
 
             SerializationDataHandler h = new SerializationDataHandler();
 
-            saxParser.parse(new InputSource(source), h);
+            try (InputStream source = file.getContents()) {
+                saxParser.parse(new InputSource(source), h);
+            }
 
-            return new ResourceProxy(filePath, h.getResult());
+            return new ResourceProxy(file.getPathRelativeToSyncDir().asPortableString(), h.getResult());
         } catch (ParserConfigurationException | SAXException e) {
             // TODO proper exception handling
             throw new RuntimeException(e);
@@ -165,13 +157,15 @@ public class SimpleXmlSerializationManager implements SerializationManager, Seri
     }
 
     @Override
-    public String getRepositoryPath(String osPath) {
-        return osPath;
+    public String getRepositoryPath(WorkspacePath localPath) {
+        return localPath.asPortableString();
     }
 
     @Override
-    public String getOsPath(String repositoryPath) {
-        return repositoryPath;
+    public String getLocalName(String repositoryName) {
+        if (repositoryName == null || repositoryName.contains("/"))
+            throw new IllegalArgumentException("Repository name must not be null or contain slashes : " + repositoryName);
+        return repositoryName;
     }
 
     private void startElement(TransformerHandler handler, String tagName) throws SAXException {
@@ -187,6 +181,7 @@ public class SimpleXmlSerializationManager implements SerializationManager, Seri
     /* (non-Javadoc)
      * @see org.apache.sling.ide.serialization.SerializationManager#destroy()
      */
+    @Override
     public void destroy() {
     }
 

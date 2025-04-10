@@ -25,12 +25,19 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.sling.ide.content.sync.fs.impl.FSWorkspaceDirectory;
+import org.apache.sling.ide.content.sync.fs.impl.FSWorkspaceFile;
+import org.apache.sling.ide.content.sync.fs.impl.FSWorkspaceProject;
 import org.apache.sling.ide.serialization.SerializationData;
 import org.apache.sling.ide.serialization.SerializationException;
 import org.apache.sling.ide.serialization.SerializationKind;
+import org.apache.sling.ide.sync.content.WorkspaceDirectory;
+import org.apache.sling.ide.sync.content.WorkspaceFile;
 import org.apache.sling.ide.transport.ResourceProxy;
 import org.custommonkey.xmlunit.XMLUnit;
 import org.junit.Before;
@@ -57,7 +64,7 @@ public class SimpleXmlSerializationManagerTest {
     public void emptySerializedData() throws SerializationException, SAXException {
 
         SerializationData serializationData = sm.newBuilder(null, null).buildSerializationData(null,
-                newResourceWithProperties(new HashMap<String, Object>()));
+                newResourceWithProperties(new HashMap<>()));
 
         assertThat(serializationData, is(nullValue()));
     }
@@ -125,7 +132,7 @@ public class SimpleXmlSerializationManagerTest {
     public void readSerializedData() throws IOException, SAXException {
 
         Map<String, Object> serializationData = sm
-                .readSerializationData(null, readSerializationDataFile("stringSerializedData")).getProperties();
+                .readSerializationData(newWorkspaceFile(readSerializationDataFile("stringSerializedData"))).getProperties();
 
         Map<String, Object> expected = new HashMap<>();
         expected.put("jcr:createdBy", "admin");
@@ -133,41 +140,55 @@ public class SimpleXmlSerializationManagerTest {
 
         assertThat(serializationData, is(expected));
     }
-
+    
     @Test
     public void serializationFileMatches() {
 
-        assertThat(sm.isSerializationFile(".content.xml"), is(true));
+        assertThat(sm.isSerializationFile(newWorkspaceFile(".content.xml")), is(true));
 
     }
 
     @Test
     public void serializationFileDoesNotMatch() {
 
-        assertThat(sm.isSerializationFile("content.json"), is(false));
+        assertThat(sm.isSerializationFile(newWorkspaceFile("content.json")), is(false));
 
     }
 
     @Test
     public void serializationFileLocation() {
         
-        String serializationFilePath = sm.getSerializationFilePath("jcr_root", SerializationKind.FOLDER);
+        WorkspaceFile serializationFilePath = sm.getSerializationFile(newWorkspaceDirectory("content"), SerializationKind.FOLDER);
         
-        assertThat(serializationFilePath, is("jcr_root" + File.separatorChar + ".content.xml"));
+        assertThat(serializationFilePath.getPathRelativeToSyncDir().absolute().asPortableString(), is("/content/.content.xml"));
     }
 
-    @Test
-    public void baseResourcePath() {
-
-        String basePath = sm.getBaseResourcePath("jcr_root" + File.separatorChar + ".content.xml");
-        assertThat(basePath, is("jcr_root"));
-    }
-
-    @Test
-    public void baseResourcePathIsEmpty() {
+    private WorkspaceFile newWorkspaceFile(InputStream contents) {
         
-        String basePath = sm.getBaseResourcePath(".content.xml");
-        assertThat(basePath, is(""));
+        Path project = Paths.get("root", "project");
+        
+        FSWorkspaceProject workspaceProject = new FSWorkspaceProject(project.toFile(), project.toFile(), null);
+        
+        Path filePath = project.resolve("jcr_root").resolve("file.xml");
+        
+        return new FSWorkspaceFile(filePath.toFile(), workspaceProject) {
+            @Override
+            public InputStream getContents() throws IOException {
+                return contents;
+            }
+        };
+    }
+    
+    private WorkspaceFile newWorkspaceFile(String fileName) {
+        File ioFile = Paths.get("root", "project", "jcr_root", fileName).toFile();
+        FSWorkspaceProject project = new FSWorkspaceProject(ioFile.getParentFile().getParentFile(), ioFile.getParentFile().getParentFile(), null);
+        return new FSWorkspaceFile(ioFile, project);
+    }
+    
+    private WorkspaceDirectory newWorkspaceDirectory(String dirName) {
+        File ioFile = Paths.get("root", "project", "jcr_root", dirName).toFile();
+        FSWorkspaceProject project = new FSWorkspaceProject(ioFile.getParentFile().getParentFile(), ioFile.getParentFile().getParentFile(), null);
+        return new FSWorkspaceDirectory(ioFile, project);
     }
     
 }

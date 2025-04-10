@@ -169,7 +169,7 @@ public class GenericJcrRootFile extends JcrNode {
 			}
 			while(it2.hasNext()) {
                 JcrNode aChild = it2.next();
-				if (resName.equals(serializationManager.getOsPath(aChild.getName()))) {
+				if (resName.equals(serializationManager.getLocalName(aChild.getName()))) {
 					// then pick this one
 					it.remove();
 					aChild.setResource(resource);

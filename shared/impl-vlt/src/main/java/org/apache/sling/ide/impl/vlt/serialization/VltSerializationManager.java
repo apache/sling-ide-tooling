@@ -16,9 +16,7 @@
  */
 package org.apache.sling.ide.impl.vlt.serialization;
 
-import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
@@ -44,6 +42,11 @@ import org.apache.sling.ide.serialization.SerializationDataBuilder;
 import org.apache.sling.ide.serialization.SerializationException;
 import org.apache.sling.ide.serialization.SerializationKind;
 import org.apache.sling.ide.serialization.SerializationManager;
+import org.apache.sling.ide.sync.content.WorkspaceDirectory;
+import org.apache.sling.ide.sync.content.WorkspaceFile;
+import org.apache.sling.ide.sync.content.WorkspacePath;
+import org.apache.sling.ide.sync.content.WorkspaceProject;
+import org.apache.sling.ide.sync.content.WorkspaceResource;
 import org.apache.sling.ide.transport.ResourceProxy;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -103,9 +106,8 @@ public class VltSerializationManager implements SerializationManager {
     }
 
     @Override
-    public boolean isSerializationFile(String filePath) {
+    public boolean isSerializationFile(WorkspaceFile file) {
         
-        File file = new File(filePath);
         String fileName = file.getName();
         if (fileName.equals(Constants.DOT_CONTENT_XML)) {
             return true;
@@ -118,7 +120,7 @@ public class VltSerializationManager implements SerializationManager {
         // TODO - refrain from doing I/O here
         // TODO - copied from TransactionImpl
         
-        try (InputStream in = new BufferedInputStream(new FileInputStream(file))) {
+        try (InputStream in = file.getContents()) {
             return DocViewParser.isDocView(new InputSource(in));
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -126,61 +128,34 @@ public class VltSerializationManager implements SerializationManager {
     }
 
     @Override
-    public String getBaseResourcePath(String serializationFilePath) {
-
-        File file = new File(serializationFilePath);
-        String fileName = file.getName();
-        if (fileName.equals(Constants.DOT_CONTENT_XML)) {
-            return file.getParent();
-        }
-
-        if (!fileName.endsWith(EXTENSION_XML)) {
-            return file.getAbsolutePath();
-        }
-
-        // assume that delete file with the xml extension is a full serialization aggregate
-        // TODO - this can generate false results
-        if (!file.exists()) {
-            return getPathWithoutXmlExtension(file);
-        }
-
-        // TODO - refrain from doing I/O here
-        // TODO - copied from TransactionImpl
-        
-        try (InputStream in = new BufferedInputStream(new FileInputStream(file))) {
-            if (DocViewParser.isDocView(new InputSource(in))) {
-                return getPathWithoutXmlExtension(file);
-            }
-
-            return file.getAbsolutePath();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private String getPathWithoutXmlExtension(File file) {
-        return file.getAbsolutePath().substring(0, file.getAbsolutePath().length() - EXTENSION_XML.length());
-    }
-
-    @Override
-    public String getSerializationFilePath(String baseFilePath, SerializationKind serializationKind) {
+    public WorkspaceFile getSerializationFile(WorkspaceResource resource, SerializationKind serializationKind) {
 
         switch (serializationKind) {
             case FOLDER:
             case METADATA_PARTIAL:
-                return baseFilePath + File.separatorChar + Constants.DOT_CONTENT_XML;
+                // normally we would assume that the resource is a WorkspaceDirectory. However, the API contract is quite
+                // loose and we normally receive WorkspaceFile instances as well. So we rebuild an equivalent WorkspaceDirectory
+                // object to allow the logic to work in all cases.
+                WorkspacePath path = resource.getLocalPath();
+                WorkspacePath projectRelativePath = resource.getProject().getLocalPath().relativize(path);
+                return resource.getProject().getDirectory(projectRelativePath)
+                        .getFile(new WorkspacePath(Constants.DOT_CONTENT_XML));
             case METADATA_FULL:
-                return baseFilePath;
+                return (WorkspaceFile) resource;
             case FILE:
-                return baseFilePath + ".dir" + File.separatorChar + Constants.DOT_CONTENT_XML;
+                WorkspaceProject project = resource.getProject();
+                WorkspaceDirectory parentDir = project.getDirectory(resource.getLocalPath().getParent());
+                return parentDir.getDirectory(new WorkspacePath(resource.getName() + ".dir"))
+                        .getFile(new WorkspacePath(Constants.DOT_CONTENT_XML));
         }
 
         throw new IllegalArgumentException("Unsupported serialization kind " + serializationKind);
     }
 
     @Override
-    public String getRepositoryPath(String osPath) {
+    public String getRepositoryPath(WorkspacePath localPath) {
 
+        String osPath = localPath.asPortableString();
         String repositoryPath;
         String name = Text.getName(osPath);
         if (name.equals(Constants.DOT_CONTENT_XML)) {
@@ -211,8 +186,11 @@ public class VltSerializationManager implements SerializationManager {
     }
 
     @Override
-    public String getOsPath(String repositoryPath) {
-        return PlatformNameFormat.getPlatformPath(repositoryPath);
+    public String getLocalName(String repositoryName) {
+        if (repositoryName == null || repositoryName.contains("/"))
+            throw new IllegalArgumentException("Repository name must not be null or contain slashes : " + repositoryName);
+        
+        return PlatformNameFormat.getPlatformName(repositoryName);
     }
     
     @Override
@@ -225,13 +203,13 @@ public class VltSerializationManager implements SerializationManager {
     }
 
     @Override
-    public ResourceProxy readSerializationData(String filePath, InputStream source) throws IOException {
-        if (source == null)
+    public ResourceProxy readSerializationData(WorkspaceFile file) throws IOException {
+        if (file == null || ! file.exists() )
             return null;
 
-        String repositoryPath = getRepositoryPath(filePath);
+        String repositoryPath = getRepositoryPath(file.getPathRelativeToSyncDir());
 
-        try {
+        try (InputStream source = file.getContents()) {
         	DocViewParser parser = new DocViewParser();
         	ResourceProxyParserHandler handler = new ResourceProxyParserHandler();
         	parser.parse(repositoryPath, new InputSource(source), handler);

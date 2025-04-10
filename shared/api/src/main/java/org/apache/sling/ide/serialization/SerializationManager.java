@@ -18,45 +18,62 @@ package org.apache.sling.ide.serialization;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 
+import org.apache.sling.ide.sync.content.WorkspaceFile;
+import org.apache.sling.ide.sync.content.WorkspacePath;
+import org.apache.sling.ide.sync.content.WorkspaceResource;
 import org.apache.sling.ide.transport.Repository;
 import org.apache.sling.ide.transport.ResourceProxy;
 
 public interface SerializationManager {
 
-    void destroy();
+    /**
+     * Checks if the given file is a serialization file.
+     * 
+     * <p>May load the file to check its contents.</p>
+     * 
+     * @param file the workspace file
+     * @return true if the file is a serialization file
+     */
+    boolean isSerializationFile(WorkspaceFile file);
 
     /**
-     * @param filePath the filesystem path
-     * @return
+     * Returns the serialization file for the given resource and serialization kind.
+     * 
+     * @param baseResource the resource to get the serialisation file for
+     * @param serializationKind the kind of serialization
+     * @return the serialization file for the given resource. Never null, may not exist.
      */
-    boolean isSerializationFile(String filePath);
+    WorkspaceFile getSerializationFile(WorkspaceResource baseResource, SerializationKind serializationKind);
 
     /**
-     * @param serializationFilePath the full OS path to the serialization file
-     * @return
+     * Returns the (remote) repository path for the given local path.
+     * 
+     * @param localPath the local path
+     * @return the repository path
      */
-    String getBaseResourcePath(String serializationFilePath);
+    String getRepositoryPath(WorkspacePath localPath);
 
     /**
-     * @param baseFilePath the filesystem path of the resource
-     * @param serializationKind
-     * @return
+     * Maps a repository name to a local name.
+     * 
+     * @param repositoryName the repository name, must not be a path
+     * @return the local name
+     * 
+     * @throws IllegalArgumentException if the repositoryName is null or contains slashes
      */
-    String getSerializationFilePath(String baseFilePath, SerializationKind serializationKind);
-
-    String getRepositoryPath(String osPath);
-
-    String getOsPath(String repositoryPath);
+    String getLocalName(String repositoryName);
 
     SerializationDataBuilder newBuilder(Repository repository, File contentSyncRoot) throws SerializationException;
 
     /**
-     * @param filePath The filePath, in repository format
-     * @param source
-     * @return
+     * Reads the serialization data from the given file and creates a resource proxy
+     * 
+     * @param serializationFile the file to read
+     * @return the resource proxy
      * @throws IOException
      */
-    ResourceProxy readSerializationData(String filePath, InputStream source) throws IOException;
+    ResourceProxy readSerializationData(WorkspaceFile serializationFile) throws IOException;
+    
+    void destroy();
 }
