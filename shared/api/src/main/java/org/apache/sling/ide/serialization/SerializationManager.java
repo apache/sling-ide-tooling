@@ -38,12 +38,6 @@ public interface SerializationManager {
     boolean isSerializationFile(WorkspaceFile file);
 
     /**
-     * @param serializationFilePath the full OS path to the serialization file
-     * @return
-     */
-    String getBaseResourcePath(String serializationFilePath);
-
-    /**
      * Returns the serialization file for the given resource and serialization kind.
      * 
      * @param baseResource the resource to get the serialisation file for

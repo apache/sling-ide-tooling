@@ -179,20 +179,6 @@ public class SimpleXmlSerializationManagerTest {
         assertThat(serializationFilePath.getPathRelativeToSyncDir().absolute().asPortableString(), is("/content/.content.xml"));
     }
 
-    @Test
-    public void baseResourcePath() {
-
-        String basePath = sm.getBaseResourcePath("jcr_root" + File.separatorChar + ".content.xml");
-        assertThat(basePath, is("jcr_root"));
-    }
-
-    @Test
-    public void baseResourcePathIsEmpty() {
-        
-        String basePath = sm.getBaseResourcePath(".content.xml");
-        assertThat(basePath, is(""));
-    }
-    
     private WorkspaceFile fileMustExist(String fileName) {
         File ioFile = Paths.get("root", "project", "jcr_root", fileName).toFile();
         FSWorkspaceProject project = new FSWorkspaceProject(ioFile.getParentFile().getParentFile(), ioFile.getParentFile().getParentFile(), null);

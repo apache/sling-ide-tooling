@@ -16,9 +16,7 @@
  */
 package org.apache.sling.ide.impl.vlt.serialization;
 
-import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
@@ -127,43 +125,6 @@ public class VltSerializationManager implements SerializationManager {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    @Override
-    public String getBaseResourcePath(String serializationFilePath) {
-
-        File file = new File(serializationFilePath);
-        String fileName = file.getName();
-        if (fileName.equals(Constants.DOT_CONTENT_XML)) {
-            return file.getParent();
-        }
-
-        if (!fileName.endsWith(EXTENSION_XML)) {
-            return file.getAbsolutePath();
-        }
-
-        // assume that delete file with the xml extension is a full serialization aggregate
-        // TODO - this can generate false results
-        if (!file.exists()) {
-            return getPathWithoutXmlExtension(file);
-        }
-
-        // TODO - refrain from doing I/O here
-        // TODO - copied from TransactionImpl
-        
-        try (InputStream in = new BufferedInputStream(new FileInputStream(file))) {
-            if (DocViewParser.isDocView(new InputSource(in))) {
-                return getPathWithoutXmlExtension(file);
-            }
-
-            return file.getAbsolutePath();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private String getPathWithoutXmlExtension(File file) {
-        return file.getAbsolutePath().substring(0, file.getAbsolutePath().length() - EXTENSION_XML.length());
     }
 
     @Override

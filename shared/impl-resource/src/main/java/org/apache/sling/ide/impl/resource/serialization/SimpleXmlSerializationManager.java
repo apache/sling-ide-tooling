@@ -75,20 +75,6 @@ public class SimpleXmlSerializationManager implements SerializationManager, Seri
     }
 
     @Override
-    public String getBaseResourcePath(String serializationFilePath) {
-        if (!serializationFilePath.endsWith(CONTENT_XML)) {
-            throw new IllegalArgumentException("File path " + serializationFilePath + "does not end with '"
-                    + File.separatorChar + CONTENT_XML + "'");
-        }
-
-        if (CONTENT_XML.equals(serializationFilePath)) {
-            return "";
-        }
-
-        return serializationFilePath.substring(0, serializationFilePath.length() - (CONTENT_XML.length() + 1));
-    }
-
-    @Override
     public ResourceProxy readSerializationData(WorkspaceFile file) throws IOException {
 
         try {

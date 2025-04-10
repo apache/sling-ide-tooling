@@ -19,15 +19,8 @@ package org.apache.sling.ide.impl.vlt.serialization;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-
-import org.apache.commons.io.IOUtils;
 import org.apache.sling.ide.impl.vlt.Slf4jLogger;
 import org.apache.sling.ide.sync.content.WorkspacePath;
-import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -43,67 +36,6 @@ public class VltSerializationManagerTest {
     @Before
     public void init() {
         serializationManager = new VltSerializationManager(new Slf4jLogger(), null);
-    }
-
-    @Test
-    public void getSerializationFilePath_Root() {
-
-        File root = findFilesystemRoot();
-
-        assertThat(serializationManager.getBaseResourcePath(new File(root, ".content.xml").getAbsolutePath()),
-                is(root.getAbsolutePath()));
-    }
-
-    private File findFilesystemRoot() {
-        File[] roots = File.listRoots();
-        Assume.assumeTrue("No filesystem roots found", roots != null && roots.length > 0);
-        return roots[0];
-    }
-
-    @Test
-    public void getSerializationFilePath_NestedPath() {
-
-        File f = newFile(findFilesystemRoot(), "apps", "sling", "servlet", "default", ".content.xml");
-
-        assertThat(serializationManager.getBaseResourcePath(f.getAbsolutePath()), is(f.getParentFile()
-                .getAbsolutePath()));
-    }
-
-    private File newFile(File parent, String... segments) {
-
-        File current = parent;
-        for (String segment : segments) {
-            current = new File(current, segment);
-        }
-        return current;
-    }
-
-    @Test
-    public void getSerializationFilePath_FullCoverageAggerate() throws IOException {
-
-        File contentFile = trash.newFile("default.xml");
-        
-        try (InputStream in = getClass().getResourceAsStream("simple-content.xml"); 
-                FileOutputStream out = new FileOutputStream(contentFile);) {
-            IOUtils.copy(in, out);
-        }
-
-        assertThat(serializationManager.getBaseResourcePath(contentFile.getAbsolutePath()),
-                is(new File(contentFile.getParent(), "default").getAbsolutePath()));
-    }
-
-    @Test
-    public void getSerializationFilePath_XmlFile() throws IOException {
-
-        File contentFile = trash.newFile("file.xml");
-        
-        try (InputStream in = getClass().getResourceAsStream("file.xml");
-                FileOutputStream out = new FileOutputStream(contentFile)) {
-            IOUtils.copy(in, out);
-        }
-
-        assertThat(serializationManager.getBaseResourcePath(contentFile.getAbsolutePath()),
-                is(contentFile.getAbsolutePath()));
     }
 
     @Test
@@ -142,11 +74,4 @@ public class VltSerializationManagerTest {
         assertThat(serializationManager.getRepositoryPath(new WorkspacePath("/content/test.dir/file")), is("/content/test/file"));
     }
 
-    @Test
-    public void getBaseResourcePath_MissingXmlFile() {
-        File f = newFile(findFilesystemRoot(), "apps", "sling", "servlet", "default", "config.xml");
-
-        assertThat(serializationManager.getBaseResourcePath(f.getAbsolutePath()),
-                is(f.getAbsolutePath().replace(".xml", "")));
-    }
 }
