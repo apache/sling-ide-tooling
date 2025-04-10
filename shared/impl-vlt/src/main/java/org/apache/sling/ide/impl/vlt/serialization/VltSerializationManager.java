@@ -192,8 +192,9 @@ public class VltSerializationManager implements SerializationManager {
     }
 
     @Override
-    public String getRepositoryPath(String osPath) {
+    public String getRepositoryPath(WorkspacePath localPath) {
 
+        String osPath = localPath.asPortableString();
         String repositoryPath;
         String name = Text.getName(osPath);
         if (name.equals(Constants.DOT_CONTENT_XML)) {
@@ -242,7 +243,7 @@ public class VltSerializationManager implements SerializationManager {
         if (file == null || ! file.exists() )
             return null;
 
-        String repositoryPath = getRepositoryPath(file.getPathRelativeToSyncDir().asPortableString());
+        String repositoryPath = getRepositoryPath(file.getPathRelativeToSyncDir());
 
         try (InputStream source = file.getContents()) {
         	DocViewParser parser = new DocViewParser();

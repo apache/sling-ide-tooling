@@ -49,6 +49,7 @@ import org.apache.sling.ide.serialization.SerializationKind;
 import org.apache.sling.ide.serialization.SerializationKindManager;
 import org.apache.sling.ide.serialization.SerializationManager;
 import org.apache.sling.ide.sync.content.WorkspaceFile;
+import org.apache.sling.ide.sync.content.WorkspaceResource;
 import org.apache.sling.ide.transport.NodeTypeRegistry;
 import org.apache.sling.ide.transport.Repository;
 import org.apache.sling.ide.transport.RepositoryException;
@@ -1383,11 +1384,11 @@ public class JcrNode implements IAdaptable {
         
         IFolder contentSyncRoot = ProjectUtil.getSyncDirectory(getProject());
         IFile file = u.file;
-        try (InputStream contents = file.getContents() ){
-            String resourceLocation = file.getFullPath().makeRelativeTo(contentSyncRoot.getFullPath())
-                    .toPortableString();
+        WorkspaceFile resourceFile = (WorkspaceFile) EclipseResources.create(file);
+        
+        try {
             ResourceProxy resourceProxy = Activator.getDefault()
-                    .getSerializationManager().readSerializationData(resourceLocation, contents);
+                    .getSerializationManager().readSerializationData(resourceFile);
             
             // resourceProxy could be containing a full tree
             // dive into the right position

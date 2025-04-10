@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.IOException;
 
 import org.apache.sling.ide.sync.content.WorkspaceFile;
+import org.apache.sling.ide.sync.content.WorkspacePath;
 import org.apache.sling.ide.sync.content.WorkspaceResource;
 import org.apache.sling.ide.transport.Repository;
 import org.apache.sling.ide.transport.ResourceProxy;
@@ -51,7 +52,13 @@ public interface SerializationManager {
      */
     WorkspaceFile getSerializationFile(WorkspaceResource baseResource, SerializationKind serializationKind);
 
-    String getRepositoryPath(String osPath);
+    /**
+     * Returns the (remote) repository path for the given local path.
+     * 
+     * @param localPath the local path
+     * @return the repository path
+     */
+    String getRepositoryPath(WorkspacePath localPath);
 
     String getOsPath(String repositoryPath);
 

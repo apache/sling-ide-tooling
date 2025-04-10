@@ -171,8 +171,8 @@ public class SimpleXmlSerializationManager implements SerializationManager, Seri
     }
 
     @Override
-    public String getRepositoryPath(String osPath) {
-        return osPath;
+    public String getRepositoryPath(WorkspacePath localPath) {
+        return localPath.asPortableString();
     }
 
     @Override

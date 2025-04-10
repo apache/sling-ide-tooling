@@ -74,7 +74,8 @@ public class DefaultSyncCommandFactory implements SyncCommandFactory {
             return null;
         }
         
-        String repositoryPath = resource.getPathRelativeToSyncDir().absolute().asPortableString();
+        WorkspacePath resourceLocalPath = resource.getPathRelativeToSyncDir().absolute();
+        String repositoryPath = resourceLocalPath.asPortableString();
 
         FilterResult filterResult = resource.getProject().getFilter().filter(repositoryPath);
         
@@ -92,7 +93,7 @@ public class DefaultSyncCommandFactory implements SyncCommandFactory {
         WorkspaceFile serializationFile = serializationManager.getSerializationFile(resource,
                 SerializationKind.FOLDER);
         
-        ResourceProxy coveringParentData = findSerializationDataFromCoveringParent(resource, repositoryPath, serializationFile.getLocalPath());
+        ResourceProxy coveringParentData = findSerializationDataFromCoveringParent(resource, resourceLocalPath, serializationFile.getLocalPath());
         if (coveringParentData != null) {
             logger.trace("Found covering resource data ( repository path = {0} ) for resource at {1},  skipping deletion and performing an update instead",
                             coveringParentData.getPath(), resource.getLocalPath());
@@ -100,7 +101,7 @@ public class DefaultSyncCommandFactory implements SyncCommandFactory {
             return repository.newAddOrUpdateNodeCommand(new CommandContext(resource.getProject().getFilter()), info, coveringParentData);
         }
         
-        return repository.newDeleteNodeCommand(serializationManager.getRepositoryPath(repositoryPath));
+        return repository.newDeleteNodeCommand(serializationManager.getRepositoryPath(resourceLocalPath));
     }
     
     @Override
@@ -123,7 +124,7 @@ public class DefaultSyncCommandFactory implements SyncCommandFactory {
     }
 
    private ResourceProxy findSerializationDataFromCoveringParent(WorkspaceResource localFile,
-           String resourceLocation, WorkspacePath serializationFilePath) throws IOException {
+           WorkspacePath resourceLocalPath, WorkspacePath serializationFilePath) throws IOException {
 
        logger.trace("Found plain nt:folder candidate at {0}, trying to find a covering resource for it",
 localFile);
@@ -164,7 +165,7 @@ localFile);
                
                ResourceProxy serializationData = serializationManager.readSerializationData( possibleSerializationFile);
 
-               String repositoryPath = serializationManager.getRepositoryPath(resourceLocation);
+               String repositoryPath = serializationManager.getRepositoryPath(resourceLocalPath);
                String potentialPath = serializationData.getPath();
                boolean covered = serializationData.covers(repositoryPath);
 
@@ -302,7 +303,7 @@ public ResourceAndInfo buildResourceAndInfo(WorkspaceResource resource, Reposito
            fallbackNodeType = Repository.NT_FOLDER;
        }
 
-       String resourceLocation = changedResource.getPathRelativeToSyncDir().asPortableString();
+       WorkspacePath resourceLocation = changedResource.getPathRelativeToSyncDir();
        WorkspaceFile serializationResource = serializationManager.getSerializationFile(
                changedResource, serializationKind);
 
@@ -319,7 +320,7 @@ public ResourceAndInfo buildResourceAndInfo(WorkspaceResource resource, Reposito
        return buildResourceProxy(resourceLocation, serializationResource, fallbackNodeType, repository);
    }
    
-   private ResourceProxy buildResourceProxy(String resourceLocation, WorkspaceFile serializationFile,
+   private ResourceProxy buildResourceProxy(WorkspacePath resourceLocation, WorkspaceFile serializationFile,
            String fallbackPrimaryType, Repository repository) throws IOException {
        if (serializationFile.exists()) {
            ResourceProxy resourceProxy = serializationManager.readSerializationData(serializationFile);
@@ -399,7 +400,7 @@ public ResourceAndInfo buildResourceAndInfo(WorkspaceResource resource, Reposito
        for ( WorkspaceResource extraChildResource : extraChildResources.values()) {
            WorkspacePath extraChildResourcePath = extraChildResource.getPathRelativeToSyncDir();
            resourceProxy.addChild(new ResourceProxy(serializationManager
-                   .getRepositoryPath(extraChildResourcePath.asPortableString())));
+                   .getRepositoryPath(extraChildResourcePath)));
            
            logger.trace("For resource at with serialization data {0} the found a child resource at {1} which is not listed in the serialized child resources and will be added",
                            serializationFile, extraChildResource);
