@@ -47,6 +47,7 @@ public class ResourceProxy {
     private final List<ResourceProxy> children = new ArrayList<>();
     private final Map<Class<?>, Object> adapted = new HashMap<>(1);
 
+    // TODO - use a typed path object?
     public ResourceProxy(String path) {
         this(path, new HashMap<String, Object>());
     }

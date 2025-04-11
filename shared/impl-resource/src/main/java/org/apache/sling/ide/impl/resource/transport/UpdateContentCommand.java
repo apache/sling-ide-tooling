@@ -29,7 +29,7 @@ import org.apache.commons.httpclient.methods.multipart.FilePart;
 import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
 import org.apache.commons.httpclient.methods.multipart.Part;
 import org.apache.commons.httpclient.methods.multipart.StringPart;
-import org.apache.sling.ide.transport.FileInfo;
+import org.apache.sling.ide.sync.content.WorkspaceFile;
 import org.apache.sling.ide.transport.ProtectedNodes;
 import org.apache.sling.ide.transport.RepositoryException;
 import org.apache.sling.ide.transport.RepositoryInfo;
@@ -38,13 +38,13 @@ import org.apache.sling.ide.transport.Result;
 class UpdateContentCommand extends AbstractCommand<Void> {
 
     private final Map<String, Object> properties;
-    private final FileInfo fileInfo;
+    private final WorkspaceFile file;
 
-    UpdateContentCommand(RepositoryInfo repositoryInfo, HttpClient httpClient, String relativePath,
-            Map<String, Object> properties, FileInfo fileInfo) {
-        super(repositoryInfo, httpClient, relativePath);
+    UpdateContentCommand(RepositoryInfo repositoryInfo, HttpClient httpClient, WorkspaceFile fileInfo,
+            Map<String, Object> properties) {
+        super(repositoryInfo, httpClient, fileInfo.getPathRelativeToSyncDir().absolute().asPortableString());
         this.properties = properties;
-        this.fileInfo = fileInfo;
+        this.file = fileInfo;
     }
 
     @Override
@@ -67,9 +67,9 @@ class UpdateContentCommand extends AbstractCommand<Void> {
                             + property.getValue().getClass());
                 }
     		}
-            File f = new File(fileInfo.getLocation());
-            if (f.isFile()) {
-                parts.add(new FilePart(fileInfo.getName(), f));
+            File osFile = file.getOSPath().toFile();
+            if (osFile.isFile()) {
+                parts.add(new FilePart(osFile.getName(), osFile));
             }
             post.setRequestEntity(new MultipartRequestEntity(parts.toArray(new Part[parts.size()]), post
                     .getParams()));
@@ -88,6 +88,6 @@ class UpdateContentCommand extends AbstractCommand<Void> {
     @Override
     public String toString() {
     	
-    	return String.format("%8s %s", "UPDATE", fileInfo.getRelativeLocation() + "/" + fileInfo.getName());
+    	return String.format("%8s %s", "UPDATE", file.getPathRelativeToSyncDir() + "/" + file.getName());
     }
 }

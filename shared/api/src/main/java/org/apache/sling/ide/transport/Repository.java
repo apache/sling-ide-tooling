@@ -16,6 +16,8 @@
  */
 package org.apache.sling.ide.transport;
 
+import org.apache.sling.ide.sync.content.WorkspaceFile;
+
 public interface Repository {
 	
 	public static String JCR_PRIMARY_TYPE= "jcr:primaryType";
@@ -88,7 +90,7 @@ public interface Repository {
  	
     RepositoryInfo getRepositoryInfo();
 
-    Command<Void> newAddOrUpdateNodeCommand(CommandContext context, FileInfo fileInfo, ResourceProxy resourceProxy,
+    Command<Void> newAddOrUpdateNodeCommand(CommandContext context, WorkspaceFile fileInfo, ResourceProxy resourceProxy,
             CommandExecutionFlag... flags);
 
     /**
