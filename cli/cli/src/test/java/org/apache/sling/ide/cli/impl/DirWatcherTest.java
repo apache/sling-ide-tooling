@@ -116,9 +116,9 @@ public class DirWatcherTest {
     
     @Test(timeout = 3000)
     public void deletedFile() throws IOException, InterruptedException {
-    	// TODO: does not work on Mac OS yet
+    	// TODO: does not work on Mac OS or Windows yet
     	assumeFalse(SystemUtils.IS_OS_MAC);
-        assumeFalse(SystemUtils.IS_OS_WINDOWS); // TODO - SLING-7596
+        assumeFalse(SystemUtils.IS_OS_WINDOWS); 
         
         File watchRoot = folder.newFolder();
         File subDir = new File(watchRoot, "subDir");
