@@ -23,10 +23,9 @@ import static org.apache.jackrabbit.vault.util.JcrConstants.JCR_PRIMARYTYPE;
 import static org.apache.jackrabbit.vault.util.JcrConstants.NT_FILE;
 import static org.apache.jackrabbit.vault.util.JcrConstants.NT_RESOURCE;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -57,8 +56,8 @@ import org.apache.jackrabbit.util.Text;
 import org.apache.jackrabbit.vault.util.JcrConstants;
 import org.apache.sling.ide.filter.FilterResult;
 import org.apache.sling.ide.log.Logger;
+import org.apache.sling.ide.sync.content.WorkspaceFile;
 import org.apache.sling.ide.transport.CommandContext;
-import org.apache.sling.ide.transport.FileInfo;
 import org.apache.sling.ide.transport.Repository.CommandExecutionFlag;
 import org.apache.sling.ide.transport.ResourceProxy;
 import org.apache.sling.ide.util.PathUtil;
@@ -66,11 +65,11 @@ import org.apache.sling.ide.util.PathUtil;
 public class AddOrUpdateNodeCommand extends JcrCommand<Void> {
 
     private ResourceProxy resource;
-    private FileInfo fileInfo;
+    private WorkspaceFile fileInfo;
     private CommandContext context;
 
     public AddOrUpdateNodeCommand(Repository jcrRepo, Credentials credentials, CommandContext context,
-            FileInfo fileInfo, ResourceProxy resource, Logger logger, CommandExecutionFlag... flags) {
+            WorkspaceFile fileInfo, ResourceProxy resource, Logger logger, CommandExecutionFlag... flags) {
 
         super(jcrRepo, credentials, resource.getPath(), logger, flags);
         
@@ -373,8 +372,6 @@ public class AddOrUpdateNodeCommand extends JcrCommand<Void> {
     private void updateFileLikeNodeTypes(Node node) throws RepositoryException, IOException {
         // TODO - better handling of file-like nodes - perhaps we need to know the SerializationKind here
         // TODO - avoid IO
-        File file = new File(fileInfo.getLocation());
-
         if (!hasFileLikePrimaryNodeType(node)) {
             return;
         }
@@ -394,7 +391,7 @@ public class AddOrUpdateNodeCommand extends JcrCommand<Void> {
         getLogger().trace("Updating {0} property on node at {1} ", JCR_DATA, contentNode.getPath());
 
         
-        try (FileInputStream inputStream = new FileInputStream(file)) {
+        try (InputStream inputStream = fileInfo.getContents()) {
             Binary binary = node.getSession().getValueFactory().createBinary(inputStream);
             contentNode.setProperty(JCR_DATA, binary);
             // TODO: might have to be done differently since the client and server's clocks can differ

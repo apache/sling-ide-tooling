@@ -16,7 +16,6 @@
  */
 package org.apache.sling.ide.sync.content.impl;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
@@ -37,7 +36,6 @@ import org.apache.sling.ide.sync.content.WorkspacePath;
 import org.apache.sling.ide.sync.content.WorkspaceResource;
 import org.apache.sling.ide.transport.Command;
 import org.apache.sling.ide.transport.CommandContext;
-import org.apache.sling.ide.transport.FileInfo;
 import org.apache.sling.ide.transport.Repository;
 import org.apache.sling.ide.transport.RepositoryException;
 import org.apache.sling.ide.transport.ResourceAndInfo;
@@ -97,7 +95,7 @@ public class DefaultSyncCommandFactory implements SyncCommandFactory {
         if (coveringParentData != null) {
             logger.trace("Found covering resource data ( repository path = {0} ) for resource at {1},  skipping deletion and performing an update instead",
                             coveringParentData.getPath(), resource.getLocalPath());
-            FileInfo info = createFileInfo(resource);
+            WorkspaceFile info = (resource instanceof WorkspaceFile) ? (WorkspaceFile) resource : null;
             return repository.newAddOrUpdateNodeCommand(new CommandContext(resource.getProject().getFilter()), info, coveringParentData);
         }
         
@@ -185,21 +183,8 @@ localFile);
        return null;
    }
 
-   private FileInfo createFileInfo(WorkspaceResource resource) {
-
-       if (!(resource instanceof WorkspaceFile)) {
-           return null;
-       }
-
-       FileInfo info = new FileInfo(resource.getOSPath().toString(), resource.getPathRelativeToSyncDir().asPortableString(), resource.getName());
-
-       logger.trace("For {0} built fileInfo {1}", resource, info);
-
-       return info;
-   }
-   
    @Override
-public ResourceAndInfo buildResourceAndInfo(WorkspaceResource resource, Repository repository) throws IOException {
+   public ResourceAndInfo buildResourceAndInfo(WorkspaceResource resource, Repository repository) throws IOException {
 
        if ( !resource.exists() ) {
            return null;
@@ -218,37 +203,37 @@ public ResourceAndInfo buildResourceAndInfo(WorkspaceResource resource, Reposito
            return null;
        }
 
-       FileInfo info = createFileInfo(resource);
+       WorkspaceFile info = (resource instanceof WorkspaceFile) ? (WorkspaceFile) resource : null;
        logger.trace("For {0} built fileInfo {1}", resource, info);
-
-       WorkspaceDirectory syncDirectory = resource.getProject().getSyncDirectory();
-       File syncDirectoryAsFile = syncDirectory.getOSPath().toFile();
 
        ResourceProxy resourceProxy = null;
 
-       if (resource instanceof WorkspaceFile && serializationManager.isSerializationFile((WorkspaceFile) resource)) {
-           WorkspaceFile file = (WorkspaceFile) resource;
-           WorkspacePath resourceLocation = file.getPathRelativeToSyncDir();
-           resourceProxy = serializationManager.readSerializationData(file);
-           normaliseResourceChildren(file, resourceProxy, repository);
-
+       if (info != null && serializationManager.isSerializationFile((WorkspaceFile) resource)) {
+           resourceProxy = serializationManager.readSerializationData(info);
+           normaliseResourceChildren(info, resourceProxy, repository);
 
            // TODO - not sure if this 100% correct, but we definitely should not refer to the FileInfo as the
            // .serialization file, since for nt:file/nt:resource nodes this will overwrite the file contents
+           // See https://jackrabbit.apache.org/filevault/vaultfs.html#extended-file-aggregates
+           // where we have the following case
+           // |- sample.jpg
+           // `- sample.jpg.dir
+           // |- .content.xml <-- this is the file we're targeting
+           // `- _jcr_content
+           // `- _dam_thumbnails
+           //      |- 90.jpg
+           //      `- 120.jpg
            String primaryType = (String) resourceProxy.getProperties().get(Repository.JCR_PRIMARY_TYPE);
            if (Repository.NT_FILE.equals(primaryType)) {
                // TODO move logic to serializationManager
-               File locationFile = new File(info.getLocation());
-               String locationFileParent = locationFile.getParent();
-               int endIndex = locationFileParent.length() - ".dir".length();
-               File actualFile = new File(locationFileParent.substring(0, endIndex));
-               String newLocation = actualFile.getAbsolutePath();
-               String newName = actualFile.getName();
-               String newRelativeLocation = actualFile.getAbsolutePath().substring(
-                       syncDirectoryAsFile.getAbsolutePath().length());
-               info = new FileInfo(newLocation, newRelativeLocation, newName);
-
-               logger.trace("Adjusted original location from {0} to {1}", resourceLocation, newLocation);
+               
+               WorkspacePath originalPath = info.getPathRelativeToSyncDir();
+               WorkspaceDirectory parent = info.getParent();
+               String mainFileName = info.getName().replaceAll("\\.dir^", "");
+               info = parent.getFile(new WorkspacePath(mainFileName));
+               WorkspacePath adjustedPath = info.getPathRelativeToSyncDir();
+               
+               logger.trace("Adjusted original location from {0} to {1}", originalPath, adjustedPath);
 
            }
        } else {

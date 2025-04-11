@@ -16,6 +16,8 @@
  */
 package org.apache.sling.ide.transport;
 
+import org.apache.sling.ide.sync.content.WorkspaceFile;
+
 /**
  * The <tt>ResourceAndInfo</tt> is a simple value class allowing both a ResourceProxy and a FileInfo to be passed
  * together
@@ -23,14 +25,14 @@ package org.apache.sling.ide.transport;
  */
 public class ResourceAndInfo {
     private final ResourceProxy resource;
-    private final FileInfo info;
+    private final WorkspaceFile info;
     private final boolean onlyWhenMissing;
 
-    public ResourceAndInfo(ResourceProxy resource, FileInfo info) {
+    public ResourceAndInfo(ResourceProxy resource, WorkspaceFile info) {
         this(resource, info, false);
     }
 
-    public ResourceAndInfo(ResourceProxy resource, FileInfo info, boolean onlyIfMissing) {
+    public ResourceAndInfo(ResourceProxy resource, WorkspaceFile info, boolean onlyIfMissing) {
         this.resource = resource;
         this.info = info;
         this.onlyWhenMissing = onlyIfMissing;
@@ -40,7 +42,7 @@ public class ResourceAndInfo {
         return resource;
     }
 
-    public FileInfo getInfo() {
+    public WorkspaceFile getInfo() {
         return info;
     }
 

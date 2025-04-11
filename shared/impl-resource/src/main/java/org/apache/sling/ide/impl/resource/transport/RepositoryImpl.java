@@ -18,9 +18,9 @@ package org.apache.sling.ide.impl.resource.transport;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.sling.ide.log.Logger;
+import org.apache.sling.ide.sync.content.WorkspaceFile;
 import org.apache.sling.ide.transport.Command;
 import org.apache.sling.ide.transport.CommandContext;
-import org.apache.sling.ide.transport.FileInfo;
 import org.apache.sling.ide.transport.NodeTypeRegistry;
 import org.apache.sling.ide.transport.Repository;
 import org.apache.sling.ide.transport.RepositoryInfo;
@@ -59,19 +59,19 @@ public class RepositoryImpl implements Repository {
 	}
 	
 	@Override
-    public Command<Void> newAddOrUpdateNodeCommand(CommandContext context, final FileInfo fileInfo, ResourceProxy resource,
+    public Command<Void> newAddOrUpdateNodeCommand(CommandContext context, final WorkspaceFile fileInfo, ResourceProxy resource,
             CommandExecutionFlag... flags) {
         if (flags.length != 0) {
             throw new UnsupportedOperationException("This implementation does not support any flags");
         }
 		
-        return new UpdateContentCommand(repositoryInfo, httpClient, fileInfo.getRelativeLocation(),
-                resource.getProperties(), fileInfo);
+        return new UpdateContentCommand(repositoryInfo, httpClient, fileInfo,
+                resource.getProperties());
 	}
 
     @Override
     public Command<Void> newReorderChildNodesCommand(ResourceProxy resourceProxy) {
-        return new AbstractCommand<Void>(repositoryInfo, httpClient, resourceProxy.getPath()) {
+        return new AbstractCommand<>(repositoryInfo, httpClient, resourceProxy.getPath()) {
             @Override
             public Result<Void> execute() {
                 // TODO - this is a no-op
