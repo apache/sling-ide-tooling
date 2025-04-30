@@ -57,3 +57,12 @@ Provide-Capability: osgi.service;objectClass=org.apache.sling.ide.log.Logger
 Service-Component: OSGI-INF/org.apache.sling.ide.eclipse.core.debug.impl.Tracer.xml,
  OSGI-INF/org.apache.sling.ide.eclipse.core.logger.CompositeLogger.xml,
  OSGI-INF/org.apache.sling.ide.eclipse.core.logger.DefaultEclipseLogger.xml
+Require-Capability: osgi.service;filter:="(objectClass=org.apache.sling.ide.transport.RepositoryFactory)";
+ effective:=active,osgi.service;filter:="(objectClass=org.apache.sling.ide.serialization.SerializationManager)";
+ effective:=active,osgi.service;filter:="(objectClass=org.apache.sling.ide.filter.FilterLocator)";
+ effective:=active,osgi.service;filter:="(objectClass=org.apache.sling.ide.osgi.OsgiClientFactory)";
+ effective:=active,osgi.service;filter:="(objectClass=org.apache.sling.ide.artifacts.EmbeddedBundleLocator)";
+ effective:=active,osgi.service;filter:="(objectClass=org.apache.sling.ide.log.Logger)";
+ effective:=active,osgi.service;filter:="(objectClass=org.apache.sling.ide.transport.BatcherFactory)";
+ effective:=active,osgi.service;filter:="(objectClass=org.apache.sling.ide.sync.content.SyncCommandFactory)";
+ effective:=active

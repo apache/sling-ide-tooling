@@ -44,8 +44,9 @@
                         <execution>
                             <id>bnd-process</id>
                             <configuration>
-                                <!-- due to the non-Maven standard merging this is effectively added to the config set in sling-bundle-parent -->
-                                <!-- make sure to automatically start this bundle in Equinox whenever some classes are referenced -->
+                                <!-- due to the non-Maven standard merging this is effectively added to the config set in sling-bundle-parent
+                                make sure to automatically start this bundle in Equinox whenever some classes are referenced
+                                (https://vogella.com/blog/getting-started-with-osgi-declarative-services-2024/#interlude-bundle-activationpolicy-lazy) -->
                                 <bnd>Bundle-ActivationPolicy: lazy</bnd>
                             </configuration>
                         </execution>
