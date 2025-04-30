@@ -66,16 +66,8 @@ public class Activator extends Plugin {
     public static final String BSN_ARTIFACTS = "org.apache.sling.ide.artifacts";
 
 	public void start(BundleContext context) throws Exception {
-		super.start(context);
-		plugin = this;
-		
-		// the following bundles need to be explicitly started as no class is directly referenced
-		// and everything works via declarative services
-		// compare with https://github.com/eclipse-m2e/m2e-core/issues/945
-		getFirstBundle(context, BSN_API).start();
-		getFirstBundle(context, BSN_VAULT_IMPL).start();
-		getFirstBundle(context, BSN_ARTIFACTS).start();
-		
+        super.start(context);
+        plugin = this;
         repositoryFactory = new ExtendedServiceTracker<>(context, RepositoryFactory.class);
         serializationManager = new ExtendedServiceTracker<>(context, SerializationManager.class);
         filterLocator = new ExtendedServiceTracker<>(context, FilterLocator.class);
