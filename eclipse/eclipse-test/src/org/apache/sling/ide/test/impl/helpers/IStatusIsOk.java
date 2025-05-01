@@ -18,13 +18,11 @@ package org.apache.sling.ide.test.impl.helpers;
 
 import org.eclipse.core.runtime.IStatus;
 import org.hamcrest.Description;
-import org.hamcrest.Factory;
 import org.hamcrest.Matcher;
-import org.junit.internal.matchers.TypeSafeMatcher;
+import org.hamcrest.TypeSafeMatcher;
 
 public class IStatusIsOk extends TypeSafeMatcher<IStatus> {
 
-    @Factory
     public static <T> Matcher<IStatus> isOk() {
         return new IStatusIsOk();
     }

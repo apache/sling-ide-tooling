@@ -16,9 +16,10 @@
  */
 package org.apache.sling.ide.eclipse.ui.wizards.np;
 
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Properties;
+import java.util.Map;
 import java.util.StringTokenizer;
 
 import org.apache.maven.archetype.catalog.Archetype;
@@ -357,9 +358,9 @@ public class ArchetypeParametersWizardPage extends WizardPage {
 		return javaPackage.getText();
 	}
 
-	public Properties getProperties() {
+	public Map<String, String> getProperties() {
 		int cnt = propertiesTable.getItemCount();
-		Properties p = new Properties();
+		Map<String, String> p = new HashMap<>();
 		for(int i=0; i<cnt; i++) {
 			TableItem item = propertiesTable.getItem(i);
 			p.put(item.getText(0), item.getText(1));

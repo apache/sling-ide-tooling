@@ -20,6 +20,7 @@ import static org.apache.sling.ide.eclipse.core.progress.ProgressUtils.advance;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import org.apache.maven.archetype.catalog.Archetype;
@@ -98,7 +99,7 @@ public abstract class AbstractNewMavenBasedSlingApplicationWizard extends Abstra
         String artifactId = archetypeParametersPage.getArtifactId();
         String version = archetypeParametersPage.getVersion();
         String javaPackage = archetypeParametersPage.getJavaPackage();
-        Properties properties = archetypeParametersPage.getProperties();
+        Map<String, String> properties = archetypeParametersPage.getProperties();
 
         IProject existingProject = ResourcesPlugin.getWorkspace().getRoot().getProject(artifactId);
         if (existingProject!=null && existingProject.exists()) {
