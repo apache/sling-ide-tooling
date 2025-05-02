@@ -46,7 +46,9 @@
                             <configuration>
                                 <!-- due to the non-Maven standard merging this is effectively added to the config set in sling-bundle-parent -->
                                 <!-- make sure to automatically start this bundle in Equinox whenever some classes are referenced -->
-                                <bnd>Bundle-ActivationPolicy: lazy</bnd>
+                                <bnd>
+                                -snapshot: v${tstamp}
+                                Bundle-ActivationPolicy: lazy</bnd>
                             </configuration>
                         </execution>
                     </executions>
