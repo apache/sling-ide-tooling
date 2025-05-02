@@ -67,8 +67,7 @@ Require-Bundle: org.eclipse.ui.navigator;bundle-version="3.5.101",
  org.eclipse.jdt.ui,
  org.apache.sling.ide.eclipse-core,
  org.eclipse.ui.views.properties.tabbed
-Service-Component: ${tycho.ds.path}/org.apache.sling.ide.eclipse.ui.internal.console.SlingConsoleEventListener.xml,
- OSGI-INF/*.xml
+Service-Component: OSGI-INF/org.apache.sling.ide.eclipse.ui.internal.console.SlingConsoleLogger.xml
 Export-Package: org.apache.sling.ide.eclipse.ui,
  org.apache.sling.ide.eclipse.ui.browser,
  org.apache.sling.ide.eclipse.ui.console,
