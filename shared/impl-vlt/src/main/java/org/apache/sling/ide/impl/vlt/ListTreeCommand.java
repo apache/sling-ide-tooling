@@ -24,13 +24,14 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 
 import org.apache.sling.ide.log.Logger;
+import org.apache.sling.ide.transport.RepositoryPath;
 import org.apache.sling.ide.transport.ResourceProxy;
 
 public class ListTreeCommand extends JcrCommand<ResourceProxy> {
 
     private final int levels;
 
-    public ListTreeCommand(Repository repository, Credentials credentials, String path, int levels, Logger logger) {
+    public ListTreeCommand(Repository repository, Credentials credentials, RepositoryPath path, int levels, Logger logger) {
         super(repository, credentials, path, logger);
         this.levels = Math.max(1,levels);
     }
@@ -38,7 +39,7 @@ public class ListTreeCommand extends JcrCommand<ResourceProxy> {
     @Override
     protected ResourceProxy execute0(Session session) throws RepositoryException {
 
-        Node node = session.getNode(getPath());
+        Node node = session.getNode(getPath().asString());
 
         ResourceProxy parent = nodeToResource(node);
 

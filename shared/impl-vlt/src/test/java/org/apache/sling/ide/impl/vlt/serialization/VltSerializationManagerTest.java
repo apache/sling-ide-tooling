@@ -21,6 +21,7 @@ import static org.junit.Assert.assertThat;
 
 import org.apache.sling.ide.impl.vlt.Slf4jLogger;
 import org.apache.sling.ide.sync.content.WorkspacePath;
+import org.apache.sling.ide.transport.RepositoryPath;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -60,18 +61,20 @@ public class VltSerializationManagerTest {
 
     @Test
     public void getRepositoryPath_CleanName() {
-        assertThat(serializationManager.getRepositoryPath(new WorkspacePath("/content/test")), is("/content/test"));
+        assertThat(serializationManager.getRepositoryPath(new WorkspacePath("/content/test")), 
+                is(new RepositoryPath("/content/test")));
     }
 
     @Test
     public void getRepositoryPath_MangledName() {
         assertThat(serializationManager.getRepositoryPath(new WorkspacePath("/content/test/_jcr_content")),
-                is("/content/test/jcr:content"));
+                is(new RepositoryPath("/content/test/jcr:content")));
     }
 
     @Test
     public void getRepositoryPath_SerializationDir() {
-        assertThat(serializationManager.getRepositoryPath(new WorkspacePath("/content/test.dir/file")), is("/content/test/file"));
+        assertThat(serializationManager.getRepositoryPath(new WorkspacePath("/content/test.dir/file")), 
+                is(new RepositoryPath("/content/test/file")));
     }
 
 }

@@ -19,6 +19,7 @@ package org.apache.sling.ide.filter;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+import org.apache.sling.ide.transport.RepositoryPath;
 import org.junit.Test;
 
 public class IgnoredResourcesTest {
@@ -29,7 +30,7 @@ public class IgnoredResourcesTest {
         IgnoredResources r = new IgnoredResources();
         r.registerRegExpIgnoreRule("/content", "en");
 
-        assertThat(r.isIgnored("/content/en"), equalTo(true));
+        assertThat(r.isIgnored(new RepositoryPath("/content/en")), equalTo(true));
     }
 
     @Test
@@ -38,8 +39,8 @@ public class IgnoredResourcesTest {
         IgnoredResources r = new IgnoredResources();
         r.registerRegExpIgnoreRule("/content", "*sync");
 
-        assertThat(r.isIgnored("/content/contentsync"), equalTo(true));
-        assertThat(r.isIgnored("/content/content"), equalTo(false));
+        assertThat(r.isIgnored(new RepositoryPath("/content/contentsync")), equalTo(true));
+        assertThat(r.isIgnored(new RepositoryPath("/content/content")), equalTo(false));
     }
 
     @Test
@@ -48,7 +49,7 @@ public class IgnoredResourcesTest {
         IgnoredResources r = new IgnoredResources();
         r.registerRegExpIgnoreRule("/content", "#en");
 
-        assertThat(r.isIgnored("/content/#en"), equalTo(false));
+        assertThat(r.isIgnored(new RepositoryPath("/content/#en")), equalTo(false));
     }
 
     @Test
@@ -57,8 +58,8 @@ public class IgnoredResourcesTest {
         IgnoredResources r = new IgnoredResources();
         r.registerRegExpIgnoreRule("/content", "en.html");
 
-        assertThat(r.isIgnored("/content/en.html"), equalTo(true));
-        assertThat(r.isIgnored("/content/en-html"), equalTo(false));
+        assertThat(r.isIgnored(new RepositoryPath("/content/en.html")), equalTo(true));
+        assertThat(r.isIgnored(new RepositoryPath("/content/en-html")), equalTo(false));
     }
 
     @Test
@@ -67,7 +68,7 @@ public class IgnoredResourcesTest {
         IgnoredResources r = new IgnoredResources();
         r.registerRegExpIgnoreRule("/content", "?en");
 
-        assertThat(r.isIgnored("/content/zen"), equalTo(true));
+        assertThat(r.isIgnored(new RepositoryPath("/content/zen")), equalTo(true));
     }
 
     @Test
@@ -76,7 +77,7 @@ public class IgnoredResourcesTest {
         IgnoredResources r = new IgnoredResources();
         r.registerRegExpIgnoreRule("/", "en");
 
-        assertThat(r.isIgnored("/en"), equalTo(true));
+        assertThat(r.isIgnored(new RepositoryPath("/en")), equalTo(true));
 
     }
 }

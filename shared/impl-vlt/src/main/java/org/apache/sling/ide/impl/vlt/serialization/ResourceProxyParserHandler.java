@@ -36,6 +36,7 @@ import org.apache.jackrabbit.util.ISO8601;
 import org.apache.jackrabbit.vault.fs.io.DocViewParserHandler;
 import org.apache.jackrabbit.vault.util.DocViewNode2;
 import org.apache.jackrabbit.vault.util.DocViewProperty2;
+import org.apache.sling.ide.transport.RepositoryPath;
 import org.apache.sling.ide.transport.ResourceProxy;
 
 public class ResourceProxyParserHandler implements DocViewParserHandler {
@@ -73,7 +74,7 @@ public class ResourceProxyParserHandler implements DocViewParserHandler {
 	public void startDocViewNode(String nodePath, DocViewNode2 docViewNode, Optional<DocViewNode2> parentDocViewNode,
 			int line, int column) throws IOException, RepositoryException {
 		
-		ResourceProxy currentResource = new ResourceProxy(nodePath);
+		ResourceProxy currentResource = new ResourceProxy(new RepositoryPath(nodePath));
 		for (DocViewProperty2 property: docViewNode.getProperties()) {
 			Object value = TypeHint.convertDocViewPropertyToTypedValue(property);
 			if (value != null) {
@@ -102,11 +103,13 @@ public class ResourceProxyParserHandler implements DocViewParserHandler {
      */
     static enum TypeHint {
         UNDEFINED(PropertyType.UNDEFINED) {
+            @Override
             Object parseValues(String[] values, boolean explicitMultiValue) {
                 return STRING.parseValues(values, explicitMultiValue);
             }
         },
         STRING(PropertyType.STRING) {
+            @Override
             Object parseValues(String[] values, boolean explicitMultiValue) {
                 if (values.length == 1 && !explicitMultiValue) {
                     return values[0];

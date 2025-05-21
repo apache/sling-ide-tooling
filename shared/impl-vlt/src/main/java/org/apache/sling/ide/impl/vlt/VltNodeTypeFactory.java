@@ -28,9 +28,9 @@ import javax.jcr.nodetype.NodeType;
 import javax.jcr.nodetype.PropertyDefinition;
 
 import org.apache.sling.ide.transport.RepositoryException;
+import org.apache.sling.ide.transport.RepositoryPath;
 import org.apache.sling.ide.transport.ResourceProxy;
 import org.apache.sling.ide.transport.Result;
-import org.apache.sling.ide.util.PathUtil;
 
 public class VltNodeTypeFactory {
 
@@ -45,7 +45,7 @@ public class VltNodeTypeFactory {
     }
 
     void init(VltRepository repository) throws RepositoryException {
-        Result<ResourceProxy> jcrSystem = repository.newListTreeNodeCommand("/jcr:system/jcr:nodeTypes", 3).execute();
+        Result<ResourceProxy> jcrSystem = repository.newListTreeNodeCommand(new RepositoryPath("/jcr:system/jcr:nodeTypes"), 3).execute();
         // phase 1: create all node types
         for (ResourceProxy child : jcrSystem.get().getChildren()) {
             
@@ -95,7 +95,7 @@ public class VltNodeTypeFactory {
 
         Set<VltNodeDefinition> nds = new HashSet<>();
         for (ResourceProxy ntChild : child.getChildren()) {
-            String ntChildName = PathUtil.getName(ntChild.getPath());
+            String ntChildName = ntChild.getPath().getName();
             if (ntChildName.startsWith("jcr:childNodeDefinition")) {
                 VltNodeDefinition nd = handleChildNodeDefinition(ntChild);
                 nds.add(nd);
@@ -112,7 +112,7 @@ public class VltNodeTypeFactory {
 
     private VltNodeType createNodeType(ResourceProxy child) {
         final VltNodeType nt = new VltNodeType(child);
-        final String name = PathUtil.getName(child.getPath());
+        final String name = child.getPath().getName();
         nt.setName(name);
         return nt;
     }
@@ -122,7 +122,7 @@ public class VltNodeTypeFactory {
         
         // load propertyDefinition children
         for (ResourceProxy aChild : child.getChildren()) {
-            String childName = PathUtil.getName(aChild.getPath());
+            String childName = aChild.getPath().getName();
             if (childName.startsWith("jcr:propertyDefinition")) {
                 String jcrName = (String)aChild.getProperties().get("jcr:name");
                 if (jcrName!=null) {
@@ -305,7 +305,7 @@ public class VltNodeTypeFactory {
             VltNodeType superType = (VltNodeType) declaredSupertypes[i];
             allSuperTypes.add(superType);
             nt.addSuperType(superType);
-            initSuperTypes(allSuperTypes, (VltNodeType) superType);
+            initSuperTypes(allSuperTypes, superType);
         }
     }
 

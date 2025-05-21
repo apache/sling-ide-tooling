@@ -42,25 +42,23 @@ import java.util.Map;
  */
 public class ResourceProxy {
 
-    private final String path;
+    private final RepositoryPath path;
     private final Map<String, Object> properties;
     private final List<ResourceProxy> children = new ArrayList<>();
     private final Map<Class<?>, Object> adapted = new HashMap<>(1);
 
-    // TODO - use a typed path object?
-    public ResourceProxy(String path) {
-        this(path, new HashMap<String, Object>());
+    public ResourceProxy(RepositoryPath path) {
+        this(path, new HashMap<>());
     }
 
-    public ResourceProxy(String path, Map<String, Object> properties) {
+    public ResourceProxy(RepositoryPath path, Map<String, Object> properties) {
         this.path = path;
         this.properties = properties;
     }
 
     public void addChild(ResourceProxy child) {
 
-        // TODO - should validate for direct parent
-        if (!isParent(path, child.getPath())) {
+        if ( !path.isParent(child.path) ) {
             throw new IllegalArgumentException("Resource at path " + child.getPath() + " is not a direct child of "
                     + path);
         }
@@ -73,7 +71,7 @@ public class ResourceProxy {
         this.properties.put(name, value);
     }
 
-    public String getPath() {
+    public RepositoryPath getPath() {
         return path;
     }
 
@@ -113,47 +111,29 @@ public class ResourceProxy {
         return coveredChildren;
     }
 
-    public boolean covers(String path) {
+    public boolean covers(RepositoryPath path) {
         for (ResourceProxy child : getCoveredChildren()) {
             if (child.getPath().equals(path)) {
                 return true;
-            } else if (isDescendent(child.getPath(), path)) {
+            } else if (child.getPath().isDescendent(path)) {
                 return child.covers(path);
             }
         }
 
         return false;
     }
-
-    private boolean isParent(String parentPath, String childPath) {
-
-        if (!isDescendent(parentPath, childPath)) {
-            return false;
-        }
-
-        for (int i = parentPath.length() + 1; i < childPath.length(); i++) {
-            if (childPath.charAt(i) == '/') {
-                return false;
-            }
-        }
-
-        return true;
+    
+    // TODO - remove?
+    @Deprecated
+    public boolean covers(String path) {
+        return covers(new RepositoryPath(path));
     }
 
-    private boolean isDescendent(String parentPath, String childPath) {
-        if (parentPath.equals("/")) {
-            return childPath.length() > 1;
-        }
-
-        return parentPath.length() < childPath.length() && childPath.charAt(parentPath.length()) == '/'
-                    && childPath.startsWith(parentPath);
-    }
-
-    public ResourceProxy getChild(String path) {
+    public ResourceProxy getChild(RepositoryPath path) {
         for (ResourceProxy child : getChildren()) {
             if (child.getPath().equals(path)) {
                 return child;
-            } else if (isDescendent(child.getPath(), path)) {
+            } else if ( child.getPath().isDescendent(path) ) {
                 return child.getChild(path);
             }
         }

@@ -20,6 +20,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import org.apache.sling.ide.transport.RepositoryPath;
+
 /**
  * The <tt>IgnoredResources</tt> holds information about what resources are ignored in a local checkout
  */
@@ -55,9 +57,9 @@ public class IgnoredResources {
         patterns.add(Pattern.compile(reg.toString()));
     }
 
-    public boolean isIgnored(String repositoryPath) {
+    public boolean isIgnored(RepositoryPath repositoryPath) {
         for (Pattern pattern : patterns) {
-            if (pattern.matcher(repositoryPath).matches()) {
+            if (pattern.matcher(repositoryPath.asString()).matches()) {
                 return true;
             }
         }

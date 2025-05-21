@@ -24,18 +24,19 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 
 import org.apache.sling.ide.log.Logger;
+import org.apache.sling.ide.transport.RepositoryPath;
 
 public class DeleteNodeCommand extends JcrCommand<Void> {
 
-    public DeleteNodeCommand(Repository repository, Credentials credentials, String path, Logger logger) {
+    public DeleteNodeCommand(Repository repository, Credentials credentials, RepositoryPath path, Logger logger) {
         super(repository, credentials, path, logger);
     }
 
     @Override
     protected Void execute0(Session session) throws RepositoryException, IOException {
 
-        if (session.nodeExists(getPath())) {
-            session.getNode(getPath()).remove();
+        if (session.nodeExists(getPath().asString())) {
+            session.getNode(getPath().asString()).remove();
         }
 
         return null;

@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.jackrabbit.util.Text;
 import org.apache.sling.ide.eclipse.core.EclipseResources;
 import org.apache.sling.ide.eclipse.core.ProjectUtil;
 import org.apache.sling.ide.eclipse.core.ResourceUtil;
@@ -48,6 +47,7 @@ import org.apache.sling.ide.sync.content.SyncCommandFactory;
 import org.apache.sling.ide.transport.Command;
 import org.apache.sling.ide.transport.Repository;
 import org.apache.sling.ide.transport.RepositoryException;
+import org.apache.sling.ide.transport.RepositoryPath;
 import org.apache.sling.ide.transport.ResourceAndInfo;
 import org.apache.sling.ide.transport.ResourceProxy;
 import org.apache.sling.ide.transport.Result;
@@ -205,7 +205,7 @@ public class ImportRepositoryContentAction {
                         return true;
                     }
 
-                    String repositoryPath = rai.getResource().getPath();
+                    RepositoryPath repositoryPath = rai.getResource().getPath();
 
                     FilterResult filterResult = filter.filter(repositoryPath);
 
@@ -293,7 +293,7 @@ public class ImportRepositoryContentAction {
 
                                 if (reloadedChildResource.getChildren().size() != 0) {
 
-                                    String pathName = Text.getName(reloadedChildResource.getPath());
+                                    String pathName = reloadedChildResource.getPath().getName();
                                     pathName = serializationManager.getLocalName(pathName);
                                     createFolder(project, serializationFolderPath.append(pathName));
 
@@ -377,7 +377,7 @@ public class ImportRepositoryContentAction {
 
         // TODO - can we just use the serializationFolderPath ?
 
-        String name = serializationManager.getLocalName(Text.getName(resource.getPath()));
+        String name = serializationManager.getLocalName(resource.getPath().getName());
 
         return serializationFolderPath.removeLastSegments(1).append(name);
     }

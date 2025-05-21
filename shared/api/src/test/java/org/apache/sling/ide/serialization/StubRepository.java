@@ -23,27 +23,28 @@ import org.apache.sling.ide.transport.FallbackNodeTypeRegistry;
 import org.apache.sling.ide.transport.NodeTypeRegistry;
 import org.apache.sling.ide.transport.Repository;
 import org.apache.sling.ide.transport.RepositoryInfo;
+import org.apache.sling.ide.transport.RepositoryPath;
 import org.apache.sling.ide.transport.ResourceProxy;
 
 public class StubRepository implements Repository {
 
     @Override
-    public Command<ResourceProxy> newListChildrenNodeCommand(final String path) {
+    public Command<ResourceProxy> newListChildrenNodeCommand(final RepositoryPath path) {
         return null;
     }
 
     @Override
-    public Command<ResourceProxy> newGetNodeContentCommand(String path) {
+    public Command<ResourceProxy> newGetNodeContentCommand(RepositoryPath path) {
         return null;
     }
 
     @Override
-    public Command<byte[]> newGetNodeCommand(String path) {
+    public Command<byte[]> newGetNodeCommand(RepositoryPath path) {
         return null;
     }
 
     @Override
-    public Command<Void> newDeleteNodeCommand(String path) {
+    public Command<Void> newDeleteNodeCommand(RepositoryPath path) {
         return null;
     }
 

@@ -47,6 +47,7 @@ import org.apache.sling.ide.sync.content.WorkspaceFile;
 import org.apache.sling.ide.sync.content.WorkspacePath;
 import org.apache.sling.ide.sync.content.WorkspaceResource;
 import org.apache.sling.ide.transport.Repository;
+import org.apache.sling.ide.transport.RepositoryPath;
 import org.apache.sling.ide.transport.ResourceProxy;
 import org.osgi.service.component.annotations.Component;
 import org.xml.sax.Attributes;
@@ -87,7 +88,7 @@ public class SimpleXmlSerializationManager implements SerializationManager, Seri
                 saxParser.parse(new InputSource(source), h);
             }
 
-            return new ResourceProxy(file.getPathRelativeToSyncDir().asPortableString(), h.getResult());
+            return new ResourceProxy(new RepositoryPath(file.getPathRelativeToSyncDir().asPortableString()), h.getResult());
         } catch (ParserConfigurationException | SAXException e) {
             // TODO proper exception handling
             throw new RuntimeException(e);
@@ -149,7 +150,8 @@ public class SimpleXmlSerializationManager implements SerializationManager, Seri
             handler.endDocument();
 
             // TODO - also add the serialization type
-            return new SerializationData(resource.getPath(), CONTENT_XML, result.toByteArray(), null);
+            // TODO - resource path is probably incorrect here
+            return new SerializationData(resource.getPath().asString(), CONTENT_XML, result.toByteArray(), null);
         } catch (TransformerConfigurationException | TransformerFactoryConfigurationError | SAXException e) {
             // TODO proper exception handling
             throw new RuntimeException(e);
@@ -157,8 +159,8 @@ public class SimpleXmlSerializationManager implements SerializationManager, Seri
     }
 
     @Override
-    public String getRepositoryPath(WorkspacePath localPath) {
-        return localPath.asPortableString();
+    public RepositoryPath getRepositoryPath(WorkspacePath localPath) {
+        return new RepositoryPath(localPath.asPortableString());
     }
 
     @Override

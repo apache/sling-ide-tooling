@@ -38,6 +38,7 @@ import org.apache.sling.ide.serialization.SerializationException;
 import org.apache.sling.ide.serialization.SerializationKind;
 import org.apache.sling.ide.sync.content.WorkspaceDirectory;
 import org.apache.sling.ide.sync.content.WorkspaceFile;
+import org.apache.sling.ide.transport.RepositoryPath;
 import org.apache.sling.ide.transport.ResourceProxy;
 import org.custommonkey.xmlunit.XMLUnit;
 import org.junit.Before;
@@ -70,7 +71,7 @@ public class SimpleXmlSerializationManagerTest {
     }
 
     private ResourceProxy newResourceWithProperties(Map<String, Object> properties) {
-        ResourceProxy resource = new ResourceProxy("/");
+        ResourceProxy resource = new ResourceProxy(new RepositoryPath("/"));
         for (Map.Entry<String, Object> entry : properties.entrySet()) {
             resource.addProperty(entry.getKey(), entry.getValue());
         }

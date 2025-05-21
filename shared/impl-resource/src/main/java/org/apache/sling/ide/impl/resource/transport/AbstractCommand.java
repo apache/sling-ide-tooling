@@ -25,7 +25,6 @@ import org.apache.sling.ide.transport.Repository.CommandExecutionFlag;
 import org.apache.sling.ide.transport.RepositoryException;
 import org.apache.sling.ide.transport.RepositoryInfo;
 import org.apache.sling.ide.transport.Result;
-import org.apache.sling.ide.util.PathUtil;
 
 public abstract class AbstractCommand<T> implements Command<T> {
 

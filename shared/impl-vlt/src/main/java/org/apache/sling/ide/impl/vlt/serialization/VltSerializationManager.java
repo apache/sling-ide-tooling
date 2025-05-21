@@ -47,6 +47,7 @@ import org.apache.sling.ide.sync.content.WorkspaceFile;
 import org.apache.sling.ide.sync.content.WorkspacePath;
 import org.apache.sling.ide.sync.content.WorkspaceProject;
 import org.apache.sling.ide.sync.content.WorkspaceResource;
+import org.apache.sling.ide.transport.RepositoryPath;
 import org.apache.sling.ide.transport.ResourceProxy;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -153,7 +154,7 @@ public class VltSerializationManager implements SerializationManager {
     }
 
     @Override
-    public String getRepositoryPath(WorkspacePath localPath) {
+    public RepositoryPath getRepositoryPath(WorkspacePath localPath) {
 
         String osPath = localPath.asPortableString();
         String repositoryPath;
@@ -182,7 +183,7 @@ public class VltSerializationManager implements SerializationManager {
             repositoryPath = "/";
         }
 
-        return repositoryPath;
+        return new RepositoryPath(repositoryPath);
     }
 
     @Override
@@ -207,12 +208,12 @@ public class VltSerializationManager implements SerializationManager {
         if (file == null || ! file.exists() )
             return null;
 
-        String repositoryPath = getRepositoryPath(file.getPathRelativeToSyncDir());
+        RepositoryPath repositoryPath = getRepositoryPath(file.getPathRelativeToSyncDir());
 
         try (InputStream source = file.getContents()) {
         	DocViewParser parser = new DocViewParser();
         	ResourceProxyParserHandler handler = new ResourceProxyParserHandler();
-        	parser.parse(repositoryPath, new InputSource(source), handler);
+        	parser.parse(repositoryPath.asString(), new InputSource(source), handler);
             return handler.getRoot();
         } catch (XmlParseException e) {
             // TODO proper error handling

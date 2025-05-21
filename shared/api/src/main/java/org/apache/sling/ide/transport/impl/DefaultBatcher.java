@@ -22,7 +22,7 @@ import java.util.ListIterator;
 
 import org.apache.sling.ide.transport.Batcher;
 import org.apache.sling.ide.transport.Command;
-import org.apache.sling.ide.util.PathUtil;
+import org.apache.sling.ide.transport.RepositoryPath;
 
 public class DefaultBatcher implements Batcher {
     
@@ -93,17 +93,17 @@ public class DefaultBatcher implements Batcher {
         }
 
         private void processDelete(Command<?> newCmd) {
-            String path = newCmd.getPath();
+            RepositoryPath path = newCmd.getPath();
             for ( ListIterator<Command<?>> iterator = deletes.listIterator(); iterator.hasNext(); ) {
                 
                 // if we already have an ancestor deleted, skip this one
                 Command<?> oldCmd = iterator.next();
-                if ( PathUtil.isAncestor(oldCmd.getPath(), path ) ) {
+                if ( oldCmd.getPath().isAncestor(path) ) {
                     return;
                 }
                 
                 // if we are delete an ancestor of another resource which gets deleted, replace it
-                if ( PathUtil.isAncestor(path, oldCmd.getPath())) {
+                if ( path.isAncestor(oldCmd.getPath())) {
                     iterator.set(newCmd);
                     return;
                 }
@@ -114,7 +114,7 @@ public class DefaultBatcher implements Batcher {
         }
         
         private void processWithPathEqualityCheck(Command<?> newCmd, List<Command<?>> oldCmds) {
-            String path = newCmd.getPath();
+            RepositoryPath path = newCmd.getPath();
             for (Command<?> oldCmd : oldCmds) {
                 // if we already have an add-or-update for this path, skip it    
                 if ( path.equals(oldCmd.getPath()) ) {
