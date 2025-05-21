@@ -24,18 +24,19 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 
 import org.apache.sling.ide.log.Logger;
+import org.apache.sling.ide.transport.RepositoryPath;
 import org.apache.sling.ide.transport.ResourceProxy;
 
 public class ListChildrenCommand extends JcrCommand<ResourceProxy> {
 
-    public ListChildrenCommand(Repository repository, Credentials credentials, String path, Logger logger) {
+    public ListChildrenCommand(Repository repository, Credentials credentials, RepositoryPath path, Logger logger) {
         super(repository, credentials, path, logger);
     }
 
     @Override
     protected ResourceProxy execute0(Session session) throws RepositoryException {
 
-        Node node = session.getNode(getPath());
+        Node node = session.getNode(getPath().asString());
         NodeIterator nodes = node.getNodes();
 
         ResourceProxy parent = nodeToResource(node);

@@ -28,13 +28,9 @@ import java.math.BigDecimal;
 import java.util.Calendar;
 import java.util.Map;
 
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-
 import org.apache.jackrabbit.vault.fs.io.DocViewParser;
 import org.apache.jackrabbit.vault.fs.io.DocViewParser.XmlParseException;
-import org.apache.sling.ide.impl.vlt.Slf4jLogger;
+import org.apache.sling.ide.transport.RepositoryPath;
 import org.apache.sling.ide.transport.ResourceProxy;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
@@ -42,7 +38,6 @@ import org.hamcrest.Matchers;
 import org.hamcrest.TypeSafeMatcher;
 import org.junit.Test;
 import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 
 public class ResourceProxyParserHandlerTest {
 
@@ -127,20 +122,20 @@ public class ResourceProxyParserHandlerTest {
 
         ResourceProxy root = parseContentXmlFile("full-coverage.xml", "/apps/full-coverage");
 
-        assertThat("full-coverage path", root.getPath(), is("/apps/full-coverage"));
+        assertThat("full-coverage path", root.getPath(), is(new RepositoryPath("/apps/full-coverage")));
         assertThat("full-coverage properties.size", root.getProperties().size(), is(3));
         assertThat("full-coverage properties[jcr:title]", root.getProperties(),
                 hasEntry("jcr:title", (Object) "Full coverage parent"));
         assertThat("full-coverage children.size", root.getChildren().size(), is(2));
 
         ResourceProxy parent1 = root.getChildren().get(0);
-        assertThat("parent-1 path", parent1.getPath(), is("/apps/full-coverage/parent-1"));
+        assertThat("parent-1 path", parent1.getPath(), is(new RepositoryPath("/apps/full-coverage/parent-1")));
         assertThat("parent-1 properties[jcr:title]", parent1.getProperties(),
                 hasEntry("jcr:title", (Object) "Parent 1"));
         assertThat("parent-1 children.size", parent1.getChildren().size(), is(2));
 
         ResourceProxy child11 = parent1.getChildren().get(0);
-        assertThat("child-1-1 path", child11.getPath(), is("/apps/full-coverage/parent-1/child-1-1"));
+        assertThat("child-1-1 path", child11.getPath(), is(new RepositoryPath("/apps/full-coverage/parent-1/child-1-1")));
         assertThat("child-1-1 properties[jcr:title]", child11.getProperties(),
                 hasEntry("jcr:title", (Object) "Child 1-1"));
 
@@ -246,11 +241,11 @@ public class ResourceProxyParserHandlerTest {
 
     static class ResourceChildPathMatcher extends TypeSafeMatcher<Iterable<? extends ResourceProxy>> {
 
-        private final String resourcePath;
+        private final RepositoryPath resourcePath;
 
         private ResourceChildPathMatcher(String resourcePath) {
 
-            this.resourcePath = resourcePath;
+            this.resourcePath = new RepositoryPath(resourcePath);
         }
 
         @Override

@@ -31,7 +31,6 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.nodetype.NodeType;
 
-import org.apache.jackrabbit.util.Text;
 import org.apache.sling.ide.log.Logger;
 import org.apache.sling.ide.transport.ResourceProxy;
 
@@ -53,12 +52,12 @@ public class ReorderChildNodesCommand extends JcrCommand<Void> {
     @Override
     protected Void execute0(Session session) throws RepositoryException, IOException {
 
-        boolean nodeExists = session.nodeExists(getPath());
+        boolean nodeExists = session.nodeExists(getPath().asString());
         if (!nodeExists) {
             return null;
         }
 
-        Node node = session.getNode(getPath());
+        Node node = session.getNode(getPath().asString());
 
         NodeType primaryNodeType = node.getPrimaryNodeType();
 
@@ -93,7 +92,7 @@ public class ReorderChildNodesCommand extends JcrCommand<Void> {
         }
 
         for (ResourceProxy childResources : children) {
-            resourceChildNames.add(Text.getName(childResources.getPath()));
+            resourceChildNames.add(childResources.getPath().getName());
         }
         ListIterator<Node> nodeChildrenListIt = nodeChildren.listIterator();
 
@@ -116,7 +115,7 @@ public class ReorderChildNodesCommand extends JcrCommand<Void> {
             Node childNode = nodeChildrenListIt.next();
 
             // order is as expected, skip reordering
-            if (Text.getName(childResource.getPath()).equals(childNode.getName())) {
+            if (childResource.getPath().getName().equals(childNode.getName())) {
                 // descend into covered child resources once they are properly arranged and perform reordering
                 if (resourceToReorder.covers(childResource.getPath())) {
                     reorderChildNodes(childNode, childResource);
@@ -133,16 +132,16 @@ public class ReorderChildNodesCommand extends JcrCommand<Void> {
 
             String expectedParentName;
             if (childrenIterator.hasNext()) {
-                expectedParentName = Text.getName(childrenIterator.next().getPath());
+                expectedParentName = childrenIterator.next().getPath().getName();
                 childrenIterator.previous(); // move back
             } else {
                 expectedParentName = null;
             }
 
             getLogger().trace("For node at {0} ordering {1} before {2}", nodeToReorder.getPath(),
-                    Text.getName(childResource.getPath()), expectedParentName);
+                    childResource.getPath().getName(), expectedParentName);
 
-            nodeToReorder.orderBefore(Text.getName(childResource.getPath()), expectedParentName);
+            nodeToReorder.orderBefore(childResource.getPath().getName(), expectedParentName);
         }
     }
 

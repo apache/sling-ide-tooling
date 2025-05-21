@@ -32,6 +32,7 @@ import org.apache.sling.ide.impl.vlt.DeleteNodeCommand;
 import org.apache.sling.ide.impl.vlt.GetNodeContentCommand;
 import org.apache.sling.ide.impl.vlt.ReorderChildNodesCommand;
 import org.apache.sling.ide.transport.Command;
+import org.apache.sling.ide.transport.RepositoryPath;
 import org.apache.sling.ide.transport.ResourceProxy;
 import org.apache.sling.ide.transport.impl.DefaultBatcher;
 import org.hamcrest.Matchers;
@@ -69,9 +70,9 @@ public class DefaultBatcherTest {
     
     private void testMoreComprehensiveDeletesAreCompacted(String expected, String firstPath, String... otherPaths) {
 
-        batcher.add(new DeleteNodeCommand(mockRepo, credentials, firstPath, null));
+        batcher.add(new DeleteNodeCommand(mockRepo, credentials, new RepositoryPath(firstPath), null));
         for ( String otherPath: otherPaths) {
-            batcher.add(new DeleteNodeCommand(mockRepo, credentials, otherPath, null));
+            batcher.add(new DeleteNodeCommand(mockRepo, credentials, new RepositoryPath(otherPath), null));
         }
         
         List<Command<?>> batched = batcher.get();
@@ -79,14 +80,14 @@ public class DefaultBatcherTest {
         assertThat(batched, hasSize(1));
         Command<?> command = batched.get(0);
         assertThat(command, instanceOf(DeleteNodeCommand.class));
-        assertThat(command.getPath(), equalTo(expected));
+        assertThat(command.getPath().asString(), equalTo(expected));
     }
 
     @Test
     public void unrelatedDeletesAreNotCompacted() {
         
-        assertCommandsAreNotCompacted(new DeleteNodeCommand(mockRepo, credentials, "/content/branch", null), 
-                new DeleteNodeCommand(mockRepo, credentials, "/content/sub", null));
+        assertCommandsAreNotCompacted(new DeleteNodeCommand(mockRepo, credentials, new RepositoryPath("/content/branch"), null), 
+                new DeleteNodeCommand(mockRepo, credentials, new RepositoryPath("/content/sub"), null));
     }
     
     public void assertCommandsAreNotCompacted(Command<?> first, Command<?> second) {
@@ -104,7 +105,7 @@ public class DefaultBatcherTest {
     
     @Test
     public void dataIsClearedBetweenCalls() {
-        batcher.add(new DeleteNodeCommand(mockRepo, credentials, "/content/branch", null));
+        batcher.add(new DeleteNodeCommand(mockRepo, credentials, new RepositoryPath("/content/branch"), null));
         batcher.get();
         assertThat(batcher.get(), hasSize(0));
     }
@@ -112,8 +113,8 @@ public class DefaultBatcherTest {
     @Test
     public void identicalAddOrUpdatesAreCompacted() {
         
-        AddOrUpdateNodeCommand first = new AddOrUpdateNodeCommand(mockRepo, credentials, null, null, new ResourceProxy("/content"), null);
-        AddOrUpdateNodeCommand second = new AddOrUpdateNodeCommand(mockRepo, credentials, null, null, new ResourceProxy("/content"), null);
+        AddOrUpdateNodeCommand first = new AddOrUpdateNodeCommand(mockRepo, credentials, null, null, newResource("/content"), null);
+        AddOrUpdateNodeCommand second = new AddOrUpdateNodeCommand(mockRepo, credentials, null, null, newResource("/content"), null);
         
         batcher.add(first);
         batcher.add(second);
@@ -123,22 +124,22 @@ public class DefaultBatcherTest {
         assertThat(batched, hasSize(1));
         Command<?> command = batched.get(0);
         assertThat(command, instanceOf(AddOrUpdateNodeCommand.class));
-        assertThat(command.getPath(), equalTo("/content"));
+        assertThat(command.getPath().asString(), equalTo("/content"));
         
     }
 
     @Test
     public void unrelatedAddOrUpdatesAreNotCompacted() {
         
-        assertCommandsAreNotCompacted(new AddOrUpdateNodeCommand(mockRepo, credentials, null, null, new ResourceProxy("/content/a"), null), 
-                new AddOrUpdateNodeCommand(mockRepo, credentials, null, null, new ResourceProxy("/content/b"), null));
+        assertCommandsAreNotCompacted(new AddOrUpdateNodeCommand(mockRepo, credentials, null, null, newResource("/content/a"), null), 
+                new AddOrUpdateNodeCommand(mockRepo, credentials, null, null, newResource("/content/b"), null));
     }
 
     @Test
     public void identicalsReorderingsAreCompacted() {
         
-        ReorderChildNodesCommand first = new ReorderChildNodesCommand(mockRepo, credentials, new ResourceProxy("/content"), null);
-        ReorderChildNodesCommand second = new ReorderChildNodesCommand(mockRepo, credentials,new ResourceProxy("/content"), null);
+        ReorderChildNodesCommand first = new ReorderChildNodesCommand(mockRepo, credentials, newResource("/content"), null);
+        ReorderChildNodesCommand second = new ReorderChildNodesCommand(mockRepo, credentials,newResource("/content"), null);
         
         batcher.add(first);
         batcher.add(second);
@@ -148,20 +149,24 @@ public class DefaultBatcherTest {
         assertThat(batched, hasSize(1));
         Command<?> command = batched.get(0);
         assertThat(command, instanceOf(ReorderChildNodesCommand.class));
-        assertThat(command.getPath(), equalTo("/content"));
+        assertThat(command.getPath().asString(), equalTo("/content"));
     }
     
     @Test
     public void unrelatedReorderingsAreNotCompacted() {
         
-        assertCommandsAreNotCompacted(new ReorderChildNodesCommand(mockRepo, credentials, new ResourceProxy("/content/a"), null), 
-                new ReorderChildNodesCommand(mockRepo, credentials,new ResourceProxy("/content/b"), null));
+        assertCommandsAreNotCompacted(new ReorderChildNodesCommand(mockRepo, credentials, newResource("/content/a"), null), 
+                new ReorderChildNodesCommand(mockRepo, credentials,newResource("/content/b"), null));
     }
     
     @Test
     public void unhandledCommandIsReturnedAsIs() {
         
-        assertCommandsAreNotCompacted(new GetNodeContentCommand(mockRepo, credentials, "/content", null), 
-                new GetNodeContentCommand(mockRepo, credentials, "/content", null));
+        assertCommandsAreNotCompacted(new GetNodeContentCommand(mockRepo, credentials, new RepositoryPath("/content"), null), 
+                new GetNodeContentCommand(mockRepo, credentials, new RepositoryPath("/content"), null));
+    }
+    
+    private ResourceProxy newResource(String path) {
+        return new ResourceProxy(new RepositoryPath(path));
     }
 }

@@ -106,7 +106,7 @@ public interface Repository {
      */
     Command<Void> newReorderChildNodesCommand(ResourceProxy resourceProxy);
 	
-    Command<Void> newDeleteNodeCommand(String path);
+    Command<Void> newDeleteNodeCommand(RepositoryPath path);
  
     /**
      * Retrieves information about the resource located at <tt>path</tt> and its direct descendants
@@ -114,7 +114,7 @@ public interface Repository {
      * @param path
      * @return a <tt>ResourceProxy</tt> rooted at <tt>path</tt> and its direct descendants
      */
-    Command<ResourceProxy> newListChildrenNodeCommand(String path);
+    Command<ResourceProxy> newListChildrenNodeCommand(RepositoryPath path);
  	
     /**
      * Retrieves all properties of a resource located at <tt>path</tt>
@@ -122,9 +122,9 @@ public interface Repository {
      * @param path
      * @return all properties for the resource located at <tt>path</tt>
      */
-    Command<ResourceProxy> newGetNodeContentCommand(String path);
+    Command<ResourceProxy> newGetNodeContentCommand(RepositoryPath path);
 
-	Command<byte[]> newGetNodeCommand(String path);
+	Command<byte[]> newGetNodeCommand(RepositoryPath path);
 	
 	/**
 	 * Returns the node type registry - when the underlying server is started -

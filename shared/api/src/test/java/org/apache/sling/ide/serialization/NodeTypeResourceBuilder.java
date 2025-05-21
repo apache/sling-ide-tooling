@@ -16,19 +16,14 @@
  */
 package org.apache.sling.ide.serialization;
 
+import org.apache.sling.ide.transport.RepositoryPath;
 import org.apache.sling.ide.transport.ResourceProxy;
 
 public class NodeTypeResourceBuilder {
 
     public static NodeTypeResourceBuilder newBuilder(ResourceProxy parent, String name) {
 
-        String path;
-
-        if (parent.getPath().endsWith("/")) {
-            path = parent.getPath() + name;
-        } else {
-            path = parent.getPath() + "/" + name;
-        }
+        RepositoryPath path = parent.getPath().addChild(name);
 
         ResourceProxy resourceProxy = new ResourceProxy(path);
         // set defaults

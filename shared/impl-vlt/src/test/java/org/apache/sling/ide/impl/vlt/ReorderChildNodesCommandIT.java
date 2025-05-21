@@ -28,6 +28,7 @@ import javax.jcr.NodeIterator;
 import javax.jcr.Session;
 
 import org.apache.sling.ide.log.Logger;
+import org.apache.sling.ide.transport.RepositoryPath;
 import org.apache.sling.ide.transport.ResourceProxy;
 import org.junit.Rule;
 import org.junit.Test;
@@ -115,7 +116,7 @@ public class ReorderChildNodesCommandIT {
 
     private ResourceProxy newResource(String path, String primaryType) {
 
-        ResourceProxy resource = new ResourceProxy(path);
+        ResourceProxy resource = new ResourceProxy(new RepositoryPath(path));
         resource.addProperty("jcr:primaryType", primaryType);
         return resource;
     }
