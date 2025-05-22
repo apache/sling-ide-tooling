@@ -36,6 +36,7 @@ import org.apache.sling.ide.transport.Command;
 import org.apache.sling.ide.transport.Repository;
 import org.apache.sling.ide.transport.RepositoryFactory;
 import org.apache.sling.ide.transport.RepositoryInfo;
+import org.apache.sling.ide.transport.RepositoryPath;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
@@ -76,7 +77,7 @@ public class ContentSync {
         
         Repository repo = repoFactory.connectRepository(new RepositoryInfo(cfg.username(), cfg.password(), URI.create(cfg.repositoryUrl())));
         
-        repo.newListChildrenNodeCommand("/").execute();
+        repo.newListChildrenNodeCommand(new RepositoryPath("/")).execute();
         
         logger.trace("Connected to {0} ", repo.getRepositoryInfo());
         
