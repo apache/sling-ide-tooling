@@ -199,7 +199,6 @@
         <setEntry value="org.apache.sling.ide.eclipse-m2e-test@default:false"/>
         <setEntry value="org.apache.sling.ide.eclipse-m2e-ui@default:default"/>
         <setEntry value="org.apache.sling.ide.eclipse-ui@default:default"/>
-        <setEntry value="org.apache.sling.ide.impl-resource@default:default"/>
         <setEntry value="org.apache.sling.ide.impl-vlt@default:default"/>
         <setEntry value="org.apache.sling.ide.vlt-wrapper@default:default"/>
     </setAttribute>
@@ -208,7 +207,6 @@
     <booleanAttribute key="tracing" value="false"/>
     <mapAttribute key="tracingOptions">
         <mapEntry key="org.apache.sling.ide.eclipse-core/debug" value="true"/>
-        <mapEntry key="org.apache.sling.ide.impl-resource/debug" value="true"/>
         <mapEntry key="org.eclipse.core.contenttype/debug" value="false"/>
         <mapEntry key="org.eclipse.core.expressions/debug/TypeExtensionManager" value="false"/>
         <mapEntry key="org.eclipse.core.expressions/tracePropertyResolving" value="false"/>
