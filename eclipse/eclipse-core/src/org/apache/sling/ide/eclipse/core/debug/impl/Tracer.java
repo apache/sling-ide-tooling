@@ -22,14 +22,18 @@ import org.apache.sling.ide.eclipse.core.logger.LogSubscriber;
 import org.eclipse.osgi.service.debug.DebugOptions;
 import org.eclipse.osgi.service.debug.DebugOptionsListener;
 import org.eclipse.osgi.service.debug.DebugTrace;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceRegistration;
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
 
 /**
  * The <tt>Tracer</tt> is the default implementation of the <tt>Logger</tt>.
  * 
  */
 @Component(property = DebugOptions.LISTENER_SYMBOLICNAME + "="
-		+ Tracer.BUNDLE_SYMBOLIC_NAME)
+		+ Tracer.BUNDLE_SYMBOLIC_NAME, service = LogSubscriber.class)
 public class Tracer implements DebugOptionsListener, LogSubscriber {
 
 	protected static final String BUNDLE_SYMBOLIC_NAME = "org.apache.sling.ide.eclipse-core";
@@ -37,6 +41,19 @@ public class Tracer implements DebugOptionsListener, LogSubscriber {
     private boolean consoleEnabled;
     private boolean performanceEnabled;
     private DebugTrace trace;
+
+    private ServiceRegistration<DebugOptionsListener> debugOptionsListenerRegistration;
+
+    @Activate
+    public void activate(BundleContext context) {
+        // defer registration of the DebugOptionsListener service until this component is activated, otherwise this bundle is eagerly loaded by Equinox
+        context.registerService(DebugOptionsListener.class, this, null);
+    }
+
+    @Deactivate
+    public void deactivate(BundleContext context) {
+        debugOptionsListenerRegistration.unregister();
+    }
 
     @Override
     public void optionsChanged(DebugOptions options) {

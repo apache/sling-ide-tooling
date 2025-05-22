@@ -60,22 +60,10 @@ public class Activator extends Plugin {
     private ExtendedServiceTracker<SyncCommandFactory> commandFactory;
     
     private Preferences preferences;
-    
-    public static final String BSN_VAULT_IMPL = "org.apache.sling.ide.impl-vlt";
-    public static final String BSN_API = "org.apache.sling.ide.api";
-    public static final String BSN_ARTIFACTS = "org.apache.sling.ide.artifacts";
 
 	public void start(BundleContext context) throws Exception {
-		super.start(context);
-		plugin = this;
-		
-		// the following bundles need to be explicitly started as no class is directly referenced
-		// and everything works via declarative services
-		// compare with https://github.com/eclipse-m2e/m2e-core/issues/945
-		getFirstBundle(context, BSN_API).start();
-		getFirstBundle(context, BSN_VAULT_IMPL).start();
-		getFirstBundle(context, BSN_ARTIFACTS).start();
-		
+        super.start(context);
+        plugin = this;
         repositoryFactory = new ExtendedServiceTracker<>(context, RepositoryFactory.class);
         serializationManager = new ExtendedServiceTracker<>(context, SerializationManager.class);
         filterLocator = new ExtendedServiceTracker<>(context, FilterLocator.class);
@@ -85,16 +73,6 @@ public class Activator extends Plugin {
         batcherFactoryLocator = new ExtendedServiceTracker<>(context, BatcherFactory.class);
         sourceReferenceLocator = new ExtendedServiceTracker<>(context, SourceReferenceResolver.class);
         commandFactory = new ExtendedServiceTracker<>(context, SyncCommandFactory.class);
-	}
-
-	static Bundle getFirstBundle(BundleContext bundleContext, String bundleSymbolicName)
-	{
-		for (Bundle bundle : bundleContext.getBundles()) {
-			if (bundleSymbolicName.equals(bundle.getSymbolicName())) {
-				return bundle;
-			}
-		}
-		throw new IllegalStateException("Bundle with Bundle-SymbolicName '" + bundleSymbolicName + "' could not be found. Something went wrong during installation");
 	}
 
 	/*
