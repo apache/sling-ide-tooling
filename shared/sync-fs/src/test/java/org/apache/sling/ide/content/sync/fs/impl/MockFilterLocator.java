@@ -24,13 +24,14 @@ import java.nio.file.Paths;
 import org.apache.sling.ide.filter.Filter;
 import org.apache.sling.ide.filter.FilterLocator;
 import org.apache.sling.ide.filter.FilterResult;
+import org.apache.sling.ide.transport.RepositoryPath;
 
 public class MockFilterLocator implements FilterLocator {
 
     public static final Filter MOCK_FILTER = new Filter() {
         
         @Override
-        public FilterResult filter(String repositoryPath) {
+        public FilterResult filter(RepositoryPath repositoryPath) {
             return FilterResult.ALLOW;
         }
     };

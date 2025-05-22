@@ -73,7 +73,7 @@ public class DefaultSyncCommandFactory implements SyncCommandFactory {
         }
         
         WorkspacePath resourceLocalPath = resource.getPathRelativeToSyncDir().absolute();
-        String repositoryPath = resourceLocalPath.asPortableString();
+        RepositoryPath repositoryPath = serializationManager.getRepositoryPath(resourceLocalPath);
 
         FilterResult filterResult = resource.getProject().getFilter().filter(repositoryPath);
         

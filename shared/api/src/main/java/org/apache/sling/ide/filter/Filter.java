@@ -27,11 +27,5 @@ public interface Filter {
      * 
      * @return the filter result, never <code>null</code>
      */
-    // TODO - remove?
-    @Deprecated
-    FilterResult filter(String repositoryPath);
-    
-    default FilterResult filter(RepositoryPath repositoryPath) {
-        return filter(repositoryPath.asString());
-    }
+    FilterResult filter(RepositoryPath repositoryPath);
 }

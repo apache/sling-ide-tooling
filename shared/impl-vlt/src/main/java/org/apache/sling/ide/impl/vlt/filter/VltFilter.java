@@ -25,6 +25,7 @@ import org.apache.jackrabbit.vault.fs.config.DefaultWorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.impl.AggregateManagerImpl;
 import org.apache.sling.ide.filter.Filter;
 import org.apache.sling.ide.filter.FilterResult;
+import org.apache.sling.ide.transport.RepositoryPath;
 
 public class VltFilter implements Filter {
 
@@ -42,18 +43,16 @@ public class VltFilter implements Filter {
     }
 
     @Override
-    public FilterResult filter(String relativeFilePath) {
+    public FilterResult filter(RepositoryPath repositoryPath) {
+        
+        String pathAsString = repositoryPath.asString();
 
-        if (relativeFilePath.length() > 0 && relativeFilePath.charAt(0) != '/') {
-            relativeFilePath = '/' + relativeFilePath;
-        }
-
-        if (filter.contains(relativeFilePath)) {
+        if (filter.contains(pathAsString)) {
             return FilterResult.ALLOW;
         }
 
         for (PathFilterSet pathFilterSet : filter.getFilterSets()) {
-            if (pathFilterSet.getRoot().startsWith(relativeFilePath)) {
+            if (pathFilterSet.getRoot().startsWith(pathAsString)) {
                 return FilterResult.PREREQUISITE;
             }
         }

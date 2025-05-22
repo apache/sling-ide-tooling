@@ -147,7 +147,7 @@ public class AddOrUpdateNodeCommand extends JcrCommand<Void> {
             }
 
             if ( context.filter() != null 
-                    && context.filter(). filter(child.getPath()) == FilterResult.DENY ) {
+                    && context.filter(). filter(new RepositoryPath(child.getPath())) == FilterResult.DENY ) {
                 getLogger().trace("Not deleting node at {0} since it is not included in the filter", child.getPath());
                 continue;
             }

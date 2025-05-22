@@ -41,7 +41,7 @@ public class AddOrUpdateNodeCommandIT {
 
 	private static final CommandContext DEFAULT_CONTEXT = new CommandContext(new Filter() {
 		@Override
-		public FilterResult filter(String repositoryPath) {
+		public FilterResult filter(RepositoryPath repositoryPath) {
 			return FilterResult.ALLOW;
 		}
 	});
@@ -208,8 +208,8 @@ public class AddOrUpdateNodeCommandIT {
 		final CommandContext context = new CommandContext(new Filter() {
 
 			@Override
-			public FilterResult filter(String repositoryPath) {
-				if (repositoryPath.equals("/content/not-included-child")) {
+			public FilterResult filter(RepositoryPath repositoryPath) {
+				if (repositoryPath.asString().equals("/content/not-included-child")) {
 					return FilterResult.DENY;
 				}
 
