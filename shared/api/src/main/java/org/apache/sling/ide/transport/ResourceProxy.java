@@ -122,12 +122,6 @@ public class ResourceProxy {
 
         return false;
     }
-    
-    // TODO - remove?
-    @Deprecated
-    public boolean covers(String path) {
-        return covers(new RepositoryPath(path));
-    }
 
     public ResourceProxy getChild(RepositoryPath path) {
         for (ResourceProxy child : getChildren()) {

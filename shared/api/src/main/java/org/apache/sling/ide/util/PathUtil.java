@@ -16,6 +16,17 @@
  */
 package org.apache.sling.ide.util;
 
+import org.apache.sling.ide.serialization.SerializationManager;
+import org.apache.sling.ide.sync.content.WorkspacePath;
+import org.apache.sling.ide.transport.RepositoryPath;
+
+/**
+ * Utility class that provides implementations useful for both {@link WorkspacePath} and {@link RepositoryPath}
+ * 
+ * <p><strong>NOTE:</strong> The two path implementations are intentionally kept separate to avoid confusion about
+ * which kind of path is being used. Conversions must be done via {@link SerializationManager#getRepositoryPath(WorkspacePath)}
+ * and not fall back on the String form of the paths.</p>
+ */
 public class PathUtil {
 
     public static String join(String first, String second) {
@@ -69,5 +80,34 @@ public class PathUtil {
         }
         
         return false;
+    }
+    
+    public static boolean isParent(String parentPath, String childPath) {
+
+        if (!isDescendent(parentPath, childPath)) {
+            return false;
+        }
+
+        for (int i = parentPath.length() + 1; i < childPath.length(); i++) {
+            if (childPath.charAt(i) == '/') {
+                return false;
+            }
+        }
+
+        return true;
+    }
+    
+    public static boolean isDescendent(String parentPath, String childPath) {
+        
+        if (parentPath.equals("/")) {
+            return childPath.length() > 1;
+        }
+
+        return parentPath.length() < childPath.length() && childPath.charAt(parentPath.length()) == '/'
+                    && childPath.startsWith(parentPath);
+    }
+    
+    private PathUtil() {
+        
     }
 }

@@ -32,7 +32,7 @@ public class ResourceProxyTest {
         ResourceProxy r = new ResourceProxy(PATH_CONTENT);
         r.addChild(newResource("/content/test", "nt:unstructured"));
 
-        assertThat(r.covers("/content/test"), is(true));
+        assertThat(r.covers(new RepositoryPath("/content/test")), is(true));
     }
 
     @Test
@@ -44,7 +44,7 @@ public class ResourceProxyTest {
 
         child.addChild(newResource("/content/test/en", "nt:unstructured"));
 
-        assertThat(r.covers("/content/test/en"), is(true));
+        assertThat(r.covers(new RepositoryPath("/content/test/en")), is(true));
     }
 
     @Test
@@ -60,7 +60,7 @@ public class ResourceProxyTest {
 
         grandChild.addChild(newResource("/content/test/en/welcome", "nt:unstructured"));
 
-        assertThat(r.covers("/content/test/en/welcome"), is(true));
+        assertThat(r.covers(new RepositoryPath("/content/test/en/welcome")), is(true));
     }
 
     @Test
@@ -69,7 +69,7 @@ public class ResourceProxyTest {
         ResourceProxy r = new ResourceProxy(PATH_CONTENT);
         r.addChild(new ResourceProxy(PATH_CONTENT.addChild("test")));
 
-        assertThat(r.covers("/content/test"), is(false));
+        assertThat(r.covers(new RepositoryPath("/content/test")), is(false));
     }
 
     @Test
@@ -81,7 +81,7 @@ public class ResourceProxyTest {
 
         child.addChild(new ResourceProxy(PATH_CONTENT.addChild("test").addChild("en")));
 
-        assertThat(r.covers("/content/test/en"), is(false));
+        assertThat(r.covers(new RepositoryPath("/content/test/en")), is(false));
     }
 
     @Test

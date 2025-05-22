@@ -30,7 +30,7 @@ import org.apache.sling.ide.eclipse.ui.nav.model.SyncDir;
 import org.apache.sling.ide.test.impl.helpers.DisableDebugStatusHandlers;
 import org.apache.sling.ide.test.impl.helpers.ProjectAdapter;
 import org.apache.sling.ide.test.impl.helpers.TemporaryProject;
-import org.apache.sling.ide.util.PathUtil;
+import org.apache.sling.ide.transport.RepositoryPath;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.Path;
@@ -176,7 +176,7 @@ public class JcrContentContentProviderTest {
             for ( Object child : children ) {
                 JcrNode childNode = (JcrNode) child;
                 // childNode.getName() does not seem to be usable here, so relying on the path
-                String childName = PathUtil.getName(childNode.getJcrPath());
+                String childName = new RepositoryPath(childNode.getJcrPath()).getName();
                 if ( childName.equals(expectedChildName)) {
                     current = childNode;
                     continue segments;

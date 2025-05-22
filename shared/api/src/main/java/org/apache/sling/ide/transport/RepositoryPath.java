@@ -20,32 +20,15 @@ import java.util.Objects;
 
 import org.apache.sling.ide.util.PathUtil;
 
+/**
+ * A path in the remote repository
+ * 
+ * <p>The repository path always uses the forward slash ( <tt>/</tt> ) for separating segments.</p>
+ * 
+ * @see {@link PathUtil}
+ */
 public class RepositoryPath {
     
-    private static boolean isParent(String parentPath, String childPath) {
-
-        if (!isDescendent(parentPath, childPath)) {
-            return false;
-        }
-
-        for (int i = parentPath.length() + 1; i < childPath.length(); i++) {
-            if (childPath.charAt(i) == '/') {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    private static boolean isDescendent(String parentPath, String childPath) {
-        if (parentPath.equals("/")) {
-            return childPath.length() > 1;
-        }
-
-        return parentPath.length() < childPath.length() && childPath.charAt(parentPath.length()) == '/'
-                    && childPath.startsWith(parentPath);
-    }
-
     private final String path;
 
     public RepositoryPath(String path) {
@@ -53,12 +36,12 @@ public class RepositoryPath {
         if (path == null || path.isEmpty() || !path.startsWith("/"))
             throw new IllegalArgumentException("Invalid repository path: " + path);
         
+        // TODO - more validations
         this.path = path;
     }
     
     public boolean isParent(RepositoryPath maybeChild) {
-     // TODO - should validate for direct parent
-        return isParent(asString(), maybeChild.asString());
+        return PathUtil.isParent(asString(), maybeChild.asString());
     }
 
     public boolean isAncestor(RepositoryPath other) {
@@ -66,7 +49,7 @@ public class RepositoryPath {
     }    
     
     public boolean isDescendent(RepositoryPath other) {
-        return isDescendent(asString(), other.asString());
+        return PathUtil.isDescendent(asString(), other.asString());
     }
     
     public String getName() {
@@ -78,8 +61,7 @@ public class RepositoryPath {
     }
     
     public RepositoryPath addChild(String name) {
-        // TODO - validate name
-        return new RepositoryPath(path + "/" + name);
+        return new RepositoryPath(PathUtil.join(path, name));
     }
     
     public String asString() {
