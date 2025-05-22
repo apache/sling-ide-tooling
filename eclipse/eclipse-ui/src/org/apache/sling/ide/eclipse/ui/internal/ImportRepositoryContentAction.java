@@ -44,6 +44,7 @@ import org.apache.sling.ide.serialization.SerializationKind;
 import org.apache.sling.ide.serialization.SerializationKindManager;
 import org.apache.sling.ide.serialization.SerializationManager;
 import org.apache.sling.ide.sync.content.SyncCommandFactory;
+import org.apache.sling.ide.sync.content.WorkspacePath;
 import org.apache.sling.ide.transport.Command;
 import org.apache.sling.ide.transport.Repository;
 import org.apache.sling.ide.transport.RepositoryException;
@@ -256,8 +257,10 @@ public class ImportRepositoryContentAction {
             throws RepositoryException, CoreException, IOException, SerializationException {
 
         logger.trace("crawlChildrenAndImport({0},  {1}, {2}, {3}", repository, path, project, projectRelativePath);
+        
+        RepositoryPath repositoryPath = serializationManager.getRepositoryPath(new WorkspacePath(path));
 
-        ResourceProxy resource = executeCommand(repository.newListChildrenNodeCommand(path));
+        ResourceProxy resource = executeCommand(repository.newListChildrenNodeCommand(repositoryPath));
         
         SerializationData serializationData = builder.buildSerializationData(contentSyncRoot, resource);
         logger.trace("For resource at path {0} got serialization data {1}", resource.getPath(), serializationData);
@@ -270,7 +273,7 @@ public class ImportRepositoryContentAction {
 	
 	        switch (serializationData.getSerializationKind()) {
 	            case FILE: {
-	                byte[] contents = executeCommand(repository.newGetNodeCommand(path));
+	                byte[] contents = executeCommand(repository.newGetNodeCommand(repositoryPath));
                     createFile(project, getPathForPlainFileNode(resource, serializationFolderPath), contents);
 	
 	                if (serializationData.hasContents()) {
@@ -299,7 +302,7 @@ public class ImportRepositoryContentAction {
 
                                     // 2. recursively handle all resources
                                     for (ResourceProxy grandChild : reloadedChildResource.getChildren()) {
-                                        crawlChildrenAndImport(grandChild.getPath());
+                                        crawlChildrenAndImport(path + "/" + serializationManager.getLocalName(child.getPath().getName()) + "/" + serializationManager.getLocalName(grandChild.getPath().getName()));
                                     }
                                 }
 	                            
@@ -357,7 +360,7 @@ public class ImportRepositoryContentAction {
                 }
             }
 
-            crawlChildrenAndImport(child.getPath());
+            crawlChildrenAndImport(path + "/" + serializationManager.getLocalName(child.getPath().getName()));
         }
     }
 

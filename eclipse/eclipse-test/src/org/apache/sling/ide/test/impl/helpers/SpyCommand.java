@@ -23,6 +23,7 @@ import java.util.Set;
 import org.apache.sling.ide.sync.content.WorkspaceFile;
 import org.apache.sling.ide.transport.Command;
 import org.apache.sling.ide.transport.Repository.CommandExecutionFlag;
+import org.apache.sling.ide.transport.RepositoryPath;
 import org.apache.sling.ide.transport.ResourceProxy;
 import org.apache.sling.ide.transport.Result;
 
@@ -41,11 +42,11 @@ public class SpyCommand<T> implements Command<T> {
 
     private final ResourceProxy resourceProxy;
     private final WorkspaceFile fileInfo;
-    private final String path;
+    private final RepositoryPath path;
     private final SpyCommand.Kind kind;
     private final EnumSet<CommandExecutionFlag> flags;
 
-    public SpyCommand(ResourceProxy resourceProxy, WorkspaceFile fileInfo, String path, SpyCommand.Kind kind,
+    public SpyCommand(ResourceProxy resourceProxy, WorkspaceFile fileInfo, RepositoryPath path, SpyCommand.Kind kind,
             CommandExecutionFlag... flags) {
         this.resourceProxy = resourceProxy;
         this.fileInfo = fileInfo;
@@ -61,7 +62,7 @@ public class SpyCommand<T> implements Command<T> {
     }
 
     @Override
-    public String getPath() {
+    public RepositoryPath getPath() {
         return path;
     }
 
