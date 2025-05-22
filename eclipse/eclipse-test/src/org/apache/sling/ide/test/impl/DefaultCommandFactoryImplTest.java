@@ -105,14 +105,14 @@ public class DefaultCommandFactoryImplTest {
         SpyCommand<?> command = (SpyCommand<?>) factory.newCommandForAddedOrUpdatedResource(spyRepo,
                 EclipseResources.create(contentProject.findMember("jcr_root/content/test-root/nested/gitignore")));
         assertThat("command.path", command.getPath(), nullValue());
-        assertThat("command.resource.path", command.getResourceProxy().getPath(), equalTo("/content/test-root/nested/gitignore"));
+        assertThat("command.resource.path", command.getResourceProxy().getPath().asString(), equalTo("/content/test-root/nested/gitignore"));
         assertThat("command.resource.properties", command.getResourceProxy().getProperties(),
                 equalTo(singletonMap("jcr:primaryType", (Object) "nt:file")));
         assertThat("command.kind", command.getSpyKind(), equalTo(SpyCommand.Kind.ADD_OR_UPDATE));
         
         command = (SpyCommand<?>) factory.newCommandForRemovedResource(spyRepo,
                 EclipseResources.create(contentProject.findMember("jcr_root/content/test-root/nested/gitignore")));
-        assertThat("command.path", command.getPath(), equalTo("/content/test-root/nested/gitignore"));
+        assertThat("command.path", command.getPath().asString(), equalTo("/content/test-root/nested/gitignore"));
         assertThat("command.kind", command.getSpyKind(), equalTo(SpyCommand.Kind.DELETE));
     }
 
@@ -128,7 +128,7 @@ public class DefaultCommandFactoryImplTest {
                 EclipseResources.create(contentProject.findMember("jcr_root/content/test-root")));
 
         assertThat("command.path", command.getPath(), nullValue());
-        assertThat("command.resource.path", command.getResourceProxy().getPath(), equalTo("/content/test-root"));
+        assertThat("command.resource.path", command.getResourceProxy().getPath().asString(), equalTo("/content/test-root"));
         assertThat("command.resource.properties", command.getResourceProxy().getProperties(),
                 equalTo(singletonMap("jcr:primaryType", (Object) "nt:folder")));
         assertThat("command.fileinfo", command.getFileInfo(), nullValue());
@@ -151,7 +151,7 @@ public class DefaultCommandFactoryImplTest {
         props.put("jcr:title", "Some Folder");
 
         assertThat("command.path", command.getPath(), nullValue());
-        assertThat("command.resource.path", command.getResourceProxy().getPath(), equalTo("/content/test-root/nested"));
+        assertThat("command.resource.path", command.getResourceProxy().getPath().asString(), equalTo("/content/test-root/nested"));
         assertThat("command.resource.properties", command.getResourceProxy().getProperties(), equalTo(props));
         assertThat("command.fileinfo", command.getFileInfo(), nullValue());
         assertThat("command.kind", command.getSpyKind(), equalTo(SpyCommand.Kind.ADD_OR_UPDATE));

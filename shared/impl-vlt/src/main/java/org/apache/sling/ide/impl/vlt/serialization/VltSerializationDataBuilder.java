@@ -134,7 +134,7 @@ public class VltSerializationDataBuilder implements SerializationDataBuilder {
 
             SerializationKind serializationKind = getSerializationKind(aggregate);
 
-            if (resource.getPath().equals("/") || serializationKind == SerializationKind.METADATA_PARTIAL
+            if (resource.getPath().asString().equals("/") || serializationKind == SerializationKind.METADATA_PARTIAL
                     || serializationKind == SerializationKind.FILE || serializationKind == SerializationKind.FOLDER) {
                 nameHint = Constants.DOT_CONTENT_XML;
             } else if (serializationKind == SerializationKind.METADATA_FULL) {
@@ -335,7 +335,7 @@ public class VltSerializationDataBuilder implements SerializationDataBuilder {
         }
 
         for (Aggregate leaf : leaves) {
-            if (leaf.getPath().equals(resource.getPath())) {
+            if (leaf.getPath().equals(resource.getPath().asString())) {
                 chain.add(leaf);
                 return chain;
             } else if (Text.isDescendant(leaf.getPath(), resource.getPath().asString())) {

@@ -151,8 +151,10 @@ public class ImportRepositoryContentAction {
             recordNotIgnoredResources();
 
             ProgressUtils.advance(monitor, 1);
+            
+            RepositoryPath repositoryPath = serializationManager.getRepositoryPath(new WorkspacePath(repositoryImportRoot.toPortableString()));
 
-            crawlChildrenAndImport(repositoryImportRoot.toPortableString());
+            crawlChildrenAndImport(repositoryPath);
 
             removeNotIgnoredAndNotUpdatedResources(new NullProgressMonitor());
 
@@ -253,13 +255,10 @@ public class ImportRepositoryContentAction {
      * @throws IOException
      */
     // TODO: This probably should be pushed into the service layer
-    private void crawlChildrenAndImport(String path)
+    private void crawlChildrenAndImport(RepositoryPath repositoryPath)
             throws RepositoryException, CoreException, IOException, SerializationException {
 
-        logger.trace("crawlChildrenAndImport({0},  {1}, {2}, {3}", repository, path, project, projectRelativePath);
-        
-        RepositoryPath repositoryPath = serializationManager.getRepositoryPath(new WorkspacePath(path));
-
+        logger.trace("crawlChildrenAndImport({0},  {1}, {2}, {3}", repository, repositoryPath, project, projectRelativePath);
         ResourceProxy resource = executeCommand(repository.newListChildrenNodeCommand(repositoryPath));
         
         SerializationData serializationData = builder.buildSerializationData(contentSyncRoot, resource);
@@ -302,7 +301,7 @@ public class ImportRepositoryContentAction {
 
                                     // 2. recursively handle all resources
                                     for (ResourceProxy grandChild : reloadedChildResource.getChildren()) {
-                                        crawlChildrenAndImport(path + "/" + serializationManager.getLocalName(child.getPath().getName()) + "/" + serializationManager.getLocalName(grandChild.getPath().getName()));
+                                        crawlChildrenAndImport(grandChild.getPath());
                                     }
                                 }
 	                            
@@ -318,7 +317,7 @@ public class ImportRepositoryContentAction {
 
                     IFolder folder = createFolder(project, serializationFolderPath);
 
-                    parseIgnoreFiles(folder, path);
+                    parseIgnoreFiles(folder, repositoryPath.asString());
 
 	                if (serializationData.hasContents()) {
                         createFile(project, serializationFolderPath.append(serializationData.getFileName()),
@@ -360,7 +359,7 @@ public class ImportRepositoryContentAction {
                 }
             }
 
-            crawlChildrenAndImport(path + "/" + serializationManager.getLocalName(child.getPath().getName()));
+            crawlChildrenAndImport(child.getPath());
         }
     }
 
@@ -385,7 +384,7 @@ public class ImportRepositoryContentAction {
         return serializationFolderPath.removeLastSegments(1).append(name);
     }
 
-    private void parseIgnoreFiles(IFolder folder, String path) throws IOException, CoreException {
+    private void parseIgnoreFiles(IFolder folder, String repositoryPath) throws IOException, CoreException {
         // TODO - the parsing should be extracted
         IResource vltIgnore = folder.findMember(".vltignore");
         if (vltIgnore != null && vltIgnore instanceof IFile) {
@@ -396,8 +395,8 @@ public class ImportRepositoryContentAction {
             try (InputStream contents = ((IFile) vltIgnore).getContents()) {
                 List<String> ignoreLines = IOUtils.readLines(contents);
                 for (String ignoreLine : ignoreLines) {
-                    logger.trace("Registering ignore rule {0}:{1}", path, ignoreLine);
-                    ignoredResources.registerRegExpIgnoreRule(path, ignoreLine);
+                    logger.trace("Registering ignore rule {0}:{1}", repositoryPath, ignoreLine);
+                    ignoredResources.registerRegExpIgnoreRule(repositoryPath, ignoreLine);
                 }
             }
         }
