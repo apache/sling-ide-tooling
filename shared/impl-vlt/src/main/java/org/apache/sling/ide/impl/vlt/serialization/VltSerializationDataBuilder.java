@@ -134,7 +134,7 @@ public class VltSerializationDataBuilder implements SerializationDataBuilder {
 
             SerializationKind serializationKind = getSerializationKind(aggregate);
 
-            if (resource.getPath().equals("/") || serializationKind == SerializationKind.METADATA_PARTIAL
+            if (resource.getPath().asString().equals("/") || serializationKind == SerializationKind.METADATA_PARTIAL
                     || serializationKind == SerializationKind.FILE || serializationKind == SerializationKind.FOLDER) {
                 nameHint = Constants.DOT_CONTENT_XML;
             } else if (serializationKind == SerializationKind.METADATA_FULL) {
@@ -277,13 +277,13 @@ public class VltSerializationDataBuilder implements SerializationDataBuilder {
      */
     private List<Aggregate> findAggregateChain(ResourceProxy resource) throws IOException, RepositoryException {
 
-        VaultFile vaultFile = fs.getFile(PlatformNameFormat.getPlatformPath(resource.getPath()));
+        VaultFile vaultFile = fs.getFile(PlatformNameFormat.getPlatformPath(resource.getPath().asString()));
 
         if (vaultFile == null || vaultFile.getAggregate() == null) {
                 // this file might be a leaf aggregate of a vaultfile higher in the resource path ; so look for a
                 // parent higher
 
-            String parentPath = Text.getRelativeParent(resource.getPath(), 1);
+            String parentPath = resource.getPath().getParent().asString();
             while (!parentPath.equals("/")) {
                 VaultFile parentFile = fs.getFile(PlatformNameFormat.getPlatformPath(parentPath));
 
@@ -335,10 +335,10 @@ public class VltSerializationDataBuilder implements SerializationDataBuilder {
         }
 
         for (Aggregate leaf : leaves) {
-            if (leaf.getPath().equals(resource.getPath())) {
+            if (leaf.getPath().equals(resource.getPath().asString())) {
                 chain.add(leaf);
                 return chain;
-            } else if (Text.isDescendant(leaf.getPath(), resource.getPath())) {
+            } else if (Text.isDescendant(leaf.getPath(), resource.getPath().asString())) {
                 chain.add(leaf);
                 return lookForAggregateInLeaves(resource, leaf, chain);
             }

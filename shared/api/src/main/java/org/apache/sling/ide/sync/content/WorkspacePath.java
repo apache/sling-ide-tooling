@@ -26,6 +26,7 @@ import org.apache.sling.ide.util.PathUtil;
  * 
  * <p>The workspace path always uses the forward slash ( <tt>/</tt> ) for separating segments.</p>
  *
+ * @see {@link PathUtil}
  */
 public class WorkspacePath {
 

@@ -23,6 +23,7 @@ import org.apache.sling.ide.sync.content.WorkspaceFile;
 import org.apache.sling.ide.sync.content.WorkspacePath;
 import org.apache.sling.ide.sync.content.WorkspaceResource;
 import org.apache.sling.ide.transport.Repository;
+import org.apache.sling.ide.transport.RepositoryPath;
 import org.apache.sling.ide.transport.ResourceProxy;
 
 public interface SerializationManager {
@@ -52,7 +53,7 @@ public interface SerializationManager {
      * @param localPath the local path
      * @return the repository path
      */
-    String getRepositoryPath(WorkspacePath localPath);
+    RepositoryPath getRepositoryPath(WorkspacePath localPath);
 
     /**
      * Maps a repository name to a local name.

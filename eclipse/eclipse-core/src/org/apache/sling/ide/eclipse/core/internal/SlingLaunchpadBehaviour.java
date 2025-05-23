@@ -42,6 +42,7 @@ import org.apache.sling.ide.transport.Batcher;
 import org.apache.sling.ide.transport.Command;
 import org.apache.sling.ide.transport.Repository;
 import org.apache.sling.ide.transport.RepositoryInfo;
+import org.apache.sling.ide.transport.RepositoryPath;
 import org.apache.sling.ide.transport.ResourceProxy;
 import org.apache.sling.ide.transport.Result;
 import org.eclipse.core.resources.IFile;
@@ -63,7 +64,6 @@ import org.eclipse.wst.server.core.IServer;
 import org.eclipse.wst.server.core.model.IModuleResource;
 import org.eclipse.wst.server.core.model.IModuleResourceDelta;
 import org.eclipse.wst.server.core.model.ServerBehaviourDelegate;
-import org.osgi.framework.Constants;
 import org.osgi.framework.Version;
 
 public class SlingLaunchpadBehaviour extends ServerBehaviourDelegateWithModulePublishSupport {
@@ -128,7 +128,7 @@ public class SlingLaunchpadBehaviour extends ServerBehaviourDelegateWithModulePu
 	
 	            } else {
 	                
-	                Command<ResourceProxy> command = repository.newListChildrenNodeCommand("/");
+	                Command<ResourceProxy> command = repository.newListChildrenNodeCommand(new RepositoryPath("/"));
 	                result = command.execute();
 	                success = result.isSuccess();
 	                
@@ -592,9 +592,9 @@ public class SlingLaunchpadBehaviour extends ServerBehaviourDelegateWithModulePu
 
     private IResource getResource(IModuleResource resource) {
 
-        IResource file = (IFile) resource.getAdapter(IFile.class);
+        IResource file = resource.getAdapter(IFile.class);
         if (file == null) {
-            file = (IFolder) resource.getAdapter(IFolder.class);
+            file = resource.getAdapter(IFolder.class);
         }
 
         if (file == null) {

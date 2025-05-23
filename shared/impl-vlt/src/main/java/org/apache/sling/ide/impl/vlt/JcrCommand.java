@@ -36,6 +36,7 @@ import javax.jcr.Session;
 import org.apache.sling.ide.log.Logger;
 import org.apache.sling.ide.transport.Command;
 import org.apache.sling.ide.transport.Repository.CommandExecutionFlag;
+import org.apache.sling.ide.transport.RepositoryPath;
 import org.apache.sling.ide.transport.ResourceProxy;
 import org.apache.sling.ide.transport.Result;
 
@@ -43,11 +44,11 @@ public abstract class JcrCommand<T> implements Command<T> {
 
     private final Credentials credentials;
     private final Repository repository;
-    private final String path;
+    private final RepositoryPath path;
     private final Logger logger;
     private final EnumSet<CommandExecutionFlag> flags;
 
-    public JcrCommand(Repository repository, Credentials credentials, String path, Logger logger,
+    public JcrCommand(Repository repository, Credentials credentials, RepositoryPath path, Logger logger,
             CommandExecutionFlag... flags) {
 
         this.repository = repository;
@@ -84,7 +85,8 @@ public abstract class JcrCommand<T> implements Command<T> {
 
     protected abstract T execute0(Session session) throws RepositoryException, IOException;
 
-    public String getPath() {
+    @Override
+    public RepositoryPath getPath() {
         return path;
     }
 
@@ -92,6 +94,7 @@ public abstract class JcrCommand<T> implements Command<T> {
         return logger;
     }
 
+    @Override
     public Set<CommandExecutionFlag> getFlags() {
         return Collections.unmodifiableSet(flags);
     }
@@ -103,7 +106,7 @@ public abstract class JcrCommand<T> implements Command<T> {
 
     protected ResourceProxy nodeToResource(Node node) throws RepositoryException {
     
-        ResourceProxy resource = new ResourceProxy(node.getPath());
+        ResourceProxy resource = new ResourceProxy(new RepositoryPath(node.getPath()));
         resource.addAdapted(Node.class, node);
 
         PropertyIterator properties = node.getProperties();

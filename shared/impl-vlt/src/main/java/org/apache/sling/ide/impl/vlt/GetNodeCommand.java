@@ -30,17 +30,18 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 
 import org.apache.sling.ide.log.Logger;
+import org.apache.sling.ide.transport.RepositoryPath;
 
 public class GetNodeCommand extends JcrCommand<byte[]> {
     
-    public GetNodeCommand(Repository repository, Credentials credentials, String path, Logger logger) {
+    public GetNodeCommand(Repository repository, Credentials credentials, RepositoryPath path, Logger logger) {
         super(repository, credentials, path, logger);
     }
 
     @Override
     protected byte[] execute0(Session session) throws RepositoryException, IOException {
 
-        Node node = session.getNode(getPath());
+        Node node = session.getNode(getPath().asString());
 
         Property property;
         if (node.hasProperty("jcr:data")) {

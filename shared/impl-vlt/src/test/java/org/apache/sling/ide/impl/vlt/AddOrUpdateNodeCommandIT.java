@@ -30,6 +30,7 @@ import org.apache.sling.ide.filter.Filter;
 import org.apache.sling.ide.filter.FilterResult;
 import org.apache.sling.ide.log.Logger;
 import org.apache.sling.ide.transport.CommandContext;
+import org.apache.sling.ide.transport.RepositoryPath;
 import org.apache.sling.ide.transport.ResourceProxy;
 import org.hamcrest.Matchers;
 import org.junit.Ignore;
@@ -40,7 +41,7 @@ public class AddOrUpdateNodeCommandIT {
 
 	private static final CommandContext DEFAULT_CONTEXT = new CommandContext(new Filter() {
 		@Override
-		public FilterResult filter(String repositoryPath) {
+		public FilterResult filter(RepositoryPath repositoryPath) {
 			return FilterResult.ALLOW;
 		}
 	});
@@ -60,7 +61,7 @@ public class AddOrUpdateNodeCommandIT {
 
 	private ResourceProxy newResource(String path, String primaryType) {
 
-		ResourceProxy resource = new ResourceProxy(path);
+		ResourceProxy resource = new ResourceProxy(new RepositoryPath(path));
 		resource.addProperty("jcr:primaryType", primaryType);
 		return resource;
 	}
@@ -207,8 +208,8 @@ public class AddOrUpdateNodeCommandIT {
 		final CommandContext context = new CommandContext(new Filter() {
 
 			@Override
-			public FilterResult filter(String repositoryPath) {
-				if (repositoryPath.equals("/content/not-included-child")) {
+			public FilterResult filter(RepositoryPath repositoryPath) {
+				if (repositoryPath.asString().equals("/content/not-included-child")) {
 					return FilterResult.DENY;
 				}
 
@@ -281,7 +282,7 @@ public class AddOrUpdateNodeCommandIT {
 	public void createIfRequiredFlagCreatesNeededResourcesEvenWhenPrimaryTypeIsMissing() throws Exception {
 
 		Session session = repositoryManager.getAdminSession();
-		ResourceProxy resource = new ResourceProxy("/content");
+		ResourceProxy resource = new ResourceProxy(new RepositoryPath("/content"));
 
 		AddOrUpdateNodeCommand cmd = new AddOrUpdateNodeCommand(repositoryManager.getRepository(), repositoryManager.getAdminCredentials(), DEFAULT_CONTEXT, null,
 				resource, logger, CREATE_ONLY_WHEN_MISSING);

@@ -24,6 +24,7 @@ import java.io.InputStream;
 
 import org.apache.jackrabbit.vault.fs.config.ConfigurationException;
 import org.apache.sling.ide.filter.FilterResult;
+import org.apache.sling.ide.transport.RepositoryPath;
 import org.junit.Test;
 
 public class VltFilterTest {
@@ -31,7 +32,7 @@ public class VltFilterTest {
     @Test
     public void defaultFilterExcludedVarClasses() throws IOException, ConfigurationException {
 
-        assertThat(newFilter("filter-default.xml").filter("/var/classes"), is(FilterResult.DENY));
+        assertThat(newFilter("filter-default.xml").filter(new RepositoryPath("/var/classes")), is(FilterResult.DENY));
         
     }
 
@@ -48,20 +49,14 @@ public class VltFilterTest {
 
         VltFilter filter = new VltFilter(null);
 
-        assertThat(filter.filter("/var/classes"), is(FilterResult.DENY));
+        assertThat(filter.filter(new RepositoryPath("/var/classes")), is(FilterResult.DENY));
 
     }
 
     @Test
     public void defaultFilterIncludesLibs() throws IOException, ConfigurationException {
 
-        assertThat(newFilter("filter-default.xml").filter("/libs"), is(FilterResult.ALLOW));
-    }
-
-    @Test
-    public void pathMissingLeadingSlashIsCorrected() throws IOException, ConfigurationException {
-
-        assertThat(newFilter("filter-default.xml").filter("libs"), is(FilterResult.ALLOW));
+        assertThat(newFilter("filter-default.xml").filter(new RepositoryPath("/libs")), is(FilterResult.ALLOW));
     }
 
     @Test
@@ -69,7 +64,7 @@ public class VltFilterTest {
 
         String[] parents = new String[] { "/libs", "/libs/sling", "/libs/sling/servlet" };
         for (String parent : parents) {
-            assertThat("Parent '" + parent + "'", newFilter("filter-deep.xml").filter(parent),
+            assertThat("Parent '" + parent + "'", newFilter("filter-deep.xml").filter(new RepositoryPath(parent)),
                     is(FilterResult.PREREQUISITE));
         }
     }
@@ -77,9 +72,9 @@ public class VltFilterTest {
     @Test
     public void filterWithInclude() throws IOException, ConfigurationException {
         
-        assertThat(newFilter("filter-with-include.xml").filter("/etc/designs/base"), is(FilterResult.PREREQUISITE));
-        assertThat(newFilter("filter-with-include.xml").filter("/etc/designs/base/jcr:content"), is(FilterResult.ALLOW));
-        assertThat(newFilter("filter-with-include.xml").filter("/etc/designs/base/other"), is(FilterResult.DENY));
+        assertThat(newFilter("filter-with-include.xml").filter(new RepositoryPath("/etc/designs/base")), is(FilterResult.PREREQUISITE));
+        assertThat(newFilter("filter-with-include.xml").filter(new RepositoryPath("/etc/designs/base/jcr:content")), is(FilterResult.ALLOW));
+        assertThat(newFilter("filter-with-include.xml").filter(new RepositoryPath("/etc/designs/base/other")), is(FilterResult.DENY));
     }
 
 }

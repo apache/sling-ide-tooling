@@ -52,15 +52,14 @@ import javax.jcr.ValueFactory;
 import javax.jcr.nodetype.NodeType;
 import javax.jcr.nodetype.PropertyDefinition;
 
-import org.apache.jackrabbit.util.Text;
 import org.apache.jackrabbit.vault.util.JcrConstants;
 import org.apache.sling.ide.filter.FilterResult;
 import org.apache.sling.ide.log.Logger;
 import org.apache.sling.ide.sync.content.WorkspaceFile;
 import org.apache.sling.ide.transport.CommandContext;
 import org.apache.sling.ide.transport.Repository.CommandExecutionFlag;
+import org.apache.sling.ide.transport.RepositoryPath;
 import org.apache.sling.ide.transport.ResourceProxy;
-import org.apache.sling.ide.util.PathUtil;
 
 public class AddOrUpdateNodeCommand extends JcrCommand<Void> {
 
@@ -87,7 +86,7 @@ public class AddOrUpdateNodeCommand extends JcrCommand<Void> {
 
     private void update(ResourceProxy resource, Session session) throws RepositoryException, IOException {
 
-        String path = resource.getPath();
+        String path = resource.getPath().asString();
         boolean nodeExists = session.nodeExists(path);
 
         Node node;
@@ -100,7 +99,7 @@ public class AddOrUpdateNodeCommand extends JcrCommand<Void> {
 	            node = createNode(resource, session);
 	            getLogger().trace("Created node at {0} with primaryType {1}", path, node.getPrimaryNodeType().getName());
         	} catch (RepositoryException e) {
-        		throw new RepositoryException("Could not create node at " + Text.getRelativeParent(resource.getPath(), 1) + " based on resource " + resource, e);
+        		throw new RepositoryException("Could not create node at " + resource.getPath().getParent().asString() + " based on resource " + resource, e);
         	}
         }
 
@@ -128,7 +127,7 @@ public class AddOrUpdateNodeCommand extends JcrCommand<Void> {
             return;
         }
         
-        Map<String, ResourceProxy> resourceChildrenPaths = new HashMap<>(resourceChildren.size());
+        Map<RepositoryPath, ResourceProxy> resourceChildrenPaths = new HashMap<>(resourceChildren.size());
         for (ResourceProxy child : resourceChildren) {
             resourceChildrenPaths.put(child.getPath(), child);
         }
@@ -136,18 +135,19 @@ public class AddOrUpdateNodeCommand extends JcrCommand<Void> {
         for (NodeIterator it = node.getNodes(); it.hasNext();) {
 
             Node child = it.nextNode();
-
-            if (resourceChildrenPaths.containsKey(child.getPath())) {
+            RepositoryPath childRepositoryPath = new RepositoryPath(child.getPath());
+            
+            if (resourceChildrenPaths.containsKey(childRepositoryPath)) {
                 // only descend for reordering when the child node is covered ; otherwise we
                 // don't have enough information
-                if (resource2.covers(child.getPath())) {
-                    processDeletedNodes(child, resourceChildrenPaths.get(child.getPath()));
+                if (resource2.covers(childRepositoryPath)) {
+                    processDeletedNodes(child, resourceChildrenPaths.get(childRepositoryPath));
                 }
                 continue;
             }
 
             if ( context.filter() != null 
-                    && context.filter(). filter(child.getPath()) == FilterResult.DENY ) {
+                    && context.filter(). filter(new RepositoryPath(child.getPath())) == FilterResult.DENY ) {
                 getLogger().trace("Not deleting node at {0} since it is not included in the filter", child.getPath());
                 continue;
             }
@@ -160,7 +160,7 @@ public class AddOrUpdateNodeCommand extends JcrCommand<Void> {
 
     private Node createNode(ResourceProxy resource, Session session) throws RepositoryException, FileNotFoundException {
 
-        String parentLocation = Text.getRelativeParent(resource.getPath(), 1);
+        String parentLocation = resource.getPath().getParent().asString();
         if (parentLocation.isEmpty()) {
             parentLocation = "/";
         }
@@ -172,7 +172,7 @@ public class AddOrUpdateNodeCommand extends JcrCommand<Void> {
 
         String primaryType = (String) resource.getProperties().get(JCR_PRIMARYTYPE);
         Node parent = session.getNode(parentLocation);
-        String childName = PathUtil.getName(resource.getPath());
+        String childName = resource.getPath().getName();
         if (primaryType == null) {
             return parent.addNode(childName);
         } else {
@@ -182,7 +182,7 @@ public class AddOrUpdateNodeCommand extends JcrCommand<Void> {
 
     private void updateNode(Node node, ResourceProxy resource) throws RepositoryException, IOException {
 
-        if (node.getPath().equals(getPath()) && fileInfo != null) {
+        if (new RepositoryPath(node.getPath()).equals(getPath()) && fileInfo != null) {
             updateFileLikeNodeTypes(node);
         }
 

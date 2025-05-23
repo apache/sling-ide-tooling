@@ -32,7 +32,7 @@ public interface Command<T> {
 
 	Result<T> execute();
 
-    String getPath();
+	RepositoryPath getPath();
 
     Set<CommandExecutionFlag> getFlags();
     

@@ -38,9 +38,9 @@ import org.apache.sling.ide.transport.Command;
 import org.apache.sling.ide.transport.CommandContext;
 import org.apache.sling.ide.transport.Repository;
 import org.apache.sling.ide.transport.RepositoryException;
+import org.apache.sling.ide.transport.RepositoryPath;
 import org.apache.sling.ide.transport.ResourceAndInfo;
 import org.apache.sling.ide.transport.ResourceProxy;
-import org.apache.sling.ide.util.PathUtil;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -73,7 +73,7 @@ public class DefaultSyncCommandFactory implements SyncCommandFactory {
         }
         
         WorkspacePath resourceLocalPath = resource.getPathRelativeToSyncDir().absolute();
-        String repositoryPath = resourceLocalPath.asPortableString();
+        RepositoryPath repositoryPath = serializationManager.getRepositoryPath(resourceLocalPath);
 
         FilterResult filterResult = resource.getProject().getFilter().filter(repositoryPath);
         
@@ -163,8 +163,8 @@ localFile);
                
                ResourceProxy serializationData = serializationManager.readSerializationData( possibleSerializationFile);
 
-               String repositoryPath = serializationManager.getRepositoryPath(resourceLocalPath);
-               String potentialPath = serializationData.getPath();
+               RepositoryPath repositoryPath = serializationManager.getRepositoryPath(resourceLocalPath);
+               RepositoryPath potentialPath = serializationData.getPath();
                boolean covered = serializationData.covers(repositoryPath);
 
                logger.trace(
@@ -360,7 +360,7 @@ localFile);
 
        while (childIterator.hasNext()) {
            ResourceProxy child = childIterator.next();
-           String childName = PathUtil.getName(child.getPath());
+           String childName = child.getPath().getName();
            String osChildName = serializationManager.getLocalName(childName);
 
            // covered children might have a FS representation, depending on their child nodes, so

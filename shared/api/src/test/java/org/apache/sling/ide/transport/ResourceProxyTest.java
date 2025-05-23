@@ -23,32 +23,34 @@ import static org.junit.Assert.assertThat;
 import org.junit.Test;
 
 public class ResourceProxyTest {
+    
+    private static final RepositoryPath PATH_CONTENT = new RepositoryPath("/content"); 
 
     @Test
     public void coveredChildren_firstLevel() {
 
-        ResourceProxy r = new ResourceProxy("/content");
+        ResourceProxy r = new ResourceProxy(PATH_CONTENT);
         r.addChild(newResource("/content/test", "nt:unstructured"));
 
-        assertThat(r.covers("/content/test"), is(true));
+        assertThat(r.covers(new RepositoryPath("/content/test")), is(true));
     }
 
     @Test
     public void coveredChildren_secondLevel() {
 
-        ResourceProxy r = new ResourceProxy("/content");
+        ResourceProxy r = new ResourceProxy(PATH_CONTENT);
         ResourceProxy child = newResource("/content/test", "nt:unstructured");
         r.addChild(child);
 
         child.addChild(newResource("/content/test/en", "nt:unstructured"));
 
-        assertThat(r.covers("/content/test/en"), is(true));
+        assertThat(r.covers(new RepositoryPath("/content/test/en")), is(true));
     }
 
     @Test
     public void coveredChildren_thirdLevel() {
 
-        ResourceProxy r = new ResourceProxy("/content");
+        ResourceProxy r = new ResourceProxy(PATH_CONTENT);
 
         ResourceProxy child = newResource("/content/test", "nt:unstructured");
         r.addChild(child);
@@ -58,34 +60,34 @@ public class ResourceProxyTest {
 
         grandChild.addChild(newResource("/content/test/en/welcome", "nt:unstructured"));
 
-        assertThat(r.covers("/content/test/en/welcome"), is(true));
+        assertThat(r.covers(new RepositoryPath("/content/test/en/welcome")), is(true));
     }
 
     @Test
     public void coveredChildren_notCoveredFirstLevel() {
 
-        ResourceProxy r = new ResourceProxy("/content");
-        r.addChild(new ResourceProxy("/content/test"));
+        ResourceProxy r = new ResourceProxy(PATH_CONTENT);
+        r.addChild(new ResourceProxy(PATH_CONTENT.addChild("test")));
 
-        assertThat(r.covers("/content/test"), is(false));
+        assertThat(r.covers(new RepositoryPath("/content/test")), is(false));
     }
 
     @Test
     public void coveredChildren_notCoveredSecondLevel() {
 
-        ResourceProxy r = new ResourceProxy("/content");
+        ResourceProxy r = new ResourceProxy(PATH_CONTENT);
         ResourceProxy child = newResource("/content/test", "nt:unstructured");
         r.addChild(child);
 
-        child.addChild(new ResourceProxy("/content/test/en"));
+        child.addChild(new ResourceProxy(PATH_CONTENT.addChild("test").addChild("en")));
 
-        assertThat(r.covers("/content/test/en"), is(false));
+        assertThat(r.covers(new RepositoryPath("/content/test/en")), is(false));
     }
 
     @Test
     public void getChild() {
 
-        ResourceProxy r = new ResourceProxy("/content");
+        ResourceProxy r = new ResourceProxy(PATH_CONTENT);
         ResourceProxy child = newResource("/content/test", "nt:unstructured");
         r.addChild(child);
 
@@ -95,15 +97,15 @@ public class ResourceProxyTest {
         ResourceProxy grandGrandChild = newResource("/content/test/en/welcome", "nt:unstructured");
         grandChild.addChild(grandGrandChild);
 
-        assertThat(r.getChild("/content/test"), is(child));
-        assertThat(r.getChild("/content/test/en"), is(grandChild));
-        assertThat(r.getChild("/content/test/en/welcome"), is(grandGrandChild));
-        assertThat(r.getChild("/content/test/en2"), is(nullValue()));
+        assertThat(r.getChild(new RepositoryPath("/content/test")), is(child));
+        assertThat(r.getChild(new RepositoryPath("/content/test/en")), is(grandChild));
+        assertThat(r.getChild(new RepositoryPath("/content/test/en/welcome")), is(grandGrandChild));
+        assertThat(r.getChild(new RepositoryPath("/content/test/en2")), is(nullValue()));
     }
 
     private ResourceProxy newResource(String path, String primaryType) {
 
-        ResourceProxy child = new ResourceProxy(path);
+        ResourceProxy child = new ResourceProxy(new RepositoryPath(path));
         child.addProperty("jcr:primaryType", primaryType);
         return child;
     }
@@ -111,25 +113,25 @@ public class ResourceProxyTest {
     @Test(expected = IllegalArgumentException.class)
     public void addChild_IllegalChildRejected() {
 
-        new ResourceProxy("/content").addChild(new ResourceProxy("/var"));
+        new ResourceProxy(new RepositoryPath("/content")).addChild(new ResourceProxy(new RepositoryPath("/var")));  
     }
 
     @Test
     public void addChild_childOfRootNode() {
 
-        new ResourceProxy("/").addChild(new ResourceProxy("/var"));
+        new ResourceProxy(new RepositoryPath("/")).addChild(new ResourceProxy(new RepositoryPath("/var")));
     }
 
     @Test
     public void addChild_childOfRegularNode() {
 
-        new ResourceProxy("/content").addChild(new ResourceProxy("/content/test"));
+        new ResourceProxy(new RepositoryPath("/content")).addChild(new ResourceProxy(new RepositoryPath("/content/test")));
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void addChild_deeplyNested() {
 
-        new ResourceProxy("/content").addChild(new ResourceProxy("/content/test/en"));
+        new ResourceProxy(new RepositoryPath("/content")).addChild(new ResourceProxy(new RepositoryPath("/content/test/en")));
     }
 
 }

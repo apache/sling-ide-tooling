@@ -18,7 +18,6 @@ package org.apache.sling.ide.eclipse.ui.nav.model;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -49,10 +48,10 @@ import org.apache.sling.ide.serialization.SerializationKind;
 import org.apache.sling.ide.serialization.SerializationKindManager;
 import org.apache.sling.ide.serialization.SerializationManager;
 import org.apache.sling.ide.sync.content.WorkspaceFile;
-import org.apache.sling.ide.sync.content.WorkspaceResource;
 import org.apache.sling.ide.transport.NodeTypeRegistry;
 import org.apache.sling.ide.transport.Repository;
 import org.apache.sling.ide.transport.RepositoryException;
+import org.apache.sling.ide.transport.RepositoryPath;
 import org.apache.sling.ide.transport.ResourceProxy;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
@@ -1089,7 +1088,7 @@ public class JcrNode implements IAdaptable {
         try {
             final IProject project = getProject();
             final Filter filter = ProjectUtil.loadFilter(project);
-            final String relativeFilePath = getJcrPath();
+            final RepositoryPath relativeFilePath = new RepositoryPath(getJcrPath());
 //            final Repository repository = Activator.getDefault().getRepositoryFactory().newRepository(null);//ServerUtil.getRepository(null, null);
 //            final RepositoryInfo repositoryInfo = repository.getRepositoryInfo();
 //            if (repositoryInfo==null) {

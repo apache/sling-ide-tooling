@@ -16,6 +16,8 @@
  */
 package org.apache.sling.ide.filter;
 
+import org.apache.sling.ide.transport.RepositoryPath;
+
 public interface Filter {
 
     /**
@@ -25,5 +27,5 @@ public interface Filter {
      * 
      * @return the filter result, never <code>null</code>
      */
-    FilterResult filter(String repositoryPath);
+    FilterResult filter(RepositoryPath repositoryPath);
 }

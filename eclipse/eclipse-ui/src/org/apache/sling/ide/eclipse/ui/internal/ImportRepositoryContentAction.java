@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.jackrabbit.util.Text;
 import org.apache.sling.ide.eclipse.core.EclipseResources;
 import org.apache.sling.ide.eclipse.core.ProjectUtil;
 import org.apache.sling.ide.eclipse.core.ResourceUtil;
@@ -45,9 +44,11 @@ import org.apache.sling.ide.serialization.SerializationKind;
 import org.apache.sling.ide.serialization.SerializationKindManager;
 import org.apache.sling.ide.serialization.SerializationManager;
 import org.apache.sling.ide.sync.content.SyncCommandFactory;
+import org.apache.sling.ide.sync.content.WorkspacePath;
 import org.apache.sling.ide.transport.Command;
 import org.apache.sling.ide.transport.Repository;
 import org.apache.sling.ide.transport.RepositoryException;
+import org.apache.sling.ide.transport.RepositoryPath;
 import org.apache.sling.ide.transport.ResourceAndInfo;
 import org.apache.sling.ide.transport.ResourceProxy;
 import org.apache.sling.ide.transport.Result;
@@ -150,8 +151,10 @@ public class ImportRepositoryContentAction {
             recordNotIgnoredResources();
 
             ProgressUtils.advance(monitor, 1);
+            
+            RepositoryPath repositoryPath = serializationManager.getRepositoryPath(new WorkspacePath(repositoryImportRoot.toPortableString()));
 
-            crawlChildrenAndImport(repositoryImportRoot.toPortableString());
+            crawlChildrenAndImport(repositoryPath);
 
             removeNotIgnoredAndNotUpdatedResources(new NullProgressMonitor());
 
@@ -205,7 +208,7 @@ public class ImportRepositoryContentAction {
                         return true;
                     }
 
-                    String repositoryPath = rai.getResource().getPath();
+                    RepositoryPath repositoryPath = rai.getResource().getPath();
 
                     FilterResult filterResult = filter.filter(repositoryPath);
 
@@ -252,12 +255,11 @@ public class ImportRepositoryContentAction {
      * @throws IOException
      */
     // TODO: This probably should be pushed into the service layer
-    private void crawlChildrenAndImport(String path)
+    private void crawlChildrenAndImport(RepositoryPath repositoryPath)
             throws RepositoryException, CoreException, IOException, SerializationException {
 
-        logger.trace("crawlChildrenAndImport({0},  {1}, {2}, {3}", repository, path, project, projectRelativePath);
-
-        ResourceProxy resource = executeCommand(repository.newListChildrenNodeCommand(path));
+        logger.trace("crawlChildrenAndImport({0},  {1}, {2}, {3}", repository, repositoryPath, project, projectRelativePath);
+        ResourceProxy resource = executeCommand(repository.newListChildrenNodeCommand(repositoryPath));
         
         SerializationData serializationData = builder.buildSerializationData(contentSyncRoot, resource);
         logger.trace("For resource at path {0} got serialization data {1}", resource.getPath(), serializationData);
@@ -270,7 +272,7 @@ public class ImportRepositoryContentAction {
 	
 	        switch (serializationData.getSerializationKind()) {
 	            case FILE: {
-	                byte[] contents = executeCommand(repository.newGetNodeCommand(path));
+	                byte[] contents = executeCommand(repository.newGetNodeCommand(repositoryPath));
                     createFile(project, getPathForPlainFileNode(resource, serializationFolderPath), contents);
 	
 	                if (serializationData.hasContents()) {
@@ -293,7 +295,7 @@ public class ImportRepositoryContentAction {
 
                                 if (reloadedChildResource.getChildren().size() != 0) {
 
-                                    String pathName = Text.getName(reloadedChildResource.getPath());
+                                    String pathName = reloadedChildResource.getPath().getName();
                                     pathName = serializationManager.getLocalName(pathName);
                                     createFolder(project, serializationFolderPath.append(pathName));
 
@@ -315,7 +317,7 @@ public class ImportRepositoryContentAction {
 
                     IFolder folder = createFolder(project, serializationFolderPath);
 
-                    parseIgnoreFiles(folder, path);
+                    parseIgnoreFiles(folder, repositoryPath.asString());
 
 	                if (serializationData.hasContents()) {
                         createFile(project, serializationFolderPath.append(serializationData.getFileName()),
@@ -377,12 +379,12 @@ public class ImportRepositoryContentAction {
 
         // TODO - can we just use the serializationFolderPath ?
 
-        String name = serializationManager.getLocalName(Text.getName(resource.getPath()));
+        String name = serializationManager.getLocalName(resource.getPath().getName());
 
         return serializationFolderPath.removeLastSegments(1).append(name);
     }
 
-    private void parseIgnoreFiles(IFolder folder, String path) throws IOException, CoreException {
+    private void parseIgnoreFiles(IFolder folder, String repositoryPath) throws IOException, CoreException {
         // TODO - the parsing should be extracted
         IResource vltIgnore = folder.findMember(".vltignore");
         if (vltIgnore != null && vltIgnore instanceof IFile) {
@@ -393,8 +395,8 @@ public class ImportRepositoryContentAction {
             try (InputStream contents = ((IFile) vltIgnore).getContents()) {
                 List<String> ignoreLines = IOUtils.readLines(contents);
                 for (String ignoreLine : ignoreLines) {
-                    logger.trace("Registering ignore rule {0}:{1}", path, ignoreLine);
-                    ignoredResources.registerRegExpIgnoreRule(path, ignoreLine);
+                    logger.trace("Registering ignore rule {0}:{1}", repositoryPath, ignoreLine);
+                    ignoredResources.registerRegExpIgnoreRule(repositoryPath, ignoreLine);
                 }
             }
         }
