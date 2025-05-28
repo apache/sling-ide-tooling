@@ -42,6 +42,7 @@ Import-Package: \
 @jackrabbit-webdav-${jackrabbit.version}.jar \
 
 # whitelist the private reference usage in Packaging.getJcrPackageRegistry(Session)
--fixupmessages:"Export org.apache.jackrabbit.vault.packaging,  has 1,  private references [org.apache.jackrabbit.vault.packaging.registry.impl]"; \
-    restrict:=warning; \
-    is:=warn
+# ignore errors coming from multi-release jars, should be fixed with bnd 7.0 ( https://github.com/bndtools/bnd/issues/3514 )
+-fixupmessages: \
+  "Export org.apache.jackrabbit.vault.packaging,  has 1,  private references [org.apache.jackrabbit.vault.packaging.registry.impl]"; is:=warning, \
+  "Classes found in the wrong directory"; is:=warning
