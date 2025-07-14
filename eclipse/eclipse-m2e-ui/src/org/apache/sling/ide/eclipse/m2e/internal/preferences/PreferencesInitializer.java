@@ -26,7 +26,7 @@ public class PreferencesInitializer extends AbstractPreferenceInitializer {
     public void initializeDefaultPreferences() {
         IPreferenceStore preferenceStore = Activator.getDefault().getPreferenceStore();
         preferenceStore.setDefault(Preferences.ENABLE_CONTENT_PACKAGE_PROJECT_CONFIGURATOR, true);
-        preferenceStore.setDefault(Preferences.ENABLE_CONTENT_PACKAGE_PROJECT_CONFIGURATOR_ADDITIONAL_WTP_FACETS, true);
+        preferenceStore.setDefault(Preferences.ENABLE_CONTENT_PACKAGE_PROJECT_CONFIGURATOR_ADDITIONAL_WTP_FACETS, false);
         preferenceStore.setDefault(Preferences.ENABLE_BUNDLE_PROJECT_CONFIGURATOR, true);
     }
 

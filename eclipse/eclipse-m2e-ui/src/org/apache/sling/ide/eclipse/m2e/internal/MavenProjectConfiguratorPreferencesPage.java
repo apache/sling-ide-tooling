@@ -47,7 +47,7 @@ public class MavenProjectConfiguratorPreferencesPage extends FieldEditorPreferen
         m2eProjectConfiguratorsForContentPackagesGroup.setText("Maven Project Configurator for Content-Packages");
         enableProjectConfiguratorEditor = new BooleanFieldEditor(Preferences.ENABLE_CONTENT_PACKAGE_PROJECT_CONFIGURATOR, "Enable",
                 m2eProjectConfiguratorsForContentPackagesGroup);
-        enableExtendedProjectConfigurationEditor = new BooleanFieldEditor(Preferences.ENABLE_CONTENT_PACKAGE_PROJECT_CONFIGURATOR_ADDITIONAL_WTP_FACETS, "Add additional WTP natures and facets",
+        enableExtendedProjectConfigurationEditor = new BooleanFieldEditor(Preferences.ENABLE_CONTENT_PACKAGE_PROJECT_CONFIGURATOR_ADDITIONAL_WTP_FACETS, "Add additional WTP natures and facets (enables JSP completion but adds unnecessary metadata which should be excluded from packages)",
                 m2eProjectConfiguratorsForContentPackagesGroup);
 
         addField(enableProjectConfiguratorEditor);
