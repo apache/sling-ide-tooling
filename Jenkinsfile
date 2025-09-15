@@ -85,31 +85,14 @@ def generateStages(String os, def mvnVersion, def javaVersion) {
 }
 
 def buildAndDeployP2Repository( def mvnVersion, def javaVersion ) {
-	// for optional signing a dedicated node needs to be leveraged
-	node('ubuntu') { // use label pkcs11 for signing with digicert
+	node('ubuntu') {
 		stage('Build P2 Repository') {
-			echo "Running on node ${env.NODE_NAME} with PKCS#11 config at ${env.PKCS11_CONFIG}"
+			echo "Running on node ${env.NODE_NAME}"
 			checkout scm
-			// set up environment variables according to https://docs.digicert.com/de/digicert-one/secure-software-manager/ci-cd-integrations/maven-integration-with-pkcs11.html
-			withCredentials([
-				file(credentialsId: 'sling-digicert-pkcs-certificate', variable: 'SM_CLIENT_CERT_FILE'), 
-				string(credentialsId: 'sling-digicert-pkcs-cert-pw', variable: 'SM_CLIENT_CERT_PASSWORD'),
-				string(credentialsId: 'sling-digicert-pkcs-api-key', variable: 'SM_API_KEY')]) {
-				// https://docs.digicert.com/de/digicert-one/secure-software-manager/client-tools/configure-environment-variables.html
-				// redirecting log to another file does not work for some reason
-				withEnv(['SM_LOG_LEVEL=ERROR','SM_HOST=https://clientauth.one.digicert.com']) {
-					try {
-						withMaven(maven: mvnVersion, jdk: javaVersion, mavenLocalRepo: '.repository', options: [artifactsPublisher(disabled: true)]) {
-			                timeout(20) {
-			                	// build with profile "sign-with-jarsigner" for signing
-			                    runCmd 'mvn -f eclipse/p2update clean verify -e'
-			                }
-			            }
-			        } catch (e) {
-			        	// reenable next line to expose further infos about signature errors
-			        	//echo('smpkcs11.log: ' + readFile(file: "${env.HOME}/.signingmanager/logs/smpkcs11.log"))
-			        	throw e
-			        }
+            withMaven(maven: mvnVersion, jdk: javaVersion, mavenLocalRepo: '.repository', options: [artifactsPublisher(disabled: true)]) {
+                timeout(20) {
+                    // nightly builds are not GPG-signed
+                    runCmd 'mvn -f eclipse/p2update clean verify -e'
 			    }
 			}
 		}

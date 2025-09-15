@@ -89,103 +89,13 @@
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-release-plugin</artifactId>
 					<configuration>
-						<releaseProfiles>apache-release,sign-with-jarsigner</releaseProfiles>
+						<releaseProfiles>apache-release,sign-with-gpg</releaseProfiles>
 					</configuration>
 				</plugin>
 			</plugins>
 		</pluginManagement>
 	</build>
 	<profiles>
-		<profile>
-			<!-- this profile is automatically active during release:perform
-				each signature costs the ASF money, therefore only activate during releases
-			 -->
-			<id>sign-with-jarsigner</id>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-enforcer-plugin</artifactId>
-						<executions>
-							<execution>
-								<id>enforce-digicert-one-env-variables</id>
-								<goals>
-									<goal>enforce</goal>
-								</goals>
-								<configuration>
-									<rules>
-										<requireProperty>
-											<property>env.PKCS11_CONFIG</property>
-										</requireProperty>
-										<!-- the ones listed at https://docs.digicert.com/de/digicert-one/secure-software-manager/ci-cd-integrations/maven-integration-with-pkcs11.html -->
-										<requireProperty>
-											<property>env.SM_CLIENT_CERT_PASSWORD</property>
-										</requireProperty>
-										<requireProperty>
-											<property>env.SM_CLIENT_CERT_FILE</property>
-										</requireProperty>
-										<requireProperty>
-											<property>env.SM_API_KEY</property>
-										</requireProperty>
-									</rules>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-jarsigner-plugin</artifactId>
-						<version>3.0.0</version>
-						<executions>
-							<execution>
-								<id>sign</id>
-								<goals>
-									<goal>sign</goal>
-								</goals>
-								<phase>prepare-package</phase> <!-- must happen after "assemble-repository" but before "fix-artifacts-metadata" -->
-								<configuration>
-									<keystore>NONE</keystore>
-									<alias>Sling-PMC-2022-09</alias>
-									<storepass>none</storepass>
-									<providerClass>sun.security.pkcs11.SunPKCS11</providerClass>
-									<storetype>PKCS11</storetype>
-									<providerArg>${env.PKCS11_CONFIG}</providerArg>
-									<tsa>http://timestamp.digicert.com</tsa>
-									<verbose>true</verbose>
-									<processMainArtifact>false</processMainArtifact>
-									<archiveDirectory>${project.build.directory}/repository/plugins</archiveDirectory>
-									<includes>
-										<!-- only sign our own artifacts -->
-										<include>org.apache.sling.*.jar</include>
-									</includes>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
-					<!-- fix metadata of repository after signing -->
-					<plugin>
-						<groupId>org.eclipse.tycho</groupId>
-						<artifactId>tycho-p2-repository-plugin</artifactId>
-						<version>${tycho.version}</version>
-						<executions>
-							<execution>
-								<id>update-metadata-after-signing</id>
-								<goals>
-									<goal>fix-artifacts-metadata</goal>
-								</goals>
-								<phase>prepare-package</phase><!-- must happen after "sign" but before "archive-repository" -->
-							</execution>
-							<execution>
-								<id>verify</id>
-								<goals>
-									<goal>verify-repository</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
 		<profile>
 			<id>sign-with-gpg</id>
 			<build>
