@@ -17,7 +17,7 @@ check-gpg:
 .PHONY=check-gpg
 
 release-shared:
-	cd shared && mvn --batch-mode release:prepare -DreleaseVersion=$(RELEASE_VERSION) -DdevelopmentVersion=$(NEXT_VERSION) -Dtag=sling-ide-tooling-shared-$(RELEASE_VERSION)
+	cd shared && mvn --batch-mode release:prepare release:perform -DreleaseVersion=$(RELEASE_VERSION) -DdevelopmentVersion=$(NEXT_VERSION) -Dtag=sling-ide-tooling-shared-$(RELEASE_VERSION)
 
 .PHONY=release-shared
 
