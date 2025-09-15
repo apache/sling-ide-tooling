@@ -245,6 +245,7 @@
             </build>
             <modules>
             	<module>p2update</module>
+            	<module>source-bundle</module>
             </modules>
         </profile>
         <profile>
