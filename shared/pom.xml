@@ -31,6 +31,22 @@
         <url>https://github.com/apache/sling-ide-tooling.git</url>
     </scm>
 
+    <build>
+        <plugins>
+            <plugin>
+                <!-- When releasing we build the modules locally and include them in the p2 repository
+                but we do not release them on Maven Central. To be revisited if needed -->
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-release-plugin</artifactId>
+                <configuration>
+                    <goals>clean install</goals>
+                    <pushChanges>false</pushChanges>
+                    <autoVersionSubmodules>true</autoVersionSubmodules>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
     <modules>
         <module>parent</module>
         <module>api</module>

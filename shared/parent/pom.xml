@@ -57,16 +57,6 @@
                         <failOnMissing>false</failOnMissing><!-- no release yet -->
                     </configuration>
                 </plugin>
-                <plugin>
-                    <!-- When releasing we build the modules locally and include them in the p2 repository
-                    but we do not release them on Maven Central. To be revisited if needed -->
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-release-plugin</artifactId>
-                    <configuration>
-                        <goals>clean install</goals>
-                        <autoVersionSubmodules>true</autoVersionSubmodules>
-                    </configuration>
-                </plugin>
             </plugins>
         </pluginManagement>
     </build>
