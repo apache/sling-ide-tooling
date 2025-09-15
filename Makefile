@@ -7,7 +7,7 @@ ifndef NEXT_VERSION
 $(error NEXT_VERSION is not set)
 endif
 
-release: check-gpg pre-release-shared pre-release-eclipse push post-release-shared post-release-eclipse
+release: check-gpg release-shared release-eclipse push 
 .PHONY=release
 
 # ensure that GPG signing will work in batch mode
@@ -16,24 +16,16 @@ check-gpg:
 	rm -f README.md.gpg
 .PHONY=check-gpg
 
-pre-release-shared:
-	cd shared && mvn --batch-mode release:prepare -DdryRun=true -DreleaseVersion=$(RELEASE_VERSION) -DdevelopmentVersion=$(NEXT_VERSION)
-	cd shared && mvn --batch-mode versions:set -DnewVersion=$(RELEASE_VERSION) -DprocessAllModules=true -DgenerateBackupPoms=false
-	cd shared && git add pom.xml '**/pom.xml' && git commit -m 'chore(shared): prepare release $(RELEASE_VERSION)'
-	cd shared && mvn --batch-mode clean install -DskipTests
+release-shared:
+	cd shared && mvn --batch-mode release:prepare -DreleaseVersion=$(RELEASE_VERSION) -DdevelopmentVersion=$(NEXT_VERSION) -Dtag=sling-ide-tooling-shared-$(RELEASE_VERSION)
 
-.PHONY=pre-release-shared
+.PHONY=release-shared
 
-pre-release-eclipse:
-.PHONY=pre-release-eclipse
+release-eclipse:
+	cd eclipse && mvn --batch-mode release:prepare -DreleaseVersion=$(RELEASE_VERSION) -DdevelopmentVersion=$(NEXT_VERSION) -Dtag=sling-ide-tooling-eclipse-$(RELEASE_VERSION)
+
+.PHONY=release-eclipse
 
 push:
 .PHONY=push
 
-post-release-shared:
-	cd shared && mvn --batch-mode versions:set -DnewVersion=$(NEXT_VERSION) -DprocessAllModules=true -DgenerateBackupPoms=false
-	cd shared && git add pom.xml '**/pom.xml' && git commit -m 'chore(shared): bump version to $(NEXT_VERSION)'
-.PHONY=post-release-shared
-
-post-release-eclipse:
-.PHONY=post-release-eclipse
