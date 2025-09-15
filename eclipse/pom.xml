@@ -47,6 +47,8 @@
         <module>eclipse-sightly-ui</module>
         <module>sightly-feature</module>
         <!-- test modules activated per profile -->
+        <module>p2update</module>
+        <module>source-bundle</module>
     </modules>
 
     <build>
@@ -234,9 +236,6 @@
                     </plugin>
                 </plugins>
             </build>
-            <modules>
-            	<module>p2update</module>
-            </modules>
         </profile>
         <profile>
             <id>eclipse-test</id>
