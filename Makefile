@@ -7,7 +7,7 @@ ifndef NEXT_VERSION
 $(error NEXT_VERSION is not set)
 endif
 
-release: check-gpg release-shared release-eclipse push 
+release: check-gpg release-shared release-eclipse
 .PHONY=release
 
 # ensure that GPG signing will work in batch mode
@@ -22,10 +22,7 @@ release-shared:
 .PHONY=release-shared
 
 release-eclipse:
-	cd eclipse && mvn --batch-mode release:prepare -DreleaseVersion=$(RELEASE_VERSION) -DdevelopmentVersion=$(NEXT_VERSION) -Dtag=sling-ide-tooling-eclipse-$(RELEASE_VERSION)
+	cd eclipse && mvn --batch-mode release:prepare release:perform -DreleaseVersion=$(RELEASE_VERSION) -DdevelopmentVersion=$(NEXT_VERSION) -Dtag=sling-ide-tooling-eclipse-$(RELEASE_VERSION)
 
 .PHONY=release-eclipse
-
-push:
-.PHONY=push
 
