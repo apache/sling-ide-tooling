@@ -66,6 +66,7 @@
                     <artifactId>maven-release-plugin</artifactId>
                     <configuration>
                         <goals>clean install</goals>
+                        <autoVersionSubmodules>true</autoVersionSubmodules>
                     </configuration>
                 </plugin>
             </plugins>
