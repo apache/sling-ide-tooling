@@ -64,6 +64,7 @@
                 <artifactId>target-platform-configuration</artifactId>
                 <version>${tycho.version}</version>
                 <configuration>
+                    <pomDependencies>consider</pomDependencies>
                     <target>
                         <artifact>
                             <groupId>${project.groupId}</groupId>
@@ -229,6 +230,28 @@
         <maven.compiler.release>17</maven.compiler.release>
         <project.build.outputTimestamp />
     </properties>
+
+    <!-- required for pomDependencies=consider target-platform-configuration -->
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.sling.ide</groupId>
+            <artifactId>org.apache.sling.ide.api</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.sling.ide</groupId>
+            <artifactId>org.apache.sling.ide.artifacts</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.sling.ide</groupId>
+            <artifactId>org.apache.sling.ide.impl-vlt</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
 
     <profiles>
     	<profile>
