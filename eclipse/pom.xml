@@ -141,7 +141,6 @@
                 <artifactId>maven-release-plugin</artifactId>
                 <configuration>
                     <goals>clean install</goals>
-                    <pushChanges>false</pushChanges>
                     <autoVersionSubmodules>true</autoVersionSubmodules>
                     <releaseProfiles>apache-release,sign-with-gpg</releaseProfiles>
                     <!-- See https://wiki.eclipse.org/Tycho/Release_Workflow -->
