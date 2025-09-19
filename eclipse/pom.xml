@@ -224,6 +224,7 @@
 
     <properties>
         <tycho.version>4.0.13</tycho.version>
+        <sling-ide.shared-deps.version>1.3.9-SNAPSHOT</sling-ide.shared-deps.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <minimalJavaBuildVersion>17</minimalJavaBuildVersion>
         <maven.compiler.target>17</maven.compiler.target>
@@ -236,19 +237,19 @@
         <dependency>
             <groupId>org.apache.sling.ide</groupId>
             <artifactId>org.apache.sling.ide.api</artifactId>
-            <version>${project.version}</version>
+            <version>${sling-ide.shared-deps.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.sling.ide</groupId>
             <artifactId>org.apache.sling.ide.artifacts</artifactId>
-            <version>${project.version}</version>
+            <version>${sling-ide.shared-deps.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.sling.ide</groupId>
             <artifactId>org.apache.sling.ide.impl-vlt</artifactId>
-            <version>${project.version}</version>
+            <version>${sling-ide.shared-deps.version}</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>
