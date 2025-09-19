@@ -20,3 +20,5 @@ jcr.log
 atlassian-ide-plugin.xml
 derby.log
 bin
+
+/dist-staging/

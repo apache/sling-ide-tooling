@@ -26,7 +26,7 @@
         <!-- create a source zip of project's complete source -->
         <fileSet>
             <directory>${project.basedir}/../</directory>
-            <outputDirectory>${project.build.finalName}</outputDirectory>
+            <outputDirectory>eclipse</outputDirectory>
             <excludes>
                 <exclude>**/target/**</exclude>
                 <exclude>**/*.jar</exclude>
@@ -41,6 +41,19 @@
         <fileSet>
             <directory>${project.build.directory}/maven-shared-archive-resources</directory>
             <outputDirectory></outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>${project.basedir}/../../shared</directory>
+            <outputDirectory>shared</outputDirectory>
+            <excludes>
+                <exclude>**/target/**</exclude>
+                <exclude>**/*.jar</exclude>
+                <exclude>**/.project</exclude>
+                <exclude>**/.classpath</exclude>
+                <exclude>**/.settings/**</exclude>
+                <exclude>**/*.class</exclude>
+                <exclude>**/derby.log</exclude>
+            </excludes>
         </fileSet>
     </fileSets>
 </assembly>

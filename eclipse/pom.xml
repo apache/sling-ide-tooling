@@ -47,6 +47,8 @@
         <module>eclipse-sightly-ui</module>
         <module>sightly-feature</module>
         <!-- test modules activated per profile -->
+        <module>p2update</module>
+        <module>source-bundle</module>
     </modules>
 
     <build>
@@ -132,6 +134,38 @@
                     </excludes>
                 </configuration>
             </plugin>
+            <plugin>
+                <!-- When releasing we build the modules locally and include them in the p2 repository
+                but we do not release them on Maven Central. To be revisited if needed -->
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-release-plugin</artifactId>
+                <configuration>
+                    <goals>clean install</goals>
+                    <autoVersionSubmodules>true</autoVersionSubmodules>
+                    <releaseProfiles>apache-release,sign-with-gpg</releaseProfiles>
+                    <!-- See https://wiki.eclipse.org/Tycho/Release_Workflow -->
+                    <preparationGoals>org.eclipse.tycho:tycho-versions-plugin:${tycho.version}:update-eclipse-metadata org.apache.maven.plugins:maven-scm-plugin:1.9.5:add org.apache.maven.plugins:maven-scm-plugin:1.9.5:checkin</preparationGoals>
+                    <completionGoals>org.eclipse.tycho:tycho-versions-plugin:${tycho.version}:update-eclipse-metadata org.apache.maven.plugins:maven-scm-plugin:1.9.5:add org.apache.maven.plugins:maven-scm-plugin:1.9.5:checkin</completionGoals>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-scm-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>default-cli</id>
+                        <goals>
+                            <goal>add</goal>
+                            <goal>checkin</goal>
+                        </goals>
+                        <configuration>
+                            <includes>**/META-INF/MANIFEST.MF,**/feature.xml,**/*.product,**/category.xml</includes>
+                            <excludes>**/target/**</excludes>
+                            <message>chore: change the version to reflect the pom versions for the release</message>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
         <pluginManagement>
             <plugins>
@@ -189,6 +223,7 @@
 
     <properties>
         <tycho.version>4.0.13</tycho.version>
+        <sling-ide.shared-deps.version>1.2.3-SNAPSHOT</sling-ide.shared-deps.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <minimalJavaBuildVersion>17</minimalJavaBuildVersion>
         <maven.compiler.target>17</maven.compiler.target>
@@ -201,19 +236,19 @@
         <dependency>
             <groupId>org.apache.sling.ide</groupId>
             <artifactId>org.apache.sling.ide.api</artifactId>
-            <version>${project.version}</version>
+            <version>${sling-ide.shared-deps.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.sling.ide</groupId>
             <artifactId>org.apache.sling.ide.artifacts</artifactId>
-            <version>${project.version}</version>
+            <version>${sling-ide.shared-deps.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.sling.ide</groupId>
             <artifactId>org.apache.sling.ide.impl-vlt</artifactId>
-            <version>${project.version}</version>
+            <version>${sling-ide.shared-deps.version}</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>
@@ -233,9 +268,6 @@
                     </plugin>
                 </plugins>
             </build>
-            <modules>
-            	<module>p2update</module>
-            </modules>
         </profile>
         <profile>
             <id>eclipse-test</id>
