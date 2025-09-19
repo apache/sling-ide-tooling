@@ -18,7 +18,7 @@
 <feature
       id="org.apache.sling.ide.feature"
       label="Sling IDE Tools"
-      version="1.3.23.qualifier"
+      version="1.3.24"
       provider-name="The Apache Software Foundation">
 
    <license url="http://www.apache.org/licenses/LICENSE-2.0">
