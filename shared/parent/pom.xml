@@ -22,13 +22,13 @@
     <groupId>org.apache.sling.ide</groupId>
     <artifactId>sling-ide-shared-parent</artifactId>
     <packaging>pom</packaging>
-    <version>1.3.21-SNAPSHOT</version>
+    <version>1.3.22</version>
 
     <name>Apache Sling IDE - Shared Modules Parent</name>
 
     <scm>
         <developerConnection>scm:git:https://github.com/rombert/sling-ide-tooling.git</developerConnection>
-      <tag>sling-ide-tooling-shared-1.3.8</tag>
+      <tag>sling-ide-tooling-shared-1.3.22</tag>
   </scm>
     
     <build>
