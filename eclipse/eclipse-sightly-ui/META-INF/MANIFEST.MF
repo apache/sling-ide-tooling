@@ -3,7 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Vendor: The Apache Software Foundation
 Bundle-Name: Sling IDE Eclipse Sightly UI
 Bundle-SymbolicName: org.apache.sling.ide.eclipse-sightly-ui;singleton:=true
-Bundle-Version: 1.3.24.qualifier
+Bundle-Version: 1.3.26
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Require-Bundle: org.eclipse.core.runtime,
