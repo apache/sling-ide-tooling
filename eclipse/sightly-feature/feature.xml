@@ -18,7 +18,7 @@
 <feature
       id="org.apache.sling.ide.sightly.feature"
       label="Sling IDE Tools - Sightly Integration (Optional)"
-      version="1.3.29.qualifier"
+      version="1.3.30"
       provider-name="The Apache Software Foundation">
 
    <license url="http://www.apache.org/licenses/LICENSE-2.0">
