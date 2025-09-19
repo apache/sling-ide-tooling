@@ -41,10 +41,8 @@ prepare-dist-dir:
 	mkdir -p $(STAGING_DIR)
 	cp $(P2UPDATE_PATH)/$(P2UPDATE_FILE) $(STAGING_DIR)/
 	cp $(SOURCE_BUNDLE_PATH)/$(SOURCE_BUNDLE_FILE) $(STAGING_DIR)/
-	for ext in asc; do \
-		if [ -f $(P2UPDATE_PATH)/$(P2UPDATE_FILE).$$ext ]; then cp $(P2UPDATE_PATH)/$(P2UPDATE_FILE).$$ext $(STAGING_DIR)/; fi; \
-		if [ -f $(SOURCE_BUNDLE_PATH)/$(SOURCE_BUNDLE_FILE).$$ext ]; then cp $(SOURCE_BUNDLE_PATH)/$(SOURCE_BUNDLE_FILE).$$ext $(STAGING_DIR)/; fi; \
-	done
+	cp $(P2UPDATE_PATH)/$(P2UPDATE_FILE).asc $(STAGING_DIR)/
+	cp $(SOURCE_BUNDLE_PATH)/$(SOURCE_BUNDLE_FILE).asc $(STAGING_DIR)/
 	cd $(STAGING_DIR) && for f in $(P2UPDATE_FILE) $(SOURCE_BUNDLE_FILE); do \
 		openssl dgst -sha512 -r $$f | awk '{print $$1"  "$$2}' > $$f.sha512; \
 		openssl dgst -sha1 -r $$f | awk '{print $$1"  "$$2}' > $$f.sha1; \
