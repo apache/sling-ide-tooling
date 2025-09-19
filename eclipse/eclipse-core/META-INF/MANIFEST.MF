@@ -3,7 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Vendor: The Apache Software Foundation
 Bundle-Name: Sling IDE Eclipse Core
 Bundle-SymbolicName: org.apache.sling.ide.eclipse-core;singleton:=true
-Bundle-Version: 1.3.28
+Bundle-Version: 1.3.29.qualifier
 Bundle-Activator: org.apache.sling.ide.eclipse.core.internal.Activator
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-17
