@@ -30,7 +30,9 @@ release-shared:
 .PHONY=release-shared
 
 release-eclipse:
+	cd eclipse && mvn --batch-mode versions:set-property -Dproperty=sling-ide.shared-deps.version -DnewVersion=$(RELEASE_VERSION) && git add pom.xml && git commit -m 'chore(deps): set shared-deps version to $(RELEASE_VERSION) for release'
 	cd eclipse && mvn --batch-mode release:prepare release:perform -DreleaseVersion=$(RELEASE_VERSION) -DdevelopmentVersion=$(NEXT_VERSION) -Dtag=sling-ide-tooling-eclipse-$(RELEASE_VERSION)
+	cd eclipse && mvn --batch-mode versions:set-property -Dproperty=sling-ide.shared-deps.version -DnewVersion=$(NEXT_VERSION) && git add pom.xml && git commit -m 'chore(deps): set shared-deps version to $(NEXT_VERSION) after the release'
 
 .PHONY=release-eclipse
 
