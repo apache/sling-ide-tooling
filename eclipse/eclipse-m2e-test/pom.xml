@@ -20,7 +20,7 @@
   <parent>
     <groupId>org.apache.sling.ide</groupId>
     <artifactId>sling-ide-tooling</artifactId>
-    <version>1.3.0</version>
+    <version>1.3.1-SNAPSHOT</version>
   </parent>
   <artifactId>org.apache.sling.ide.eclipse-m2e-test</artifactId>
   <packaging>eclipse-test-plugin</packaging>
