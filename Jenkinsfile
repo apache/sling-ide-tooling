@@ -34,7 +34,8 @@ def generateStages(String os, def mvnVersion, def javaVersion) {
     def prefix = isWindows ? "win" : "linux"
     def nodeLabel = isWindows ? "Windows" : "ubuntu"
     
-    String goals = (!isWindows && shouldDeploy()) ? 'clean deploy' : 'clean install'
+    boolean shouldDeployInThisBranch = (!isWindows && shouldDeploy())
+    String goals = shouldDeployInThisBranch ? 'clean deploy' : 'clean install'
 
     def stages = [
         // use a local repository due to using version ranges in Tycho (https://github.com/eclipse-tycho/tycho/issues/1464)
@@ -59,6 +60,10 @@ def generateStages(String os, def mvnVersion, def javaVersion) {
 	                    wrap([$class: 'Xvfb', autoDisplayName: true]) {
 	                        runCmd "mvn -f eclipse ${goals}"
 	                    }
+	                }
+
+	                if (shouldDeployInThisBranch) {
+	                    stash(name: 'p2-repository', includes: 'eclipse/p2update/target/repository/**')
 	                }
 	            }
 	        } finally {
@@ -86,17 +91,9 @@ def generateStages(String os, def mvnVersion, def javaVersion) {
 
 def buildAndDeployP2Repository( def mvnVersion, def javaVersion ) {
 	node('ubuntu') {
-		stage('Build P2 Repository') {
-			echo "Running on node ${env.NODE_NAME}"
-			checkout scm
-            withMaven(maven: mvnVersion, jdk: javaVersion, mavenLocalRepo: '.repository', options: [artifactsPublisher(disabled: true)]) {
-                timeout(20) {
-                    // nightly builds are not GPG-signed
-                    runCmd 'mvn -f eclipse/p2update clean verify -e'
-			    }
-			}
-		}
 		stage('Deploy to ASF Nightlies') {
+			echo "Running on node ${env.NODE_NAME}"
+			unstash(name: 'p2-repository')
 			sshPublisher(publishers: [
 				sshPublisherDesc(configName: 'Nightlies', 
 					transfers: [
