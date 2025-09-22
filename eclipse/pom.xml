@@ -223,7 +223,7 @@
 
     <properties>
         <tycho.version>4.0.13</tycho.version>
-        <sling-ide.shared-deps.version>1.3.0</sling-ide.shared-deps.version>
+        <sling-ide.shared-deps.version>1.3.1-SNAPSHOT</sling-ide.shared-deps.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <minimalJavaBuildVersion>17</minimalJavaBuildVersion>
         <maven.compiler.target>17</maven.compiler.target>
