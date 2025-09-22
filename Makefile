@@ -60,9 +60,9 @@ prepare-dist-dir:
 	cp $(P2UPDATE_PATH)/$(P2UPDATE_FILE).asc $(STAGING_DIR)/
 	cp $(SOURCE_BUNDLE_PATH)/$(SOURCE_BUNDLE_FILE).asc $(STAGING_DIR)/
 	cd $(STAGING_DIR) && for f in $(P2UPDATE_FILE) $(SOURCE_BUNDLE_FILE); do \
-		openssl dgst -sha512 -r $$f | awk '{print $$1"  "$$2}' > $$f.sha512; \
-		openssl dgst -sha1 -r $$f | awk '{print $$1"  "$$2}' > $$f.sha1; \
-		openssl dgst -md5 -r $$f | awk '{print $$1"  "$$2}' > $$f.md5; \
+		openssl dgst -sha512 -r $$f | awk '{print $$1}' > $$f.sha512; \
+		openssl dgst -sha1 -r $$f | awk '{print $$1}' > $$f.sha1; \
+		openssl dgst -md5 -r $$f | awk '{print $$1}' > $$f.md5; \
 	done
 
 .PHONE=prepare-dist-dir
