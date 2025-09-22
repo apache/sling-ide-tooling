@@ -98,7 +98,7 @@ def buildAndDeployP2Repository( def mvnVersion, def javaVersion ) {
 				sshPublisherDesc(configName: 'Nightlies', 
 					transfers: [
 						sshTransfer(
-							cleanRemote: false,
+							cleanRemote: true,
 							excludes: '',
 							execCommand: '',
 							execTimeout: 120000,
