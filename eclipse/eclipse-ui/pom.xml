@@ -27,6 +27,10 @@
   <packaging>eclipse-plugin</packaging>
   <name>Apache Sling IDE Tools Eclipse UI</name>
 
+  <properties>
+    <decentxml.version>1.4</decentxml.version>
+  </properties>
+
   <scm>
     <connection>scm:git:https://gitbox.apache.org/repos/asf/sling-ide-tooling.git</connection>
     <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/sling-ide-tooling.git</developerConnection>
@@ -65,7 +69,7 @@
                     <artifactItem>
                         <groupId>de.pdark</groupId>
                         <artifactId>decentxml</artifactId>
-                        <version>1.4</version>
+                        <version>${decentxml.version}</version>
                     </artifactItem>                           
                 </artifactItems>
                 <outputDirectory>lib</outputDirectory>
@@ -77,6 +81,19 @@
                     </goals>
                 </execution>
             </executions>
+        </plugin>
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <configuration>
+                <additionalDependencies>
+                    <additionalDependency>
+                        <groupId>de.pdark</groupId>
+                        <artifactId>decentxml</artifactId>
+                        <version>${decentxml.version}</version>
+                    </additionalDependency>
+                </additionalDependencies>
+            </configuration>
         </plugin>
         <plugin>
 			<groupId>org.eclipse.tycho</groupId>
