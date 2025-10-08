@@ -69,14 +69,14 @@ public class MavenProjectUtilsTest {
 	    java.nio.file.Path rootPath = Paths.get("src", "org", "apache", "sling", "ide", "eclipse", "m2e", "internal", "project1");
 	    Assert.assertTrue("rootPath not found", Files.exists(rootPath));
 	    // create folder structure, 
-	    Optional<java.nio.file.Path> actualJcrRoot = MavenProjectUtils.guessJcrRootFolder(rootPath);
+	    Optional<java.nio.file.Path> actualJcrRoot = MavenProjectUtils.guessJcrRootFolder(rootPath, projectRule.getProject());
 	    Assert.assertTrue(actualJcrRoot.isPresent());
 	    Assert.assertEquals(Paths.get("src", "main", "content", "jcr_root"), actualJcrRoot.get());
 	    
 	    // test jcr_root beyond level 4
 	    rootPath = Paths.get("src", "org", "apache", "sling", "ide", "eclipse", "m2e", "internal", "project2");
         Assert.assertTrue("rootPath not found", Files.exists(rootPath));
-        actualJcrRoot = MavenProjectUtils.guessJcrRootFolder(rootPath);
+        actualJcrRoot = MavenProjectUtils.guessJcrRootFolder(rootPath, projectRule.getProject());
         Assert.assertFalse(actualJcrRoot.isPresent());
 	}
 	
