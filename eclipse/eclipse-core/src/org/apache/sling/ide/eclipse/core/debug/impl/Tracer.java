@@ -47,7 +47,7 @@ public class Tracer implements DebugOptionsListener, LogSubscriber {
     @Activate
     public void activate(BundleContext context) {
         // defer registration of the DebugOptionsListener service until this component is activated, otherwise this bundle is eagerly loaded by Equinox
-        context.registerService(DebugOptionsListener.class, this, null);
+        debugOptionsListenerRegistration = context.registerService(DebugOptionsListener.class, this, null);
     }
 
     @Deactivate
