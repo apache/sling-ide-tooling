@@ -42,15 +42,21 @@
                     <executions>
                         <execution>
                             <id>bnd-process</id>
-                            <configuration>
-                                <!-- due to the non-Maven standard merging this is effectively added to the config set in sling-bundle-parent
-                                make sure to automatically start this bundle in Equinox whenever some classes are referenced
-                                (https://vogella.com/blog/getting-started-with-osgi-declarative-services-2024/#interlude-bundle-activationpolicy-lazy) -->
-                                <bnd>Bundle-ActivationPolicy: lazy</bnd>
-                            </configuration>
-                        </execution>
-                    </executions>
-                </plugin>
+                             <configuration>
+                                <!-- due to the non-Maven standard merging this is effectively added to the config set in sling-bundle-parent -->
+                                <bnd>
+# Make sure to automatically start this bundle in Equinox whenever some classes are referenced.
+# (https://vogella.com/blog/getting-started-with-osgi-declarative-services-2024/#interlude-bundle-activationpolicy-lazy)
+Bundle-ActivationPolicy: lazy
+
+# Give snapshot bundles a unique OSGi version per build so p2 does not reuse stale pooled artifacts.
+# Keep the qualifier format aligned with the Tycho-built Eclipse bundles.
+-snapshot: ${tstamp;yyyyMMddHHmm}
+                                 </bnd>
+                             </configuration>
+                         </execution>
+                     </executions>
+                 </plugin>
                 <plugin>
                     <groupId>biz.aQute.bnd</groupId>
                     <artifactId>bnd-baseline-maven-plugin</artifactId>
