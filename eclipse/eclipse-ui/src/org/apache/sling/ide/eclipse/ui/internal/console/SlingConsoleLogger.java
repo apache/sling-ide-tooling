@@ -18,7 +18,6 @@ package org.apache.sling.ide.eclipse.ui.internal.console;
 
 import java.io.IOException;
 import java.io.PrintStream;
-import java.time.Instant;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 
@@ -65,7 +64,7 @@ public class SlingConsoleLogger implements LogSubscriber {
 			public void consolesAdded(IConsole[] consoles) {
 				synchronized (sync) {
 					for (IConsole console : consoles) {
-						if (console.getType().equals(SlingConsoleFactory.CONSOLE_TYPE_SLING)) {
+						if (SlingConsoleFactory.CONSOLE_TYPE_SLING.equals(console.getType())) {
 							slingConsole = (MessageConsole) console;
 							break;
 						}
