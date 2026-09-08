@@ -32,6 +32,9 @@ public class FeatureModelContentProvider extends BaseRootFolderContentProvider<F
     protected FeatureModelRootFolder findRootFolder(IProject project) {
     
     	IPath modelDirPath = ProjectUtil.getFeatureModelPath(project);
+    	if ( modelDirPath == null ) {
+    	    return null;
+    	}
     	
     	IFolder folder = project.getFolder(modelDirPath);
     	if ( !folder.exists() ) {

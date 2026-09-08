@@ -32,6 +32,9 @@ public class ProvisioningModelContentProvider extends BaseRootFolderContentProvi
     protected ProvisioningModelRootFolder findRootFolder(IProject project) {
     
     	IPath modelDirPath = ProjectUtil.getProvisioningModelPath(project);
+    	if ( modelDirPath == null ) {
+    	    return null;
+    	}
     	
     	IFolder folder = project.getFolder(modelDirPath);
     	if ( !folder.exists() ) {
