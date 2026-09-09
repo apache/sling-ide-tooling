@@ -58,7 +58,7 @@ def generateStages(String os, def mvnVersion, def javaVersion) {
 	                timeout(60) {
 	                    // workaround for https://issues.jenkins-ci.org/browse/JENKINS-39415
 	                    wrap([$class: 'Xvfb', autoDisplayName: true]) {
-	                        runCmd "mvn -f eclipse ${goals}"
+	                        runCmd "mvn --show-version -f eclipse ${goals}"
 	                    }
 	                }
 
