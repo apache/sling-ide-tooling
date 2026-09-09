@@ -1,7 +1,7 @@
 import org.apache.sling.jenkins.SlingJenkinsHelper;
 
 def mvnVersion = 'maven_3_latest' // https://cwiki.apache.org/confluence/x/cRTiAw
-def javaVersion = 'jdk_17_latest' // https://cwiki.apache.org/confluence/x/kRLiAw
+def javaVersion = 'jdk_21_latest' // https://cwiki.apache.org/confluence/x/kRLiAw
 
 def helper = new SlingJenkinsHelper()
 
