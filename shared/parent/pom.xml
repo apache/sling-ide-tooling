@@ -49,9 +49,8 @@
 # (https://vogella.com/blog/getting-started-with-osgi-declarative-services-2024/#interlude-bundle-activationpolicy-lazy)
 Bundle-ActivationPolicy: lazy
 
-# Give snapshot bundles a unique OSGi version per build so p2 does not reuse stale pooled artifacts.
-# Keep the qualifier format aligned with the Tycho-built Eclipse bundles.
--snapshot: ${tstamp;yyyyMMddHHmm}
+# CI overrides this with the ordered Git commit qualifier used by Tycho.
+-snapshot: ${build.qualifier}
                                  </bnd>
                              </configuration>
                          </execution>
@@ -147,6 +146,7 @@ Bundle-ActivationPolicy: lazy
     </dependencyManagement>
     
     <properties>
+		<build.qualifier>${tstamp;yyyyMMddHHmm}</build.qualifier>
 		<sling.java.version>11</sling.java.version>
 		<minimalJavaBuildVersion>17</minimalJavaBuildVersion><!-- Tycho requires Java 17 -->
 		<!-- must match the version being referenced in the pom.xml of filevault -->

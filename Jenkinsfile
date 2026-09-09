@@ -79,6 +79,12 @@ def generateStages(String os, def mvnVersion, def javaVersion) {
     		stage("[$prefix] Clone") {
 	    		echo "Running on node ${env.NODE_NAME}"
 	    		checkout scm
+                if (isWindows) {
+                    env.BUILD_QUALIFIER = bat(returnStdout: true, script: '@set TZ=UTC&& git show -s --format=%%cd-%%h --date=format-local:%%Y%%m%%d%%H%%M%%S %GIT_COMMIT%').trim()
+                } else {
+                    env.BUILD_QUALIFIER = sh(returnStdout: true, script: 'TZ=UTC git show -s --format=%cd-%h --date=format-local:%Y%m%d%H%M%S "$GIT_COMMIT"').trim()
+                }
+                env.MAVEN_ARGS = "${env.MAVEN_ARGS ?: ''} -Dbuild.qualifier=${env.BUILD_QUALIFIER} -DforceContextQualifier=${env.BUILD_QUALIFIER}".trim()
 	    	}
 	        stages.each { name, body ->
 	            stage(name) {
