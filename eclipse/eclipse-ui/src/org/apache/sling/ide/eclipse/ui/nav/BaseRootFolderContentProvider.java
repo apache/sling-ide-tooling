@@ -36,7 +36,8 @@ public abstract class BaseRootFolderContentProvider<T extends RootFolder> implem
     @Override
     public boolean hasChildren(Object parentElement) {
         // the getChildren is not expensive, therefore we leverage that here
-        return getChildren(parentElement) != null;
+        Object[] children = getChildren(parentElement);
+        return children != null && children.length > 0;
     }
     
     @Override
