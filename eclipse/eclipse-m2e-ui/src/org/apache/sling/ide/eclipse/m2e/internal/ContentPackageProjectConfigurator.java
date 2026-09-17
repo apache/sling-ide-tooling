@@ -90,10 +90,10 @@ public class ContentPackageProjectConfigurator extends AbstractProjectConfigurat
         // core configuration for sling ide plugin
         
         try {
-            Optional<java.nio.file.Path> contentSyncPath = MavenProjectUtils.guessJcrRootFolder(mavenProject);
+            Optional<java.nio.file.Path> contentSyncPath = MavenProjectUtils.guessJcrRootFolder(mavenProject.getBasedir().toPath(), project);
             if (!contentSyncPath.isPresent()) {
                 // add marker
-                addMarker(pomFile, "Could not detect jcr_root path for this content package!", IMarker.SEVERITY_ERROR);
+                addMarker(pomFile, "Could not detect jcr_root path for this content package!", IMarker.SEVERITY_INFO);
                 return;
             }
             

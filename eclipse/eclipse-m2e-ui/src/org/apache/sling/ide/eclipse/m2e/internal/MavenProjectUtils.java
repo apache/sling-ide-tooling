@@ -32,6 +32,8 @@ import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Plugin;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 
 public class MavenProjectUtils {
 
@@ -39,19 +41,29 @@ public class MavenProjectUtils {
     private static final Pattern SERVLET_API_VERSION_MATCHER = Pattern.compile("^(\\d\\.\\d)");
     private static final int MAX_RELATIVE_DEPTH_OF_JCR_ROOT = 4; // relative depth of jcr_root in content packages from the Maven basedir
 
-    public static Optional<Path> guessJcrRootFolder(MavenProject project) throws IOException {
-        return guessJcrRootFolder(project.getBasedir().toPath());
+    /**
+     * Similar to the logic in the <a href="https://github.com/apache/jackrabbit-filevault-package-maven-plugin/blob/92637f43f72c7a61e34d0636b1a1354a522a5877/src/main/java/org/apache/jackrabbit/filevault/maven/packaging/mojo/AbstractSourceAndMetadataPackageMojo.java#L47">
+     * content-package-maven-plugin to find the jcr_root folder</a>. However not considering derived resources (e.g. target/jcr_root).
+     * @param baseDir
+     * @return
+     * @throws IOException
+     */
+    public static Optional<Path> guessJcrRootFolder(Path baseDir, IProject eclipseProject) throws IOException {
+        try (Stream<Path> stream = Files.find(baseDir, MAX_RELATIVE_DEPTH_OF_JCR_ROOT, (a, b) -> a.endsWith("jcr_root"))) {
+            return stream.map(baseDir::relativize)
+                    .filter(p -> !isDerived(p, eclipseProject))
+                    .findFirst();
+        }
     }
 
-    static Optional<Path> guessJcrRootFolder(Path baseDir) throws IOException {
-        try (Stream<Path> stream = Files.find(baseDir, MAX_RELATIVE_DEPTH_OF_JCR_ROOT, (a, b) -> a.endsWith("jcr_root"))) {
-            Optional<Path> jcrRoot = stream.findFirst();
-            if (jcrRoot.isPresent()) {
-                jcrRoot = Optional.of(baseDir.relativize(jcrRoot.get()));
-            }
-            return jcrRoot;
+    static boolean isDerived(Path path, IProject eclipseProject) {
+        // skip derived jcr_root folders (e.g. target/jcr_root)
+        IResource resource = eclipseProject.findMember(path.toString());
+        if (resource == null) {
+            throw new IllegalStateException("Could not find IResource for path " + path);
         }
-    } 
+        return resource.isDerived();
+    }
 
     public static String guessServletApiVersion(MavenProject project) {
         
